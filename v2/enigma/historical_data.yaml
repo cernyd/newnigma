@@ -13,7 +13,6 @@ Enigma1:
     UKW-A: {back_board: EJMZALYXVBWFCRQUONTSPIKHGD}
     UKW-B: {back_board: YRUHQSLDPXNGOKMIEBFZCWVJAT}
     UKW-C: {back_board: FVPJIAOYEDRZXWGCTKUQSBNMHL}
-
 EnigmaM3:
   stators:
     ETW: {label: , back_board: ABCDEFGHIJKLMNOPQRSTUVWXYZ}
@@ -29,7 +28,6 @@ EnigmaM3:
   reflectors:
     UKW-B: {back_board: YRUHQSLDPXNGOKMIEBFZCWVJAT}
     UKW-C: {back_board: FVPJIAOYEDRZXWGCTKUQSBNMHL}
-
 EnigmaM4:
   stators:
     ETW: {back_board: ABCDEFGHIJKLMNOPQRSTUVWXYZ}
@@ -47,7 +45,6 @@ EnigmaM4:
   reflectors:
     UKW-B: {back_board: ENKQAUYWJICOPBLMDXZVFTHRGS}
     UKW-C: {back_board: RDOBJNTKVEHMLFCWZAXGYIPSUQ}
-
 Norenigma:
   stators:
     ETW: {label: , back_board: ABCDEFGHIJKLMNOPQRSTUVWXYZ}
@@ -59,7 +56,6 @@ Norenigma:
     V: {back_board: HEJXQOTZBVFDASCILWPGYNMURK, turnover: Z}
   reflectors:
     UKW: {back_board: MOWJYPUXNDSRAIBFVLKZGQCHET}
-
 EnigmaG:
   stators:
     ETW: {back_board: QWERTZUIOASDFGHJKPYXCVBNML}
@@ -69,7 +65,6 @@ EnigmaG:
     III: {back_board: CJGDPSHKTURAWZXFMYNQOBVLIE, turnover: UWXAEFHKMNR}
   reflectors:
     UKW: {back_board: IMETCGFRAYSQBZXWLHKDVUPOJN}
-
 EnigmaD:
   stators:
     ETW: {label: , back_board: QWERTZUIOASDFGHJKPYXCVBNML}
@@ -79,12 +74,11 @@ EnigmaD:
     III: {back_board: CJGDPSHKTURAWZXFMYNQOBVLIE, turnover: N}
   reflectors:
     UKW: {back_board: IMETCGFRAYSQBZXWLHKDVUPOJN}
-
 Tirpitz:
   stators:
     ETW: {back_board: KZROUQHYAIGBLWVSTDXFPNMCJE}
   rotors:
-    I: {back_board: KPTYUELOCVGRFQDANJMBSWHZXI,turnover: WZEKQ}
+    I: {I: , back_board: KPTYUELOCVGRFQDANJMBSWHZXI,turnover: WZEKQ}
     II: {back_board: UPHZLWEQMTDJXCAKSOIGVBYFNR, turnover: WZFLR}
     III: {back_board: QUDLYRFEKONVZAXWHMGPJBSICT, turnover: WZEKQ}
     IV: {back_board: CIWTBKXNRESPFLYDAGVHQUOJZM, turnover: WZFLR}
@@ -94,7 +88,6 @@ Tirpitz:
     VIII: {back_board: YMTPNZHWKODAJXELUQVGCBISFR, turnover: XEIMQ}
   reflectors:
     UKW: {back_board: GEKPBTAUMOCNILJDXZYFHWVQSR}
-
 EnigmaK:
   stators:
     ETW: {back_board: QWERTZUIOASDFGHJKPYXCVBNML}
@@ -104,7 +97,6 @@ EnigmaK:
     III: {back_board: CJGDPSHKTURAWZXFMYNQOBVLIE, turnover: N}
   reflectors:
     UKW: {back_board: IMETCGFRAYSQBZXWLHKDVUPOJN}
-
 SwissK:
   stators:
     ETW: {back_board: QWERTZUIOASDFGHJKPYXCVBNML}
@@ -114,7 +106,6 @@ SwissK:
     III: {back_board: EHRVXGAOBQUSIMZFLYNWKTPDJC, turnover: N}
   reflectors:
     UKW: {back_board: IMETCGFRAYSQBZXWLHKDVUPOJN}
-
 Railway:
   stators:
     ETW: {back_board: QWERTZUIOASDFGHJKPYXCVBNML}

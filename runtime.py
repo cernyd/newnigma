@@ -3,6 +3,7 @@
 from enigma.components import TestEnigma, unittest
 from data_handler import DataHandler, platform
 from gui import Root
+import argparse
 
 
 data_handler = DataHandler()
