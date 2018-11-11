@@ -2,6 +2,7 @@
 
 import pytest
 from v2.enigma.components import _RotorBase, historical_data
+from string import ascii_uppercase as alphabet
 
 # "test_cfg": {
 #     "default_cfg": {
@@ -64,9 +65,28 @@ def test_encrypt_decrypt(message, result):
 
 
 def test_routing():
+    """
+    Tests if the forward routing is being routed correctly in the opposite direction (taking the
+    relative rotor position into account)
+    """
+
     data = historical_data['Enigma1']['rotors'][0]
     base = _RotorBase(data['label'], data['back_board'])
-    print("Letter A routed to " + base._route_forward('A'))
+
+    for i in 1, 3, -2, 5, 7, 20:
+        for letter in alphabet:
+            assert letter == base._route_backward(base._route_forward(letter)), \
+                "Backwards routing doesn't return to the original location!"
+            base.rotate(i)
+
+
+def test_rotation():
+    return
+    data = historical_data['Enigma1']['rotors'][0]
+    base = _RotorBase(data['label'], data['back_board'])
+    for _ in range(5):
+        base.rotate()
+
 
 
 # class TestEnigma(unittest.TestCase):

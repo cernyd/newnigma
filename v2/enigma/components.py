@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 
-from string import ascii_letters as alphabet
-alphabet = alphabet.upper()
+from string import ascii_uppercase as alphabet
 
 
 zur_beachtung = """\
@@ -209,8 +208,10 @@ class _RotorBase:
         :param back_board: {str} defines the way letters are routed trough the rotor
         """
         self.label = label
-        self.front_board = alphabet[:]
-        self.back_board = back_board
+
+        # Pairs of letters FRONT <-> BACK
+        self.wiring = [alphabet.index(letter) for letter in back_board]
+        self.offset = 0
 
     def _route_forward(self, letter):
         """
@@ -218,8 +219,34 @@ class _RotorBase:
         :param letter: {char}
         :return: {char}
         """
-        return self.back_board[alphabet.index(letter)]
+        relative_input = (alphabet.index(letter) + self.offset) % 26
+        print("Rel input: " + str(relative_input))
+        relative_result = self.wiring[relative_input]
+        absolute_result = (relative_result + self.offset) % 26
+        return alphabet[absolute_result]
 
+
+    def _route_backward(self, letter):
+        """
+        Routes the letter from the back board to the front board
+        :param letter: {char}
+        :return: {char}
+        """
+        relative_input = (alphabet.index(letter) - self.offset) % 26
+        relative_result = self.wiring.index(relative_input)
+        absolute_result = (relative_result - self.offset) % 26
+        return alphabet[absolute_result]
+
+    def rotate(self, offset_by=1):
+        """
+        Calculates new rotor offset based on input offset
+        :param offset_by: {int} how many places the rotor should be offset
+                          (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
+        """
+        print("Before: %d" % self.offset)
+        self.offset = (self.offset + offset_by) % 26
+        print("After: %d" % self.offset)
+        print("==================================")
 
 
 class Rotor(_RotorBase):
