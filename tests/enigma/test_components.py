@@ -64,6 +64,25 @@ def test_encrypt_decrypt(message, result):
         output += '+'
 
 
+def test_single_encrypt():
+    """
+
+    """
+
+    data = historical_data['Enigma1']['rotors'][0]
+    base = _RotorBase(data['label'], data['back_board'])
+
+    assert base._route_forward('A') == 'E'
+    base.rotate()
+    assert base._route_forward('A') == 'L'
+    base.rotate()
+    assert base._route_forward('A') == 'O'
+
+    # "Looping back" to position 0 should produce the same result as in default position
+    base.rotate(24)
+    assert base._route_forward('A') == 'E'
+
+
 def test_routing():
     """
     Tests if the forward routing is being routed correctly in the opposite direction (taking the
@@ -80,12 +99,18 @@ def test_routing():
             base.rotate(i)
 
 
-def test_rotation():
-    return
+@pytest.mark.parametrize('offset_by, result', (
+    (5, 5), (-1, 25), (26, 0), (15, 15), (50, 24), (-40, 12), (25, 25)
+))
+def test_rotation(offset_by, result):
     data = historical_data['Enigma1']['rotors'][0]
     base = _RotorBase(data['label'], data['back_board'])
-    for _ in range(5):
-        base.rotate()
+    base.rotate(offset_by=offset_by)
+    assert base.offset == result, "Rotor offset is not being calculated correctly"
+
+
+def test_position():
+    pass
 
 
 

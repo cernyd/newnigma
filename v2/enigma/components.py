@@ -219,12 +219,8 @@ class _RotorBase:
         :param letter: {char}
         :return: {char}
         """
-        relative_input = (alphabet.index(letter) + self.offset) % 26
-        print("Rel input: " + str(relative_input))
-        relative_result = self.wiring[relative_input]
-        absolute_result = (relative_result + self.offset) % 26
-        return alphabet[absolute_result]
-
+        relative_result = self.wiring[self.apply_offset(alphabet.index(letter))]
+        return alphabet[self.apply_offset(relative_result)]
 
     def _route_backward(self, letter):
         """
@@ -232,22 +228,30 @@ class _RotorBase:
         :param letter: {char}
         :return: {char}
         """
-        relative_input = (alphabet.index(letter) - self.offset) % 26
-        relative_result = self.wiring.index(relative_input)
-        absolute_result = (relative_result - self.offset) % 26
-        return alphabet[absolute_result]
+        relative_input = self.apply_offset(alphabet.index(letter), True)
+        return alphabet[self.apply_offset(self.wiring.index(relative_input), True)]
+
+    def apply_offset(self, i, negate=False):
+        """
+        Applies either positive or negative offset to a value
+        :param i: {int}
+        :param negate: {bool} subtract the offset rather than add
+        :return: {int} the offset value
+        """
+        offset = -self.offset if negate else self.offset
+        return (i + offset) % 26  # The alphabet has 27 - 1 letters (and index is counted from 0)
 
     def rotate(self, offset_by=1):
         """
-        Calculates new rotor offset based on input offset
+        Calculates new rotor offset based on input offset. There are 26 letters in the
+        alphabet so 26 is the max index!
         :param offset_by: {int} how many places the rotor should be offset
                           (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
         """
-        print("Before: %d" % self.offset)
         self.offset = (self.offset + offset_by) % 26
-        print("After: %d" % self.offset)
-        print("==================================")
 
+    def position(self):
+        return alphabet[self.offset]
 
 class Rotor(_RotorBase):
     def __init__(self, label, back_board):
