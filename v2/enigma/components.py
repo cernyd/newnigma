@@ -51,34 +51,34 @@ layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 2
 
 # Stators
 ETW = {'label': 'ETW', 'back_board': alphabet}
-ETW_QWERTZ = {'back_board': "QWERTZUIOASDFGHJKPYXCVBNML"}
+ETW_QWERTZ = {'wiring': "QWERTZUIOASDFGHJKPYXCVBNML"}
 
 # Rotors
-I = {'label': 'I', 'back_board': 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'turnover': 'Q'}
-II = {'label': 'II', 'back_board': 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'turnover': 'E'}
-III = {'label': 'III', 'back_board': 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'turnover': 'V'}
-IV = {'label': 'IV', 'back_board': 'ESOVPZJAYQUIRHXLNFTGKDCMWB', 'turnover': 'J'}
-V = {'label': 'V', 'back_board': 'VZBRGITYUPSDNHLXAWMJQOFECK', 'turnover': 'Z'}
-VI = {'label': 'VI', 'back_board': 'JPGVOUMFYQBENHZRDKASXLICTW', 'turnover': 'ZM'}
-VII = {'label': 'VII', 'back_board': 'NZJHGRCXMYSWBOUFAIVLPEKQDT', 'turnover': 'ZM'}
-VIII = {'label': 'VIII', 'back_board': 'FKQHTLXOCBJSPDZRAMEWNIUYGV', 'turnover': 'ZM'}
+I = {'label': 'I', 'wiring': 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'turnover': 'Q'}
+II = {'label': 'II', 'wiring': 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'turnover': 'E'}
+III = {'label': 'III', 'wiring': 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'turnover': 'V'}
+IV = {'label': 'IV', 'wiring': 'ESOVPZJAYQUIRHXLNFTGKDCMWB', 'turnover': 'J'}
+V = {'label': 'V', 'wiring': 'VZBRGITYUPSDNHLXAWMJQOFECK', 'turnover': 'Z'}
+VI = {'label': 'VI', 'wiring': 'JPGVOUMFYQBENHZRDKASXLICTW', 'turnover': 'ZM'}
+VII = {'label': 'VII', 'wiring': 'NZJHGRCXMYSWBOUFAIVLPEKQDT', 'turnover': 'ZM'}
+VIII = {'label': 'VIII', 'wiring': 'FKQHTLXOCBJSPDZRAMEWNIUYGV', 'turnover': 'ZM'}
 
 
 # Reflectors
-UKW_B = {'label': 'UKW-B', 'back_board': "YRUHQSLDPXNGOKMIEBFZCWVJAT"}
-UKW_C = {'label': 'UKW-C', 'back_board': "FVPJIAOYEDRZXWGCTKUQSBNMHL"}
+UKW_B = {'label': 'UKW-B', 'wiring': "YRUHQSLDPXNGOKMIEBFZCWVJAT"}
+UKW_C = {'label': 'UKW-C', 'wiring': "FVPJIAOYEDRZXWGCTKUQSBNMHL"}
 
 
 # Enigma D and K
 ENIGMA_D_K = {
     'stator' : ETW_QWERTZ,
     'rotors': (
-        {'label': 'I', 'back_board': 'LPGSZMHAEOQKVXRFYBUTNICJDW', 'turnover': 'Y'},
-        {'label': 'II', 'back_board': 'SLVGBTFXJQOHEWIRZYAMKPCNDU', 'turnover': 'E'},
-        {'label': 'III', 'back_board': 'CJGDPSHKTURAWZXFMYNQOBVLIE', 'turnover': 'N'},
+        {'label': 'I', 'wiring': 'LPGSZMHAEOQKVXRFYBUTNICJDW', 'turnover': 'Y'},
+        {'label': 'II', 'wiring': 'SLVGBTFXJQOHEWIRZYAMKPCNDU', 'turnover': 'E'},
+        {'label': 'III', 'wiring': 'CJGDPSHKTURAWZXFMYNQOBVLIE', 'turnover': 'N'},
     ),
     'reflectors': (
-        {'label': 'UKW', 'back_board': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+        {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
     )
 }
 
@@ -88,7 +88,7 @@ historical_data = {
         'stator' : ETW,
         'rotors': (I, II, III, IV, V),
         'reflectors': (
-            {'label': 'UKW-A', 'back_board': "EJMZALYXVBWFCRQUONTSPIKHGD"}, UKW_B, UKW_C
+            {'label': 'UKW-A', 'wiring': "EJMZALYXVBWFCRQUONTSPIKHGD"}, UKW_B, UKW_C
         )
     },
     'EnigmaM3': {
@@ -100,36 +100,36 @@ historical_data = {
         'stator' : ETW,
         'rotors': (
             I, II, III, IV, V, VI, VII, VIII,
-            {'label': 'Beta', 'back_board': 'LEYJVCNIXWPBQMDRTAKZGFUHOS'},
-            {'label': 'Gamma', 'back_board': 'FSOKANUERHMBTIYCWLQPZXVGJD'}
+            {'label': 'Beta', 'wiring': 'LEYJVCNIXWPBQMDRTAKZGFUHOS'},
+            {'label': 'Gamma', 'wiring': 'FSOKANUERHMBTIYCWLQPZXVGJD'}
         ),
         'reflectors': (
-            {'label': 'UKW-b', 'back_board': "ENKQAUYWJICOPBLMDXZVFTHRGS"},
-            {'label': 'UKW-c', 'back_board': "RDOBJNTKVEHMLFCWZAXGYIPSUQ"}
+            {'label': 'UKW-b', 'wiring': "ENKQAUYWJICOPBLMDXZVFTHRGS"},
+            {'label': 'UKW-c', 'wiring': "RDOBJNTKVEHMLFCWZAXGYIPSUQ"}
         )
     },
     'Norenigma': {
         'stator' : ETW,
         'rotors': (
-            {'label': 'I', 'back_board': 'WTOKASUYVRBXJHQCPZEFMDINLG', 'turnover': 'Q'},
-            {'label': 'II', 'back_board': 'GJLPUBSWEMCTQVHXAOFZDRKYNI', 'turnover': 'E'},
-            {'label': 'III', 'back_board': 'JWFMHNBPUSDYTIXVZGRQLAOEKC', 'turnover': 'V'},
-            {'label': 'IV', 'back_board': 'ESOVPZJAYQUIRHXLNFTGKDCMWB', 'turnover': 'J'},
-            {'label': 'V', 'back_board': 'HEJXQOTZBVFDASCILWPGYNMURK', 'turnover': 'Z'}
+            {'label': 'I', 'wiring': 'WTOKASUYVRBXJHQCPZEFMDINLG', 'turnover': 'Q'},
+            {'label': 'II', 'wiring': 'GJLPUBSWEMCTQVHXAOFZDRKYNI', 'turnover': 'E'},
+            {'label': 'III', 'wiring': 'JWFMHNBPUSDYTIXVZGRQLAOEKC', 'turnover': 'V'},
+            {'label': 'IV', 'wiring': 'ESOVPZJAYQUIRHXLNFTGKDCMWB', 'turnover': 'J'},
+            {'label': 'V', 'wiring': 'HEJXQOTZBVFDASCILWPGYNMURK', 'turnover': 'Z'}
         ),
         'reflectors': (
-            {'label': 'UKW', 'back_board': "MOWJYPUXNDSRAIBFVLKZGQCHET"},
+            {'label': 'UKW', 'wiring': "MOWJYPUXNDSRAIBFVLKZGQCHET"},
         )
     },
     'EnigmaG': {
         'stator' : ETW_QWERTZ,
         'rotors': (
-            {'label': 'I', 'back_board': 'LPGSZMHAEOQKVXRFYBUTNICJDW', 'turnover': 'SUVWZABCEFGIKLOPQ'},
-            {'label': 'II', 'back_board': 'SLVGBTFXJQOHEWIRZYAMKPCNDU', 'turnover': 'STVYZACDFGHKMNQ'},
-            {'label': 'III', 'back_board': 'CJGDPSHKTURAWZXFMYNQOBVLIE', 'turnover': 'UWXAEFHKMNR'},
+            {'label': 'I', 'wiring': 'LPGSZMHAEOQKVXRFYBUTNICJDW', 'turnover': 'SUVWZABCEFGIKLOPQ'},
+            {'label': 'II', 'wiring': 'SLVGBTFXJQOHEWIRZYAMKPCNDU', 'turnover': 'STVYZACDFGHKMNQ'},
+            {'label': 'III', 'wiring': 'CJGDPSHKTURAWZXFMYNQOBVLIE', 'turnover': 'UWXAEFHKMNR'},
         ),
         'reflectors': (
-            {'label': 'UKW', 'back_board': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+            {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
         )
     },
     'EnigmaD': ENIGMA_D_K,
@@ -137,39 +137,39 @@ historical_data = {
     'SwissK': {
         'stator' : ETW_QWERTZ,
         'rotors': (
-            {'label': 'I', 'back_board': 'PEZUOHXSCVFMTBGLRINQJWAYDK', 'turnover': 'Y'},
-            {'label': 'II', 'back_board': 'ZOUESYDKFWPCIQXHMVBLGNJRAT', 'turnover': 'E'},
-            {'label': 'III', 'back_board': 'EHRVXGAOBQUSIMZFLYNWKTPDJC', 'turnover': 'N'},
+            {'label': 'I', 'wiring': 'PEZUOHXSCVFMTBGLRINQJWAYDK', 'turnover': 'Y'},
+            {'label': 'II', 'wiring': 'ZOUESYDKFWPCIQXHMVBLGNJRAT', 'turnover': 'E'},
+            {'label': 'III', 'wiring': 'EHRVXGAOBQUSIMZFLYNWKTPDJC', 'turnover': 'N'},
         ),
         'reflectors': (
-            {'label': 'UKW', 'back_board': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+            {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
         )
     },
     'Railway': {
         'stator' : ETW_QWERTZ,
         'rotors': (
-            {'label': 'I', 'back_board': 'JGDQOXUSCAMIFRVTPNEWKBLZYH', 'turnover': 'N'},
-            {'label': 'II', 'back_board': 'NTZPSFBOKMWRCJDIVLAEYUXHGQ', 'turnover': 'E'},
-            {'label': 'III', 'back_board': 'JVIUBHTCDYAKEQZPOSGXNRMWFL', 'turnover': 'Y'},
+            {'label': 'I', 'wiring': 'JGDQOXUSCAMIFRVTPNEWKBLZYH', 'turnover': 'N'},
+            {'label': 'II', 'wiring': 'NTZPSFBOKMWRCJDIVLAEYUXHGQ', 'turnover': 'E'},
+            {'label': 'III', 'wiring': 'JVIUBHTCDYAKEQZPOSGXNRMWFL', 'turnover': 'Y'},
         ),
         'reflectors': (
-            {'label': 'UKW', 'back_board': "QYHOGNECVPUZTFDJAXWMKISRBL"},
+            {'label': 'UKW', 'wiring': "QYHOGNECVPUZTFDJAXWMKISRBL"},
         )
     },
     'Tirpitz': {
         'stator' : {'label': 'ETW', 'back_board': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
         'rotors': (
-            {'label': 'I', 'back_board': 'KPTYUELOCVGRFQDANJMBSWHZXI', 'turnover': 'WZEKQ'},
-            {'label': 'II', 'back_board': 'UPHZLWEQMTDJXCAKSOIGVBYFNR', 'turnover': 'WZFLR'},
-            {'label': 'III', 'back_board': 'QUDLYRFEKONVZAXWHMGPJBSICT', 'turnover': 'WZEKQ'},
-            {'label': 'IV', 'back_board': 'CIWTBKXNRESPFLYDAGVHQUOJZM', 'turnover': 'WZFLR'},
-            {'label': 'V', 'back_board': 'UAXGISNJBVERDYLFZWTPCKOHMQ', 'turnover': 'YCFKR'},
-            {'label': 'VI', 'back_board': 'XFUZGALVHCNYSEWQTDMRBKPIOJ', 'turnover': 'XEIMQ'},
-            {'label': 'VII', 'back_board': 'BJVFTXPLNAYOZIKWGDQERUCHSM', 'turnover': 'YCFKR'},
-            {'label': 'VIII', 'back_board': 'YMTPNZHWKODAJXELUQVGCBISFR', 'turnover': 'XEIMQ'}
+            {'label': 'I', 'wiring': 'KPTYUELOCVGRFQDANJMBSWHZXI', 'turnover': 'WZEKQ'},
+            {'label': 'II', 'wiring': 'UPHZLWEQMTDJXCAKSOIGVBYFNR', 'turnover': 'WZFLR'},
+            {'label': 'III', 'wiring': 'QUDLYRFEKONVZAXWHMGPJBSICT', 'turnover': 'WZEKQ'},
+            {'label': 'IV', 'wiring': 'CIWTBKXNRESPFLYDAGVHQUOJZM', 'turnover': 'WZFLR'},
+            {'label': 'V', 'wiring': 'UAXGISNJBVERDYLFZWTPCKOHMQ', 'turnover': 'YCFKR'},
+            {'label': 'VI', 'wiring': 'XFUZGALVHCNYSEWQTDMRBKPIOJ', 'turnover': 'XEIMQ'},
+            {'label': 'VII', 'wiring': 'BJVFTXPLNAYOZIKWGDQERUCHSM', 'turnover': 'YCFKR'},
+            {'label': 'VIII', 'wiring': 'YMTPNZHWKODAJXELUQVGCBISFR', 'turnover': 'XEIMQ'}
         ),
         'reflectors': (
-            {'label': 'UKW', 'back_board': "GEKPBTAUMOCNILJDXZYFHWVQSR"},
+            {'label': 'UKW', 'wiring': "GEKPBTAUMOCNILJDXZYFHWVQSR"},
         )
     }
 }
@@ -201,19 +201,44 @@ class Enigma:
         """
 
 
-class _RotorBase:
-    def __init__(self, label, back_board):
+# TODO: Decide whether or not it is beneficial to pursue the DRY principle at all costs
+
+class Stator:
+    def __init__(self, wiring):
+        """
+        :param wiring: {str} defines the way letters are routed trough the rotor
+        """
+        # Pairs of letters FRONT <-> BACK
+        self.wiring = wiring
+
+    def forward(self, letter):
+        return self.wiring[alphabet.index(letter)]
+
+    def backward(self, letter):
+        return alphabet[self.wiring.index(letter)]
+
+
+class Reflector:
+    def __init__(self, wiring):
+        self.wiring = wiring
+
+    def reflect(self, letter):
+        return self.wiring[alphabet.index(letter)]
+
+
+class Rotor:
+    def __init__(self, label, wiring):
         """
         :param label: {str} rotor label (I, II, III, ...)
-        :param back_board: {str} defines the way letters are routed trough the rotor
+        :param wiring: {str} defines the way letters are routed trough the rotor
         """
+        self.wiring = [alphabet.index(letter) for letter in wiring]
+
         self.label = label
+        self.offset = 0  # "Stellung"
+        self.ring_offset = 0  # "Ringstellung"
 
-        # Pairs of letters FRONT <-> BACK
-        self.wiring = [alphabet.index(letter) for letter in back_board]
-        self.offset = 0
-
-    def _route_forward(self, letter):
+    def forward(self, letter):
         """
         Routes the letter from the front board to the back board
         :param letter: {char}
@@ -222,7 +247,7 @@ class _RotorBase:
         relative_result = self.wiring[self.apply_offset(alphabet.index(letter))]
         return alphabet[self.apply_offset(relative_result)]
 
-    def _route_backward(self, letter):
+    def backward(self, letter):
         """
         Routes the letter from the back board to the front board
         :param letter: {char}
@@ -250,13 +275,20 @@ class _RotorBase:
         """
         self.offset = (self.offset + offset_by) % 26
 
-    def position(self):
-        return alphabet[self.offset]
+    def set_ring(self, setting):
+        """
+        Sets "Rinstellung" (ring settings) which can be misaligned with internal wiring
+        :param setting: {int} new ring setting
+        """
+        self.ring_offset = setting % 26
 
-class Rotor(_RotorBase):
-    def __init__(self, label, back_board):
+    def position(self, numeric=False):
         """
-        :param label: {str} rotor label (I, II, III, ...)
-        :param back_board: {str} defines the way letters are routed trough the rotor
+        Returns current rotor position (adjusted for ringstellung)
+        :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
+        :return:
         """
-        super().__init__(label, back_board)
+        # Shown position does not need to equat the actual position because the labels can be
+        # rotated using "Ringstellung"
+        shown_position = (self.offset + self.ring_offset) % 26
+        return "%02d" % (shown_position + 1) if numeric else alphabet[shown_position]

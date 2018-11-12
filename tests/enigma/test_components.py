@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from v2.enigma.components import _RotorBase, historical_data
+from v2.enigma.components import Rotor, historical_data, Reflector
 from string import ascii_uppercase as alphabet
 
 # "test_cfg": {
@@ -65,22 +65,18 @@ def test_encrypt_decrypt(message, result):
 
 
 def test_single_encrypt():
-    """
-
-    """
-
     data = historical_data['Enigma1']['rotors'][0]
-    base = _RotorBase(data['label'], data['back_board'])
+    base = Rotor(data['label'], data['wiring'])
 
-    assert base._route_forward('A') == 'E'
+    assert base.forward('A') == 'E'
     base.rotate()
-    assert base._route_forward('A') == 'L'
+    assert base.forward('A') == 'L'
     base.rotate()
-    assert base._route_forward('A') == 'O'
+    assert base.forward('A') == 'O'
 
     # "Looping back" to position 0 should produce the same result as in default position
     base.rotate(24)
-    assert base._route_forward('A') == 'E'
+    assert base.forward('A') == 'E'
 
 
 def test_routing():
@@ -90,11 +86,11 @@ def test_routing():
     """
 
     data = historical_data['Enigma1']['rotors'][0]
-    base = _RotorBase(data['label'], data['back_board'])
+    base = Rotor(data['label'], data['wiring'])
 
     for i in 1, 3, -2, 5, 7, 20:
         for letter in alphabet:
-            assert letter == base._route_backward(base._route_forward(letter)), \
+            assert letter == base.backward(base.forward(letter)), \
                 "Backwards routing doesn't return to the original location!"
             base.rotate(i)
 
@@ -104,14 +100,26 @@ def test_routing():
 ))
 def test_rotation(offset_by, result):
     data = historical_data['Enigma1']['rotors'][0]
-    base = _RotorBase(data['label'], data['back_board'])
+    base = Rotor(data['label'], data['wiring'])
     base.rotate(offset_by=offset_by)
     assert base.offset == result, "Rotor offset is not being calculated correctly"
 
 
 def test_position():
-    pass
+    data = historical_data['Enigma1']['rotors'][0]
+    base = Rotor(data['label'], data['wiring'])
+    base.rotate()
+    assert base.position(True) == "02"
+    assert base.position() == "B"
+    base.rotate(20)
+    assert base.position() == "V"
 
+
+def test_reflector():
+    reflector = Reflector(historical_data['EnigmaM3']['reflectors'][0]['wiring'])
+
+    result = reflector.reflect('A')
+    assert 'A' == reflector.reflect(result)
 
 
 # class TestEnigma(unittest.TestCase):
