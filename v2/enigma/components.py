@@ -50,7 +50,7 @@ layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 2
 
 
 # Stators
-ETW = {'label': 'ETW', 'back_board': alphabet}
+ETW = {'label': 'ETW', 'wiring': alphabet}
 ETW_QWERTZ = {'wiring': "QWERTZUIOASDFGHJKPYXCVBNML"}
 
 # Rotors
@@ -85,19 +85,19 @@ ENIGMA_D_K = {
 
 historical_data = {
     'Enigma1': {
-        'stator' : ETW,
+        'stator': ETW,
         'rotors': (I, II, III, IV, V),
         'reflectors': (
             {'label': 'UKW-A', 'wiring': "EJMZALYXVBWFCRQUONTSPIKHGD"}, UKW_B, UKW_C
         )
     },
     'EnigmaM3': {
-        'stator' : ETW,
+        'stator': ETW,
         'rotors': (I, II, III, IV, V, VI, VII, VIII),
         'reflectors': (UKW_B, UKW_C)
     },
     'EnigmaM4': {
-        'stator' : ETW,
+        'stator': ETW,
         'rotors': (
             I, II, III, IV, V, VI, VII, VIII,
             {'label': 'Beta', 'wiring': 'LEYJVCNIXWPBQMDRTAKZGFUHOS'},
@@ -109,7 +109,7 @@ historical_data = {
         )
     },
     'Norenigma': {
-        'stator' : ETW,
+        'stator': ETW,
         'rotors': (
             {'label': 'I', 'wiring': 'WTOKASUYVRBXJHQCPZEFMDINLG', 'turnover': 'Q'},
             {'label': 'II', 'wiring': 'GJLPUBSWEMCTQVHXAOFZDRKYNI', 'turnover': 'E'},
@@ -122,7 +122,7 @@ historical_data = {
         )
     },
     'EnigmaG': {
-        'stator' : ETW_QWERTZ,
+        'stator': ETW_QWERTZ,
         'rotors': (
             {'label': 'I', 'wiring': 'LPGSZMHAEOQKVXRFYBUTNICJDW', 'turnover': 'SUVWZABCEFGIKLOPQ'},
             {'label': 'II', 'wiring': 'SLVGBTFXJQOHEWIRZYAMKPCNDU', 'turnover': 'STVYZACDFGHKMNQ'},
@@ -146,7 +146,7 @@ historical_data = {
         )
     },
     'Railway': {
-        'stator' : ETW_QWERTZ,
+        'stator': ETW_QWERTZ,
         'rotors': (
             {'label': 'I', 'wiring': 'JGDQOXUSCAMIFRVTPNEWKBLZYH', 'turnover': 'N'},
             {'label': 'II', 'wiring': 'NTZPSFBOKMWRCJDIVLAEYUXHGQ', 'turnover': 'E'},
@@ -157,7 +157,7 @@ historical_data = {
         )
     },
     'Tirpitz': {
-        'stator' : {'label': 'ETW', 'back_board': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
+        'stator': {'label': 'ETW', 'back_board': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
         'rotors': (
             {'label': 'I', 'wiring': 'KPTYUELOCVGRFQDANJMBSWHZXI', 'turnover': 'WZEKQ'},
             {'label': 'II', 'wiring': 'UPHZLWEQMTDJXCAKSOIGVBYFNR', 'turnover': 'WZFLR'},
@@ -227,7 +227,7 @@ class Reflector:
 
 
 class Rotor:
-    def __init__(self, label, wiring):
+    def __init__(self, label, wiring, turnover):
         """
         :param label: {str} rotor label (I, II, III, ...)
         :param wiring: {str} defines the way letters are routed trough the rotor
@@ -237,6 +237,7 @@ class Rotor:
         self.label = label
         self.offset = 0  # "Stellung"
         self.ring_offset = 0  # "Ringstellung"
+        self.turnover = turnover
 
     def forward(self, letter):
         """
@@ -292,3 +293,54 @@ class Rotor:
         # rotated using "Ringstellung"
         shown_position = (self.offset + self.ring_offset) % 26
         return "%02d" % (shown_position + 1) if numeric else alphabet[shown_position]
+
+    @property
+    def in_turnover(self):
+        """
+        Returns True if the rotor is in turnover position else False
+        :return: {bool} True if the rotor is in turnover position else False
+        """
+        return self.position() in self.turnover
+
+
+class Enigma:
+    def __init__(self, reflector, rotors, stator):
+        """
+        :param reflector: {Reflector} Reflector object
+        :param rotors: {[Rotor, Rotor, Rotor]} 3 or 4 rotors based on
+                                               Enigma model
+        :param stator: {Stator} Stator object
+        """
+        self._reflector = reflector
+        self._rotors = rotors
+        self._stator = stator
+
+    def step_rotors(self):
+        """Advance rotor positions"""
+        self._rotors[2].rotate()
+        if self._rotors[2].in_turnover:
+            self._rotors[1].rotate()
+            if self._rotors[1].in_turnover:
+                self._rotors[0].rotate()
+        
+        # Note that the fourth rotor never turns
+
+    def press_key(self, key):
+        """
+        Simulates effects of pressing an Enigma keys (returning the routed
+        result)
+        :param key: {char} letter to encrypt
+        """
+        self.step_rotors()
+        
+        output = self._stator.forward(key)
+
+        for rotor in reversed(self._rotors):
+            output = rotor.forward(output)
+        
+        output = self._reflector.reflect(output)
+
+        for rotor in self._rotors:
+            output = rotor.backward(output)
+        
+        return self._stator.backward(output)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from v2.enigma.components import Rotor, historical_data, Reflector
+from v2.enigma.components import Rotor, historical_data, Reflector, Enigma, Stator
 from string import ascii_uppercase as alphabet
 
 # "test_cfg": {
@@ -66,7 +66,7 @@ def test_encrypt_decrypt(message, result):
 
 def test_single_encrypt():
     data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'])
+    base = Rotor(data['label'], data['wiring'], data['turnover'])
 
     assert base.forward('A') == 'E'
     base.rotate()
@@ -86,7 +86,7 @@ def test_routing():
     """
 
     data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'])
+    base = Rotor(data['label'], data['wiring'], data['turnover'])
 
     for i in 1, 3, -2, 5, 7, 20:
         for letter in alphabet:
@@ -100,14 +100,14 @@ def test_routing():
 ))
 def test_rotation(offset_by, result):
     data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'])
+    base = Rotor(data['label'], data['wiring'], data['turnover'])
     base.rotate(offset_by=offset_by)
     assert base.offset == result, "Rotor offset is not being calculated correctly"
 
 
 def test_position():
     data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'])
+    base = Rotor(data['label'], data['wiring'], data['turnover'])
     base.rotate()
     assert base.position(True) == "02"
     assert base.position() == "B"
@@ -122,82 +122,26 @@ def test_reflector():
     assert 'A' == reflector.reflect(result)
 
 
-# class TestEnigma(unittest.TestCase):
-#     """Used to test if enigma class behaves like the real life counterpart"""
-#     model = ''
-#     cfg_path = []
-#
-#     def __init__(self, *args, **kwargs):
-#         unittest.TestCase.__init__(self, *args, **kwargs)
-#         self.cfg = Config(TestEnigma.cfg_path).data['test_cfg']
-#         self.subject = None
-#         self.enigma_factory = EnigmaFactory(['enigma', 'historical_data.yaml'])
-#         self.reset_subject()
-#
-#     def reset_subject(self):
-#         self.subject = self.enigma_factory.produce_enigma('EnigmaM3')
-#
-#     def test_encrypt_decrypt(self):
-#         """Tests if encryption and decryption are working properly"""
-#         buffer = self.cfg['test_encrypt_decrypt']
-#         for test in permutations(['encrypted', 'decrypted']):
-#             self.reset_subject()
-#             output = ''
-#             for letter in buffer[test[0]]:
-#                 output += self.subject.button_press(letter)
-#
-#             err_msg = 'Failed to {}!'.format(test[1][:-2])
-#             self.assertEqual(output, buffer[test[1]], err_msg)
-#         with self.assertRaises(AssertionError):
-#             self.subject.button_press(18)
-#
-#     def test_rotors(self):
-#         """Tests if rotors are assigned properly"""
-#         self.reset_subject()
-#         rotors = self.cfg['test_rotors']['rotors']
-#         self.subject.rotors = self.enigma_factory.produce_rotor('EnigmaM3',
-#                                                                 'rotor', rotors)
-#         self.assertEqual(self.subject.rotor_labels, rotors,
-#                          'Invalid rotor order assigned!')
-#
-#     def test_positions(self):
-#         """Tests if rotor positions are set properly"""
-#         self.reset_subject()
-#         positions = self.cfg['test_positions']['positions']
-#         self.subject.positions = positions
-#         self.assertEqual(self.subject.positions, positions,
-#                          'Positions assigned in wrong order!')
-#         with self.assertRaises(AssertionError):
-#             self.subject.positions = 14651, 'garbage', -15
-#
-#     def test_reflector(self):
-#         """Tests if the reflector is set properly"""
-#         self.reset_subject()
-#         reflector = self.cfg['test_reflector']['reflector']
-#         self.subject.reflector = self.enigma_factory.produce_rotor('EnigmaM3', 'reflector', reflector)
-#         self.assertEqual(self.subject.reflector.label, reflector,
-#                          'Invalid rotor assigned!')
-#         with self.assertRaises(AssertionError):
-#             self.subject.reflector = 'garbage_input'
-#
-#     def test_ring_settings(self):
-#         """Tests if ring settings are set properly"""
-#         self.reset_subject()
-#         ring_settings = self.cfg['test_ring_settings']['ring_settings']
-#         self.subject.ring_settings = ring_settings
-#         self.assertEqual(self.subject.ring_settings, ring_settings,
-#                          'Invalid ring settings assigned!')
-#         with self.assertRaises(AssertionError):
-#             self.subject.ring_settings = [12, 'garbage_input', 798715]
-#
-#     def test_plugboard(self):
-#         """Checks if plugboard pairs are set propertly"""
-#         self.reset_subject()
-#         plug_pairs = self.cfg['test_plugboard']['pairs']
-#         self.subject.plugboard = {'normal_pairs': plug_pairs}
-#
-#         err_msg = 'Invalid plugboard pairs assigned!'
-#         self.assertEqual(self.subject.plugboard['normal_pairs'], plug_pairs,
-#                          err_msg)
-#         with self.assertRaises(AttributeError):
-#             self.subject.plugboard = 'garbage_input'
+def test_turnover():
+    data = historical_data['EnigmaM4']['rotors'][5]
+    base = Rotor(data['label'], data['wiring'], data['turnover'])
+
+    for _ in range(50):
+        if base.in_turnover:
+            assert base.position() in base.turnover
+        base.rotate()
+
+
+def test_enigma():
+    data = historical_data['EnigmaM3']
+    reflector = Reflector(wiring=data['reflectors'][0]['wiring'])
+    stator = Stator(wiring=data['stator']['wiring'])
+    rotors = []
+    print(data)
+    for i in 0, 1, 2:
+        rotors.append(Rotor(**data['rotors'][i]))
+    enigma = Enigma(reflector, rotors, stator)
+
+    for _ in range(6):
+        print(enigma.press_key('A'))
+
