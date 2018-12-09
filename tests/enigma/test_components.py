@@ -1,55 +1,8 @@
 #!/usr/bin/env python3
 
 import pytest
-from v2.enigma.components import Rotor, historical_data, Reflector, Enigma, Stator
+from v2.enigma.components import Rotor, historical_data, Reflector, Enigma, Stator, init_component
 from string import ascii_uppercase as alphabet
-
-# "test_cfg": {
-#     "default_cfg": {
-#         "reflector": "UKW-B",
-#         "rotors": [
-#             "I",
-#             "II",
-#             "III"
-#         ]
-#     },
-#     "test_encrypt_decrypt": {
-#         "decrypted": "ENIGMAUNITTESTMESSAGE",
-#         "encrypted": "FQGAHWLMJAMTJAANUNPDY"
-#     },
-#     "test_plugboard": {
-#         "pairs": [
-#             "AQ",
-#             "XP",
-#             "FG",
-#             "DR"
-#         ]
-#     },
-#     "test_positions": {
-#         "positions": [
-#             "A",
-#             "B",
-#             "C"
-#         ]
-#     },
-#     "test_reflector": {
-#         "reflector": "UKW-B"
-#     },
-#     "test_ring_settings": {
-#         "ring_settings": [
-#             "C",
-#             "B",
-#             "A"
-#         ]
-#     },
-#     "test_rotors": {
-#         "rotors": [
-#             "III",
-#             "I",
-#             "II"
-#         ]
-#     }
-# }
 
 
 @pytest.mark.parametrize('message, result', (
@@ -116,15 +69,14 @@ def test_position():
 
 
 def test_reflector():
-    reflector = Reflector(historical_data['EnigmaM3']['reflectors'][0]['wiring'])
+    reflector = init_component('EnigmaM3', 'Reflector', 'UKW-B')
 
     result = reflector.reflect('A')
     assert 'A' == reflector.reflect(result)
 
 
 def test_turnover():
-    data = historical_data['EnigmaM4']['rotors'][5]
-    base = Rotor(data['label'], data['wiring'], data['turnover'])
+    base = init_component('EnigmaM4', 'Rotor', 'VI')
 
     for _ in range(50):
         if base.in_turnover:
@@ -137,11 +89,12 @@ def test_enigma():
     reflector = Reflector(wiring=data['reflectors'][0]['wiring'])
     stator = Stator(wiring=data['stator']['wiring'])
     rotors = []
-    print(data)
+
     for i in 0, 1, 2:
+        print(data['rotors'][i])
         rotors.append(Rotor(**data['rotors'][i]))
     enigma = Enigma(reflector, rotors, stator)
 
-    for _ in range(6):
-        print(enigma.press_key('A'))
+    for letter in 'BDZGOW':
+        assert enigma.press_key('A') == letter
 

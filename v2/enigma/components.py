@@ -175,33 +175,35 @@ historical_data = {
 }
 
 
-class Enigma:
-    def __init__(self, reflector, rotors, stator):
-        """
-        :param reflector: {components.Reflector}
-        :param rotors: {[Rotor, Rotor, Rotor, ...]} rotor count depends on model
-        :param stator: {Stator}
-        """
-        self.reflector = reflector
-        self.rotors = rotors
-        self.stator = stator
+def init_component(model, comp_type, label=None):
+    """
+    Initializes a Stator, Rotor or Reflector.
+    :param model: {str} Enigma machine model
+    :param comp_type: {str} "Stator", "Rotor" or "Reflector"
+    :param label: {str} Component label like "I", "II", "UKW-B"
+    """
+    data = historical_data[model]
 
-    def step_rotors(self, n):
-        """
-        :param n: {int} how many times to step
-        """
-        step_next = False
+    if label is None and comp_type != "Stator":
+        raise TypeError("A label has to be supplied for Rotor and Reflector" \
+                        "object!")
 
-        # TODO: Step primary rotor, double stepper effect?
+    assert model in historical_data, "The model argument must be in historical" \
+                                     "Enigma models!"
 
-    def button_press(self, letter):
-        """
-        :param letter: {char}
-        :return: {char}
-        """
+    if comp_type == "Rotor":
+        for rotor in data["rotors"]:
+            if rotor['label'] == label:
+                return Rotor(**rotor)
+    elif comp_type == "Reflector":
+        for reflector in data["reflectors"]:
+            if reflector['label'] == label:
+                return Reflector(**reflector)
+    elif comp_type == "Stator":
+        return Stator(**data["stator"])
+    else:
+        raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
 
-
-# TODO: Decide whether or not it is beneficial to pursue the DRY principle at all costs
 
 class Stator:
     def __init__(self, wiring):
@@ -219,8 +221,9 @@ class Stator:
 
 
 class Reflector:
-    def __init__(self, wiring):
+    def __init__(self, label, wiring):
         self.wiring = wiring
+        self.label = label
 
     def reflect(self, letter):
         return self.wiring[alphabet.index(letter)]
