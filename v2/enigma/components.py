@@ -180,7 +180,8 @@ def init_component(model, comp_type, label=None):
     Initializes a Stator, Rotor or Reflector.
     :param model: {str} Enigma machine model
     :param comp_type: {str} "Stator", "Rotor" or "Reflector"
-    :param label: {str} Component label like "I", "II", "UKW-B"
+    :param label: {str} or {int} Component label like "I", "II", "UKW-B" or numerical index
+                  of their position in historical data (0 = "I", 2 = "II", ...)
     """
     data = historical_data[model]
 
@@ -191,14 +192,17 @@ def init_component(model, comp_type, label=None):
     assert model in historical_data, "The model argument must be in historical" \
                                      "Enigma models!"
 
+    i = 0
     if comp_type == "Rotor":
         for rotor in data["rotors"]:
-            if rotor['label'] == label:
+            if rotor['label'] == label or label == i:
                 return Rotor(**rotor)
+            i += 1
     elif comp_type == "Reflector":
         for reflector in data["reflectors"]:
-            if reflector['label'] == label:
+            if reflector['label'] == label or label == i:
                 return Reflector(**reflector)
+            i += 1
     elif comp_type == "Stator":
         return Stator(**data["stator"])
     else:
@@ -248,8 +252,9 @@ class Rotor:
         :param letter: {char}
         :return: {char}
         """
-        relative_result = self.wiring[self.apply_offset(alphabet.index(letter))]
-        return alphabet[self.apply_offset(relative_result)]
+        relative_input = self.apply_offset(alphabet.index(letter))
+        relative_result = self.wiring[relative_input]
+        return alphabet[self.apply_offset(relative_result, True)]
 
     def backward(self, letter):
         """
@@ -257,8 +262,9 @@ class Rotor:
         :param letter: {char}
         :return: {char}
         """
-        relative_input = self.apply_offset(alphabet.index(letter), True)
-        return alphabet[self.apply_offset(self.wiring.index(relative_input), True)]
+        relative_input = self.apply_offset(alphabet.index(letter))
+        relative_result = self.apply_offset(self.wiring.index(relative_input), True)
+        return alphabet[relative_result]
 
     def apply_offset(self, i, negate=False):
         """
@@ -320,13 +326,21 @@ class Enigma:
 
     def step_rotors(self):
         """Advance rotor positions"""
-        self._rotors[2].rotate()
-        if self._rotors[2].in_turnover:
-            self._rotors[1].rotate()
-            if self._rotors[1].in_turnover:
-                self._rotors[0].rotate()
+        self._rotors[-1].rotate()
+        if self._rotors[-1].in_turnover:
+            self._rotors[-2].rotate()
+            if self._rotors[-2].in_turnover:
+                self._rotors[-3].rotate()
         
         # Note that the fourth rotor never turns
+
+    @property
+    def positions(self):
+        """
+        Returns rotor positions
+        :return: {[int, int, int]}
+        """
+        return [rotor.position() for rotor in self._rotors]
 
     def press_key(self, key):
         """
@@ -345,5 +359,7 @@ class Enigma:
 
         for rotor in self._rotors:
             output = rotor.backward(output)
-        
-        return self._stator.backward(output)
+
+        output = self._stator.backward(output)
+
+        return output

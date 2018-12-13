@@ -1,20 +1,8 @@
 #!/usr/bin/env python3
 
 import pytest
-from v2.enigma.components import Rotor, historical_data, Reflector, Enigma, Stator, init_component
+from v2.enigma.components import Enigma, init_component
 from string import ascii_uppercase as alphabet
-
-
-@pytest.mark.parametrize('message, result', (
-        ("ENIGMAUNITTESTMESSAGE", "FQGAHWLMJAMTJAANUNPDY"),
-        ("FQGAHWLMJAMTJAANUNPDY", "ENIGMAUNITTESTMESSAGE")
-))
-def test_encrypt_decrypt(message, result):
-    output = ''
-    enigma = None
-
-    for letter in message:
-        output += '+'
 
 
 def test_single_encrypt():
@@ -22,9 +10,9 @@ def test_single_encrypt():
 
     assert base.forward('A') == 'E'
     base.rotate()
-    assert base.forward('A') == 'L'
+    assert base.forward('A') == 'J'
     base.rotate()
-    assert base.forward('A') == 'O'
+    assert base.forward('A') == 'K'
 
     # "Looping back" to position 0 should produce the same result as in default position
     base.rotate(24)
@@ -81,16 +69,17 @@ def test_turnover():
 
 
 def test_enigma():
-    data = historical_data['EnigmaM3']
     reflector = init_component('EnigmaM3', 'Reflector', 'UKW-B')
     stator = init_component('EnigmaM3', 'Stator')
     rotors = []
 
     for i in 0, 1, 2:
-        print(data['rotors'][i])
-        rotors.append(Rotor(**data['rotors'][i]))
+        rotors.append(init_component('EnigmaM3', 'Rotor', label=i))
+
     enigma = Enigma(reflector, rotors, stator)
 
-    for letter in 'BDZGOW':
-        assert enigma.press_key('A') == letter
+    result = ''
+    for _ in 'BDZGOW':
+        result += enigma.press_key('A')
 
+    assert result == 'BDZGOW'
