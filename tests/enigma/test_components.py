@@ -18,8 +18,7 @@ def test_encrypt_decrypt(message, result):
 
 
 def test_single_encrypt():
-    data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'], data['turnover'])
+    base = init_component('Enigma1', 'Rotor', 'I')
 
     assert base.forward('A') == 'E'
     base.rotate()
@@ -37,9 +36,7 @@ def test_routing():
     Tests if the forward routing is being routed correctly in the opposite direction (taking the
     relative rotor position into account)
     """
-
-    data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'], data['turnover'])
+    base = init_component('Enigma1', 'Rotor', 'I')
 
     for i in 1, 3, -2, 5, 7, 20:
         for letter in alphabet:
@@ -52,15 +49,14 @@ def test_routing():
     (5, 5), (-1, 25), (26, 0), (15, 15), (50, 24), (-40, 12), (25, 25)
 ))
 def test_rotation(offset_by, result):
-    data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'], data['turnover'])
+    base = init_component('Enigma1', 'Rotor', 'I')
     base.rotate(offset_by=offset_by)
     assert base.offset == result, "Rotor offset is not being calculated correctly"
 
 
 def test_position():
-    data = historical_data['Enigma1']['rotors'][0]
-    base = Rotor(data['label'], data['wiring'], data['turnover'])
+    base = init_component('Enigma1', 'Rotor', 'I')
+
     base.rotate()
     assert base.position(True) == "02"
     assert base.position() == "B"
@@ -86,8 +82,8 @@ def test_turnover():
 
 def test_enigma():
     data = historical_data['EnigmaM3']
-    reflector = Reflector(wiring=data['reflectors'][0]['wiring'])
-    stator = Stator(wiring=data['stator']['wiring'])
+    reflector = init_component('EnigmaM3', 'Reflector', 'UKW-B')
+    stator = init_component('EnigmaM3', 'Stator')
     rotors = []
 
     for i in 0, 1, 2:

@@ -50,7 +50,7 @@ layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 2
 
 
 # Stators
-ETW = {'label': 'ETW', 'wiring': alphabet}
+ETW = {'wiring': alphabet}
 ETW_QWERTZ = {'wiring': "QWERTZUIOASDFGHJKPYXCVBNML"}
 
 # Rotors
