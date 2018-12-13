@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from v2.enigma.components import Enigma, init_component
+from v2.enigma.components import Enigma, Plugboard, init_component, init_enigma
 from string import ascii_uppercase as alphabet
 
 
@@ -69,17 +69,23 @@ def test_turnover():
 
 
 def test_enigma():
-    reflector = init_component('EnigmaM3', 'Reflector', 'UKW-B')
-    stator = init_component('EnigmaM3', 'Stator')
-    rotors = []
-
-    for i in 0, 1, 2:
-        rotors.append(init_component('EnigmaM3', 'Rotor', label=i))
-
-    enigma = Enigma(reflector, rotors, stator)
+    enigma = init_enigma('EnigmaM3', ["I", "II", "III"], "UKW-B")
 
     result = ''
     for _ in 'BDZGOW':
         result += enigma.press_key('A')
 
     assert result == 'BDZGOW'
+
+
+def test_plugboard():
+    plugboard = Plugboard(['AB', 'CD', 'YZ'])
+
+    assert plugboard.route('A') == 'B'
+    assert plugboard.route('B') == 'A'
+    assert plugboard.route('C') == 'D'
+    assert plugboard.route('D') == 'C'
+    assert plugboard.route('Y') == 'Z'
+    assert plugboard.route('Z') == 'Y'
+    assert plugboard.route('G') == 'G'
+    assert plugboard.route('I') == 'I'

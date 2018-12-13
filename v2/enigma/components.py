@@ -209,6 +209,17 @@ def init_component(model, comp_type, label=None):
         raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
 
 
+def init_enigma(model, rotor_labels, reflector_label):
+    rotors = []
+    for label in rotor_labels:
+        rotors.append(init_component(model, "Rotor", label))
+
+    reflector = init_component(model, "Reflector", reflector_label)
+    stator = init_component(model, "Stator")
+
+    return Enigma(reflector, rotors, stator)
+
+
 class Stator:
     def __init__(self, wiring):
         """
@@ -312,8 +323,52 @@ class Rotor:
         return self.position() in self.turnover
 
 
+class UKWD:
+    """UKW - D is a field rewirable Enigma machine reflector"""
+
+    def __init__(self, pairs):
+        """
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+                      where each letter can only be used once
+        """
+        self.plugboard = Plugboard(pairs)
+
+
+class Plugboard:
+    def __init__(self, pairs=None):
+        self.pairs = self.plug_pairs(pairs)
+
+    def plug_pairs(self, pairs=None):
+        """
+        Sets plugboard pairs to the supplied pairs
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+                      where each letter can only be used once
+        :return: {dict} dictionary with pairs usable by the plugboard
+        """
+        result_pairs = {}
+
+        if pairs is None:
+            return {}
+
+        for pair in pairs:
+            a, b = pair
+            result_pairs[a] = b
+            result_pairs[b] = a
+
+        return result_pairs
+
+    def route(self, letter):
+        """
+        Routes letter trough the wiring pair (if the letter is wired), otherwise returns the same letter
+        :param letter: {char} input letter
+        :return: {char} output routed letter
+        """
+        return self.pairs.get(letter, letter)
+
+
 class Enigma:
-    def __init__(self, reflector, rotors, stator):
+    """Universal Enigma object that supports every model except Enigma M4"""
+    def __init__(self, reflector, rotors, stator, plug_pairs=None):
         """
         :param reflector: {Reflector} Reflector object
         :param rotors: {[Rotor, Rotor, Rotor]} 3 or 4 rotors based on
@@ -323,6 +378,7 @@ class Enigma:
         self._reflector = reflector
         self._rotors = rotors
         self._stator = stator
+        self._plugboard = Plugboard(plug_pairs)
 
     def step_rotors(self):
         """Advance rotor positions"""
@@ -349,8 +405,9 @@ class Enigma:
         :param key: {char} letter to encrypt
         """
         self.step_rotors()
-        
-        output = self._stator.forward(key)
+
+        output = self._plugboard.route(key)
+        output = self._stator.forward(output)
 
         for rotor in reversed(self._rotors):
             output = rotor.forward(output)
@@ -361,5 +418,6 @@ class Enigma:
             output = rotor.backward(output)
 
         output = self._stator.backward(output)
+        output = self._plugboard.route(output)
 
         return output
