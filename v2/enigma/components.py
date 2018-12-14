@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# *-* coding: utf-8 *-*
 
 
 from string import ascii_uppercase as alphabet
@@ -217,7 +218,7 @@ def init_enigma(model, rotor_labels, reflector_label):
     reflector = init_component(model, "Reflector", reflector_label)
     stator = init_component(model, "Stator")
 
-    return Enigma(reflector, rotors, stator)
+    return Enigma(model, reflector, rotors, stator)
 
 
 class Stator:
@@ -362,20 +363,31 @@ class Plugboard:
         Routes letter trough the wiring pair (if the letter is wired), otherwise returns the same letter
         :param letter: {char} input letter
         :return: {char} output routed letter
-        """
+e       """
         return self.pairs.get(letter, letter)
 
 
 class Enigma:
     """Universal Enigma object that supports every model except Enigma M4"""
-    def __init__(self, reflector, rotors, stator, plug_pairs=None):
+    def __init__(self, model, reflector, rotors, stator, plug_pairs=None):
         """
         :param reflector: {Reflector} Reflector object
         :param rotors: {[Rotor, Rotor, Rotor]} 3 or 4 rotors based on
                                                Enigma model
         :param stator: {Stator} Stator object
         """
+        self.model = model
         self._reflector = reflector
+
+        if model == "EnigmaM4":
+            assert len(rotors) == 4, "Enigma M4 model must have " \
+                                     "exactly 4 rotors!"
+        elif model in historical_data:
+            assert len(rotors) == 3, "%s model must have " \
+                                    "exactly 3 rotors!" % model
+        else:
+            raise AssertionError('Invalid Enigma model "%s"' % model)
+
         self._rotors = rotors
         self._stator = stator
         self._plugboard = Plugboard(plug_pairs)

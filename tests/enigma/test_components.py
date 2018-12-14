@@ -78,6 +78,46 @@ def test_enigma():
     assert result == 'BDZGOW'
 
 
+    enigma = init_enigma('EnigmaM4', ["I", "II", "III", "IV"], "UKW-B")
+
+
+@pytest.mark.parametrize('model, n_rotors, should_fail', (
+    ("EnigmaM4", 4, False),
+    ("EnigmaM3", 3, False),
+    ("EnigmaM3", 7, True),
+    ("EnigmaMX", 3, True),
+    ("EnigmaM3", 3, False),
+    (33213, 3, True)
+))
+def test_enigma_models(model, n_rotors, should_fail):
+    rotors = range(n_rotors)
+    # Fake values instead of rotors because they are not needed in this test
+
+    if should_fail:
+        with pytest.raises(AssertionError):
+            Enigma(model, "UKW-B", rotors, None)
+    else:
+        Enigma(model, "UKW-B", rotors, None)
+
+
+@pytest.mark.parametrize('model, n_rotors, should_fail', (
+    ("EnigmaMF", 4, True),
+    ("EnigmaM", 4, True),
+    ("Enigma", 4, True),
+    ("EnigmaM4", 4, False),
+    ("EnigmaK", 3, False),
+))
+def test_init_enigma(model, n_rotors, should_fail):
+    rotors = range(n_rotors)
+    # Fake values instead of rotors because they are not needed in this test
+
+    if should_fail:
+        with pytest.raises(KeyError):
+            init_enigma(model, rotors, "UKW-B")
+    else:
+        init_enigma(model, rotors, "UKW-B")
+
+
 def test_plugboard():
     plugboard = Plugboard(['AB', 'CD', 'YZ'])
 
