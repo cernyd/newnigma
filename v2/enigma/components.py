@@ -425,8 +425,6 @@ class Enigma:
 
         self._rotors[-1].rotate()
 
-        print(self.positions)
-
     @property
     def positions(self):
         """
