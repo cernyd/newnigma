@@ -221,6 +221,39 @@ def init_enigma(model, rotor_labels, reflector_label):
     return Enigma(model, reflector, rotors, stator)
 
 
+class Plugboard:
+    def __init__(self, pairs=None):
+        self.pairs = {}
+        self.set_plug_pairs(pairs)
+
+    def set_plug_pairs(self, pairs=None):
+        """
+        Sets plugboard pairs to the supplied pairs
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+                      where each letter can only be used once
+        :return: {dict} dictionary with pairs usable by the plugboard
+        """
+        result_pairs = {}
+
+        if pairs is None:
+            return {}
+
+        for pair in pairs:
+            a, b = pair
+            result_pairs[a] = b
+            result_pairs[b] = a
+
+        self.pairs = result_pairs
+
+    def route(self, letter):
+        """
+        Routes letter trough the wiring pair (if the letter is wired), otherwise returns the same letter
+        :param letter: {char} input letter
+        :return: {char} output routed letter
+e       """
+        return self.pairs.get(letter, letter)
+
+
 class Stator:
     def __init__(self, wiring):
         """
@@ -242,7 +275,32 @@ class Reflector:
         self.label = label
 
     def reflect(self, letter):
+        """
+        Reflects letter sending it backwards into the 3 rotors
+        :param letter: {char}
+        :return: {char}
+        """
         return self.wiring[alphabet.index(letter)]
+
+
+class UKWD(Plugboard):
+    """UKW - D is a field-rewirable Enigma machine reflector"""
+
+    def __init__(self, pairs):
+        """
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+                      where each letter can only be used once
+        """
+        super().__init__(pairs)
+        self.plugboard = Plugboard(pairs)
+
+    def reflect(self, letter):  # TODO: This might not be the best inheritance strategy
+        """
+        Reflects letter sending it backwards into the 3 rotors
+        :param letter: {char}
+        :return: {char}
+        """
+        return self.route(letter)
 
 
 class Rotor:
@@ -281,11 +339,12 @@ class Rotor:
     def apply_offset(self, i, negate=False):
         """
         Applies either positive or negative offset to a value
-        :param i: {int}
+        :param i: {int} incoming position
         :param negate: {bool} subtract the offset rather than add
         :return: {int} the offset value
         """
-        offset = -self.offset if negate else self.offset
+        offset = (self.offset - self.ring_offset) % 26
+        offset = -offset if negate else offset
         return (i + offset) % 26  # The alphabet has 27 - 1 letters (and index is counted from 0)
 
     def rotate(self, offset_by=1):
@@ -296,6 +355,13 @@ class Rotor:
                           (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
         """
         self.offset = (self.offset + offset_by) % 26
+
+    def set_offset(self, offset):
+        """
+        Sets offset of the rotor
+        :param offset: {int} new rotor offset
+        """
+        self.offset = offset % 26
 
     def set_ring(self, setting):
         """
@@ -312,8 +378,7 @@ class Rotor:
         """
         # Shown position does not need to equat the actual position because the labels can be
         # rotated using "Ringstellung"
-        shown_position = (self.offset + self.ring_offset) % 26
-        return "%02d" % (shown_position + 1) if numeric else alphabet[shown_position]
+        return "%02d" % (self.offset + 1) if numeric else alphabet[self.offset]
 
     @property
     def in_turnover(self):
@@ -322,49 +387,6 @@ class Rotor:
         :return: {bool} True if the rotor is in turnover position else False
         """
         return self.position() in self.turnover
-
-
-class UKWD:
-    """UKW - D is a field rewirable Enigma machine reflector"""
-
-    def __init__(self, pairs):
-        """
-        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
-                      where each letter can only be used once
-        """
-        self.plugboard = Plugboard(pairs)
-
-
-class Plugboard:
-    def __init__(self, pairs=None):
-        self.pairs = self.plug_pairs(pairs)
-
-    def plug_pairs(self, pairs=None):
-        """
-        Sets plugboard pairs to the supplied pairs
-        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
-                      where each letter can only be used once
-        :return: {dict} dictionary with pairs usable by the plugboard
-        """
-        result_pairs = {}
-
-        if pairs is None:
-            return {}
-
-        for pair in pairs:
-            a, b = pair
-            result_pairs[a] = b
-            result_pairs[b] = a
-
-        return result_pairs
-
-    def route(self, letter):
-        """
-        Routes letter trough the wiring pair (if the letter is wired), otherwise returns the same letter
-        :param letter: {char} input letter
-        :return: {char} output routed letter
-e       """
-        return self.pairs.get(letter, letter)
 
 
 class Enigma:
@@ -410,6 +432,36 @@ class Enigma:
         """
         return [rotor.position() for rotor in self._rotors]
 
+    @positions.setter
+    def positions(self, new_positions):
+        """
+        Sets positions of all rotors
+        :param new_positions: {[int, int, int]} or {[char, char, char]} new positions to be set on the Enigma
+        """
+        assert all([type(pos) == str for pos in new_positions]) or all([type(pos) == int for pos in new_positions])
+
+        for position, rotor in zip(new_positions, self._rotors):
+            if type(position) == str:
+                position = alphabet.index(position)
+            rotor.set_offset(position)
+
+    @property
+    def ring_settings(self):
+        """
+        Returns rotor positions
+        :return: {[int, int, int]}
+        """
+        return [rotor.ring_offset for rotor in self._rotors]
+
+    @ring_settings.setter
+    def ring_settings(self, new_ring_settings):
+        """
+        Returns rotor positions
+        :param new_ring_settings: {[int, int, int]} new ring settings
+        """
+        for setting, rotor in zip(new_ring_settings, self._rotors):
+            rotor.set_ring(setting)
+
     def press_key(self, key):
         """
         Simulates effects of pressing an Enigma keys (returning the routed
@@ -433,3 +485,6 @@ class Enigma:
         output = self._plugboard.route(output)
 
         return output
+
+    def set_plug_pairs(self, plug_pairs):
+        self._plugboard.set_plug_pairs(plug_pairs)

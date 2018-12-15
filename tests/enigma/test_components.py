@@ -78,9 +78,6 @@ def test_enigma():
     assert result == 'BDZGOW'
 
 
-    enigma = init_enigma('EnigmaM4', ["I", "II", "III", "IV"], "UKW-B")
-
-
 @pytest.mark.parametrize('model, n_rotors, should_fail', (
     ("EnigmaM4", 4, False),
     ("EnigmaM3", 3, False),
@@ -129,3 +126,21 @@ def test_plugboard():
     assert plugboard.route('Z') == 'Y'
     assert plugboard.route('G') == 'G'
     assert plugboard.route('I') == 'I'
+
+
+def test_historical_messages():
+    enigma = init_enigma('Enigma1', ["II", "I", "III"], "UKW-A")
+    enigma.positions = "ABL"
+    enigma.ring_settings = [23, 12, 21]
+    enigma.set_plug_pairs(["AM", "FI", "NV", "PS", "TU", "WZ"])
+    print(enigma.positions)
+    print(enigma.ring_settings)
+
+    result = ''
+    for letter in "GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGN" \
+                  "VHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ":
+        result += enigma.press_key(letter)
+
+    assert result == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
+    print(result)
+    print(enigma.positions)
