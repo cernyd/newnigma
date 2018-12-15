@@ -304,7 +304,7 @@ class UKWD(Plugboard):
 
 
 class Rotor:
-    def __init__(self, label, wiring, turnover):
+    def __init__(self, label, wiring, turnover=None):
         """
         :param label: {str} rotor label (I, II, III, ...)
         :param wiring: {str} defines the way letters are routed trough the rotor
@@ -416,13 +416,16 @@ class Enigma:
 
     def step_rotors(self):
         """Advance rotor positions"""
-        self._rotors[-1].rotate()
         if self._rotors[-1].in_turnover:
             self._rotors[-2].rotate()
-            if self._rotors[-2].in_turnover:
-                self._rotors[-3].rotate()
-        
-        # Note that the fourth rotor never turns
+
+        if self._rotors[-2].in_turnover:
+            self._rotors[-2].rotate()
+            self._rotors[-3].rotate()
+
+        self._rotors[-1].rotate()
+
+        print(self.positions)
 
     @property
     def positions(self):

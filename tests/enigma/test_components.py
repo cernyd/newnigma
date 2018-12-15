@@ -128,19 +128,42 @@ def test_plugboard():
     assert plugboard.route('I') == 'I'
 
 
-def test_historical_messages():
-    enigma = init_enigma('Enigma1', ["II", "I", "III"], "UKW-A")
-    enigma.positions = "ABL"
-    enigma.ring_settings = [23, 12, 21]
-    enigma.set_plug_pairs(["AM", "FI", "NV", "PS", "TU", "WZ"])
-    print(enigma.positions)
-    print(enigma.ring_settings)
+@pytest.mark.parametrize('model, rotors, reflector, positions, ring_settings, plug_pairs, message, correct_result', (
+    (  # Enigma instruction manual message
+        'Enigma1', ('II', 'I', 'III'), 'UKW-A', "ABL", (23, 12, 21), ("AM", "FI", "NV", "PS", "TU", "WZ"),
+        "GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ",
+        "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
+    ),
+    (  # Operation Barbarossa message 1
+        'EnigmaM3', ('II', 'IV', 'V'), 'UKW-B', "BLA", (1, 20, 11),  ("AV", "BS", "CG", "DL", "FU", "HZ", "IN", "KM", "OW", "RX"),
+        "EDPUDNRGYSZRCXNUYTPOMRMBOFKTBZREZKMLXLVEFGUEYSIOZVEQMIKUBPMMYLKLTTDEISMDICAGYKUACTCDOMOHWXMUUIAUBSTSLRNBZSZWNRFXWFYSSXJZVIJHIDISHPRKLKAYUPADTXQSPINQMATLPIFSVKDASCTACDPBOPVHJK",
+        "AUFKLXABTEILUNGXVONXKURTINOWAXKURTINOWAXNORDWESTLXSEBEZXSEBEZXUAFFLIEGERSTRASZERIQTUNGXDUBROWKIXDUBROWKIXOPOTSCHKAXOPOTSCHKAXUMXEINSAQTDREINULLXUHRANGETRETENXANGRIFFXINFXRGTX"
+    ),
+    (  # Operation Barbarossa message 2
+        'EnigmaM3', ('II', 'IV', 'V'), 'UKW-B', "LSD", (1, 20, 11),  ("AV", "BS", "CG", "DL", "FU", "HZ", "IN", "KM", "OW", "RX"),
+        "SFBWDNJUSEGQOBHKRTAREEZMWKPPRBXOHDROEQGBBGTQVPGVKBVVGBIMHUSZYDAJQIROAXSSSNREHYGGRPISEZBOVMQIEMMZCYSGQDGRERVBILEKXYQIRGIRQNRDNVRXCYYTNJR",
+        "DREIGEHTLANGSAMABERSIQERVORWAERTSXEINSSIEBENNULLSEQSXUHRXROEMXEINSXINFRGTXDREIXAUFFLIEGERSTRASZEMITANFANGXEINSSEQSXKMXKMXOSTWXKAMENECXK"
+    ),
+    (  # Schranhorst
+        'EnigmaM3', ('III', 'VI', 'VIII'), 'UKW-B', "UZV", (0, 7, 12), ("AN", "EZ", "HK", "IJ", "LR", "MQ", "OT", "PV", "SW", "UX"),
+        "YKAENZAPMSCHZBFOCUVMRMDPYCOFHADZIZMEFXTHFLOLPZLFGGBOTGOXGRETDWTJIQHLMXVJWKZUASTR",
+        "STEUEREJTANAFJORDJANSTANDORTQUAAACCCVIERNEUNNEUNZWOFAHRTZWONULSMXXSCHARNHORSTHCO"
+    ),
+    (  # U-264
+        'EnigmaM4', ('Beta', 'II', 'IV', 'I'), 'UKW-b', "VJNA", (0, 0, 0, 21), ("AL", "BL", "DF", "GJ", "HM", "NW", "OP", "QY", "RZ", "VX"),
+        "YKAENZAPMSCHZBFOCUVMRMDPYCOFHADZIZMEFXTHFLOLPZLFGGBOTGOXGRETDWTJIQHLMXVJWKZUASTR",
+        "STEUEREJTANAFJORDJANSTANDORTQUAAACCCVIERNEUNNEUNZWOFAHRTZWONULSMXXSCHARNHORSTHCO"
+    )
+))
+def test_historical_messages(model, rotors, reflector, positions, ring_settings, plug_pairs, message, correct_result):
+    # Enigma instruction manual message
+    enigma = init_enigma(model, rotors, reflector)
+    enigma.positions = positions
+    enigma.ring_settings = ring_settings
+    enigma.set_plug_pairs(plug_pairs)
 
     result = ''
-    for letter in "GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGN" \
-                  "VHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ":
+    for letter in message:
         result += enigma.press_key(letter)
 
-    assert result == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
-    print(result)
-    print(enigma.positions)
+    assert result == correct_result
