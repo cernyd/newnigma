@@ -303,6 +303,10 @@ class UKWD(Plugboard):
         return self.route(letter)
 
 
+class Uhr:
+    pass
+
+
 class Rotor:
     def __init__(self, label, wiring, turnover=None):
         """
@@ -489,3 +493,10 @@ class Enigma:
 
     def set_plug_pairs(self, plug_pairs):
         self._plugboard.set_plug_pairs(plug_pairs)
+
+    def __str__(self):
+        header = "=== %s instance data ===" % self.model
+        footer = "="*len(header)
+        message = "\nRotors:              %s\nRotor positions:     %s\nRotor ring settings: %s \nReflector: %s\n"  # \nPlugboard pairs: %s
+        rotors = ' '.join([rotor.label for rotor in self._rotors])
+        return header + message % (rotors, ' '.join(self.positions), ' '.join(map(str, self.ring_settings)), self._reflector.label) + footer

@@ -167,3 +167,13 @@ def test_historical_messages(model, rotors, reflector, positions, ring_settings,
         result += enigma.press_key(letter)
 
     assert result == correct_result
+
+
+def test_cli():
+    import subprocess
+
+    command = "./runtime.py --cli --model Enigma1 --rotors II I III --reflector UKW-A --positions A B L --ring_settings 23 12 21 --plug_pairs AM FI NV PS TU WZ --message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
+    exit_code, output = subprocess.getstatusoutput(command)
+
+    assert exit_code == 0
+    assert output.split('\n')[-1] == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
