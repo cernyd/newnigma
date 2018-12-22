@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from v2.enigma.components import Enigma, Plugboard, init_component, init_enigma
+from v2.newnigma.components import Enigma, Plugboard, init_component, init_enigma
 from string import ascii_uppercase as alphabet
 
 
@@ -172,8 +172,7 @@ def test_historical_messages(model, rotors, reflector, positions, ring_settings,
 def test_cli():
     import subprocess
 
-    command = "./runtime.py --cli --model Enigma1 --rotors II I III --reflector UKW-A --positions A B L --ring_settings 23 12 21 --plug_pairs AM FI NV PS TU WZ --message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
-    exit_code, output = subprocess.getstatusoutput(command)
+    command = "./newnigma.py --cli --model Enigma1 --rotors II I III --reflector UKW-A --positions A B L --ring_settings 23 12 21 --plug_pairs AM FI NV PS TU WZ --message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
+    output = subprocess.getstatusoutput(command)[1]
 
-    assert exit_code == 0
     assert output.split('\n')[-1] == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"

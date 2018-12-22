@@ -2,11 +2,10 @@
 
 import argparse
 import pytest
-from v2.enigma.components import *
-from v2.cfg_handler import Config
+from v2.newnigma.components import *
+#from v2.cfg_handler import Config
 
 parser = argparse.ArgumentParser(description="returns Enigma encrypted text base on settings and provided text.")
-"""
 parser.add_argument('--test', help="runs tests before launching the simulator to ensure it works correctly",
                     action="store_true", default=False, dest="run_tests")
 parser.add_argument('--cli', help="launches the simulator in the command line mode", action='store_true', default=False,
@@ -21,16 +20,14 @@ cli.add_argument('--ring_settings', help='rotor ring settings', nargs=3, dest='r
 cli.add_argument('--reflector', help="reflector that will be used", nargs=1, dest='reflector', required=True)
 cli.add_argument('--plug_pairs', help="letter pairs to connect in the plugboard", nargs='*', dest='plug_pairs', default=None, metavar='pair')
 cli.add_argument('--message', help="message to be encrypted", nargs=1, dest='message', required=True)
-"""
 
 import sys
-#from PyQt5 import QtGui, QtWidgets
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    config = Config('data/config.json')
+    #config = Config('data/config.json')  #TODO: Implement config
 
     if args.run_tests:
         print('Running pre-launch tests...')
