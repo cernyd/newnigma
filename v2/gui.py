@@ -4,15 +4,20 @@ import PyQt5 as qt
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtMultimedia import *
+from PyQt5.QtGui import *
 from time import sleep
-
+import sys
 
 
 class Runtime:
     """
     """
     def __init__(self):
-        self.app = QApplication([])
+        self.app = QApplication(sys.argv)  # Needed for process name
+        self.app.setApplicationName("TESt")
+        self.app.setApplicationDisplayName("test")
+        self.app.setOrganizationName("Test")
+        self.app.setOrganizationDomain("Test")
         self.root = Root()
     
     def run(self):
@@ -32,6 +37,7 @@ class Root(QWidget):
 
         self.title = 'Enigma'
         self.setWindowTitle(self.title)
+        self.setWindowIcon(QIcon('data/icons/enigma.png'))
         
 
         # Menu on top bar

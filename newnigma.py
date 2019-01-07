@@ -5,6 +5,8 @@ import pytest
 from v2.newnigma.components import *
 from v2.cfg_handler import Config
 from v2.gui import Runtime
+import logging
+
 
 # ====================================================
 # MAIN PARSER GROUP
@@ -15,6 +17,7 @@ parser.add_argument('--cli', help="launches the simulator in the command line mo
                     dest='cli')
 parser.add_argument('--preview', help="Runs a sample cli command", action='store_true', default=False)
 parser.add_argument('--cli_default', help="Loads cli encryption with default settings from config file", dest='cli_default', action='store_true', default=False)
+parser.add_argument('--verbose', help="Turns on verbose logging messages", dest='verbose', action='store_true', default=False)
 
 # ====================================================
 # CLI GROUP
@@ -35,25 +38,25 @@ if __name__ == '__main__':
     # ARG PARSE
     args = parser.parse_args()
 
-    #config = Config('data/config.json')  #TODO: Implement config
-
+    if args.verbose:
+        logging.basicConfig(level=logging.INFO)
     if args.cli_default:  # CLI DEFAULT SETTINGS
         args.cli = True
     if args.run_tests:
-        print('Running pre-launch tests...')
+        logging.info('Running pre-launch tests...')
         pytest.main(['tests'])
 
     # ====================================================
     # CONFIG LOAD
 
-    print("Loading config...")
+    logging.info("Loading config...")
     cfg = Config("data/config.json")
     cfg.mk_cache()
 
     # ====================================================
     # APPLICATION INIT
     # LOADS EITHER CLI OR GUI BASED ON COMMAND LINE ARG
-    print('Starting newnigma...')
+    logging.info('Starting newnigma...')
 
     if args.preview:
         print("Copy the command below:\n\n./newnigma.py --cli --model Enigma1 --rotors II I III " \
@@ -62,12 +65,12 @@ if __name__ == '__main__':
 
     if args.cli:
         if args.cli_default:  # CLI DEFAULT SETTINGS
-            print("Loading cli defaults...")
+            logging.info("Loading cli defaults...")
             data = cfg.cache['cli_default']
             enigma = init_enigma(data['model'], data['rotors'], data['reflector'])
 
         else:  # CLI MANUAL SETTINGS
-            print('Launching newnigma in the command line...')
+            logging.info('Launching newnigma in the command line...')
             if not any((args.model, args.rotors, args.reflector)):
                 print("Must supply --model, --rotors, --reflector!")
                 exit(-1)
@@ -97,7 +100,7 @@ if __name__ == '__main__':
 
         print()
     else:
-        print('Launching newnigma Qt Application...')
+        logging.info('Launching newnigma Qt Application...')
         runtime = Runtime()
         runtime.run()
     # ====================================================
