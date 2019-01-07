@@ -1,36 +1,7 @@
 {
-  "globals": {
-    "bg": {
-      "color": "gray85"
-    },
-    "config_type": "xml",
-    "enigma_defaults": {
-      "model": "Enigma1",
-      "reflector": "UKW-B",
-      "rotors": [
-        "I",
-        "II",
-        "III"
-      ]
-    },
-    "font": {
-      "size": 10,
-      "style": "Courier"
-    },
-    "historical_cfg": {
-      "data_dir": "enigma\\historical_data.xml"
-    },
-    "rights_accepted": false,
-    "setting_vars": {
-      "autorotate": 1,
-      "rotor_lock": 0,
-      "show_numbers": 0,
-      "sound_enabled": 1,
-      "sync_scroll": 1
-    },
-    "unit_tests": {
-      "startup_test": true
+    "cli_default": {
+	"model": "Enigma1",
+	"rotors": ["I", "II", "III"],
+	"reflector": "UKW-A"
     }
-  },
-  "saved": {}
 }

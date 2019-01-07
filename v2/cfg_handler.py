@@ -11,6 +11,12 @@ class Config:
         """
         self.path = path
 
+    def mk_cache(self):
+        """
+        Loads config file and caches it to self.cache
+        """
+        self.cache = self.load()
+
     def load(self):
         """
         Loads configuration and returns deserialized json as a dictionary
@@ -27,5 +33,7 @@ class Config:
         Writes serialized json data to config path
         :param data: {dict} data to write to config
         """
+        print("Safety measure against accidentally overriding cache")
+        return
         with open(self.path, 'w') as config:
             config.write(json.dumps(data))
