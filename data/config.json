@@ -1,7 +1,7 @@
 {
-    "cli_default": {
-	"model": "Enigma1",
-	"rotors": ["I", "II", "III"],
-	"reflector": "UKW-A"
+    "default": {
+	"model": "EnigmaM4",
+	"rotors": ["I", "II", "III", "IV"],
+	"reflector": "UKW-B"
     }
 }

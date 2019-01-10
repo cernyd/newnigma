@@ -5,8 +5,11 @@ import pytest
 from v2.newnigma.components import *
 from v2.cfg_handler import Config
 from v2.gui import Runtime
+from v2.enigma_api import EnigmaAPI
 import logging
 
+
+#api = EnigmaAPI()
 
 # ====================================================
 # MAIN PARSER GROUP
@@ -52,6 +55,7 @@ if __name__ == '__main__':
     logging.info("Loading config...")
     cfg = Config("data/config.json")
     cfg.mk_cache()
+    data = cfg.cache['default']
 
     # ====================================================
     # APPLICATION INIT
@@ -66,7 +70,6 @@ if __name__ == '__main__':
     if args.cli:
         if args.cli_default:  # CLI DEFAULT SETTINGS
             logging.info("Loading cli defaults...")
-            data = cfg.cache['cli_default']
             enigma = init_enigma(data['model'], data['rotors'], data['reflector'])
 
         else:  # CLI MANUAL SETTINGS
@@ -101,7 +104,8 @@ if __name__ == '__main__':
         print()
     else:
         logging.info('Launching newnigma Qt Application...')
-        runtime = Runtime()
+        enigma_api = EnigmaAPI(data['model'], data['rotors'], data['reflector'])
+        runtime = Runtime(enigma_api)
         runtime.run()
     # ====================================================
 

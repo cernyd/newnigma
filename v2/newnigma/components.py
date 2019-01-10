@@ -414,20 +414,20 @@ class Enigma:
         else:
             raise AssertionError('Invalid Enigma model "%s"' % model)
 
-        self._rotors = rotors
+        self.rotors = rotors
         self._stator = stator
         self._plugboard = Plugboard(plug_pairs)
 
     def step_rotors(self):
         """Advance rotor positions"""
-        if self._rotors[-1].in_turnover:
-            self._rotors[-2].rotate()
+        if self.rotors[-1].in_turnover:
+            self.rotors[-2].rotate()
 
-        if self._rotors[-2].in_turnover:
-            self._rotors[-2].rotate()
-            self._rotors[-3].rotate()
+        if self.rotors[-2].in_turnover:
+            self.rotors[-2].rotate()
+            self.rotors[-3].rotate()
 
-        self._rotors[-1].rotate()
+        self.rotors[-1].rotate()
 
     @property
     def positions(self):
@@ -435,7 +435,7 @@ class Enigma:
         Returns rotor positions
         :return: {[int, int, int]}
         """
-        return [rotor.position() for rotor in self._rotors]
+        return [rotor.position() for rotor in self.rotors]
 
     @positions.setter
     def positions(self, new_positions):
@@ -445,7 +445,7 @@ class Enigma:
         """
         assert all([type(pos) == str for pos in new_positions]) or all([type(pos) == int for pos in new_positions])
 
-        for position, rotor in zip(new_positions, self._rotors):
+        for position, rotor in zip(new_positions, self.rotors):
             if type(position) == str:
                 position = alphabet.index(position)
             rotor.set_offset(position)
@@ -456,7 +456,7 @@ class Enigma:
         Returns rotor positions
         :return: {[int, int, int]}
         """
-        return [rotor.ring_offset for rotor in self._rotors]
+        return [rotor.ring_offset for rotor in self.rotors]
 
     @ring_settings.setter
     def ring_settings(self, new_ring_settings):
@@ -464,7 +464,7 @@ class Enigma:
         Returns rotor positions
         :param new_ring_settings: {[int, int, int]} new ring settings
         """
-        for setting, rotor in zip(new_ring_settings, self._rotors):
+        for setting, rotor in zip(new_ring_settings, self.rotors):
             rotor.set_ring(setting)
 
     def press_key(self, key):
@@ -478,12 +478,12 @@ class Enigma:
         output = self._plugboard.route(key)
         output = self._stator.forward(output)
 
-        for rotor in reversed(self._rotors):
+        for rotor in reversed(self.rotors):
             output = rotor.forward(output)
         
         output = self._reflector.reflect(output)
 
-        for rotor in self._rotors:
+        for rotor in self.rotors:
             output = rotor.backward(output)
 
         output = self._stator.backward(output)
@@ -498,5 +498,5 @@ class Enigma:
         header = "=== %s instance data ===" % self.model
         footer = "="*len(header)
         message = "\nRotors:              %s\nRotor positions:     %s\nRotor ring settings: %s \nReflector: %s\n"  # \nPlugboard pairs: %s
-        rotors = ' '.join([rotor.label for rotor in self._rotors])
+        rotors = ' '.join([rotor.label for rotor in self.rotors])
         return header + message % (rotors, ' '.join(self.positions), ' '.join(map(str, self.ring_settings)), self._reflector.label) + footer
