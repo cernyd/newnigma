@@ -17,7 +17,7 @@ class Runtime:
         self.app = QApplication(sys.argv)  # Needed for process name
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
-        self.app.setWindowIcon(QIcon('data/icons/enigma_200px.png'))
+        self.app.setWindowIcon(QIcon('./assets/icons/enigma_200px.png'))
         self.root = Root(api)
     
     def run(self):
@@ -37,7 +37,7 @@ class Root(QWidget):
 
         self.title = 'Enigma'
         self.setWindowTitle(self._api.model())
-        self.setWindowIcon(QIcon('data/icons/enigma_200px.png'))
+        self.setWindowIcon(QIcon('./assets/icons/enigma_200px.png'))
         #self.setStyleSheet("background-color: gray")  # TODO: Decide on stylesheet
 
         # Menu on top bar
@@ -92,7 +92,7 @@ class Root(QWidget):
         # ================
 
         self.setLayout(main_layout)
-        QSound('data/sounds/click.wav').play()
+        QSound('./assets/sounds/click.wav').play()
         self.show()
 
 
@@ -118,7 +118,7 @@ class _RotorsHandler(QFrame):
             self._layout.addWidget(indicator)
             self._rotor_indicators.append(indicator)
         
-        rotor_icon = QIcon('data/icons/settings.png')
+        rotor_icon = QIcon('./assets/icons/settings.png')
         button = QPushButton(rotor_icon, '', self)
         button.setIconSize(QSize(50, 50))
 

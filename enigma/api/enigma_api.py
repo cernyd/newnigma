@@ -1,6 +1,6 @@
 #! /usr/env python3
 
-from v2.newnigma.components import *
+from enigma.core.components import *
 
 
 class EnigmaAPI:

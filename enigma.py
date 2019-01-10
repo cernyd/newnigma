@@ -2,10 +2,10 @@
 
 import argparse
 import pytest
-from v2.newnigma.components import *
-from v2.cfg_handler import Config
-from v2.gui import Runtime
-from v2.enigma_api import EnigmaAPI
+from enigma.core.components import *
+from enigma.utils.cfg_handler import Config
+from enigma.interface.gui import Runtime
+from enigma.api.enigma_api import EnigmaAPI
 import logging
 
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     # CONFIG LOAD
 
     logging.info("Loading config...")
-    cfg = Config("data/config.json")
+    cfg = Config("config.json")
     cfg.mk_cache()
     data = cfg.cache['default']
 
