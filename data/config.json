@@ -2,6 +2,6 @@
     "default": {
 	"model": "EnigmaM4",
 	"rotors": ["I", "II", "III", "IV"],
-	"reflector": "UKW-B"
+	"reflector": "UKW-b"
     }
 }
