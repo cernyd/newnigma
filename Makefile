@@ -1,4 +1,4 @@
-run:
+gui:
 	./enigma.py
 test:
 	python3 -m pytest

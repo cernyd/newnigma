@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import pytest
-from enigma.core.components import Enigma, Plugboard, init_component, init_enigma
+from enigma.core.components import Enigma, Plugboard
+from enigma.api.enigma_api import EnigmaAPI
 from string import ascii_uppercase as alphabet
 
 
 def test_single_encrypt():
-    base = init_component('Enigma1', 'Rotor', 'I')
+    base = EnigmaAPI.generate_component('Enigma1', 'Rotor', 'I')
 
     assert base.forward('A') == 'E'
     base.rotate()
@@ -24,7 +25,7 @@ def test_routing():
     Tests if the forward routing is being routed correctly in the opposite direction (taking the
     relative rotor position into account)
     """
-    base = init_component('Enigma1', 'Rotor', 'I')
+    base = EnigmaAPI.generate_component('Enigma1', 'Rotor', 'I')
 
     for i in 1, 3, -2, 5, 7, 20:
         for letter in alphabet:
@@ -37,13 +38,13 @@ def test_routing():
     (5, 5), (-1, 25), (26, 0), (15, 15), (50, 24), (-40, 12), (25, 25)
 ))
 def test_rotation(offset_by, result):
-    base = init_component('Enigma1', 'Rotor', 'I')
+    base = EnigmaAPI.generate_component('Enigma1', 'Rotor', 'I')
     base.rotate(offset_by=offset_by)
     assert base.offset == result, "Rotor offset is not being calculated correctly"
 
 
 def test_position():
-    base = init_component('Enigma1', 'Rotor', 'I')
+    base = EnigmaAPI.generate_component('Enigma1', 'Rotor', 'I')
 
     base.rotate()
     assert base.position(True) == "02"
@@ -53,14 +54,14 @@ def test_position():
 
 
 def test_reflector():
-    reflector = init_component('EnigmaM3', 'Reflector', 'UKW-B')
+    reflector = EnigmaAPI.generate_component('EnigmaM3', 'Reflector', 'UKW-B')
 
     result = reflector.reflect('A')
     assert 'A' == reflector.reflect(result)
 
 
 def test_turnover():
-    base = init_component('EnigmaM4', 'Rotor', 'VI')
+    base = EnigmaAPI.generate_component('EnigmaM4', 'Rotor', 'VI')
 
     for _ in range(50):
         if base.in_turnover:
@@ -69,7 +70,7 @@ def test_turnover():
 
 
 def test_enigma():
-    enigma = init_enigma('EnigmaM3', ["I", "II", "III"], "UKW-B")
+    enigma = EnigmaAPI.generate_enigma('EnigmaM3', "UKW-B", ["I", "II", "III"])
 
     result = ''
     for _ in 'BDZGOW':
@@ -104,15 +105,15 @@ def test_enigma_models(model, n_rotors, should_fail):
     ("EnigmaM4", 4, False),
     ("EnigmaK", 3, False),
 ))
-def test_init_enigma(model, n_rotors, should_fail):
+def test_generate_enigma(model, n_rotors, should_fail):
     rotors = range(n_rotors)
     # Fake values instead of rotors because they are not needed in this test
 
     if should_fail:
         with pytest.raises(KeyError):
-            init_enigma(model, rotors, "UKW-B")
+            EnigmaAPI.generate_enigma(model, "UKW-B", rotors)
     else:
-        init_enigma(model, rotors, "UKW-B")
+        EnigmaAPI.generate_enigma(model, "UKW-B", rotors)
 
 
 def test_plugboard():
@@ -157,7 +158,7 @@ def test_plugboard():
 ))
 def test_historical_messages(model, rotors, reflector, positions, ring_settings, plug_pairs, message, correct_result):
     # Enigma instruction manual message
-    enigma = init_enigma(model, rotors, reflector)
+    enigma = EnigmaAPI.generate_enigma(model, reflector, rotors)
     enigma.positions = positions
     enigma.ring_settings = ring_settings
     enigma.set_plug_pairs(plug_pairs)

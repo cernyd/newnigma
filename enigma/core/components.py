@@ -1,53 +1,6 @@
 #!/usr/bin/env python3
-# *-* coding: utf-8 *-*
-
 
 from string import ascii_uppercase as alphabet
-
-
-zur_beachtung = """\
-Zur Beachtung!
-Beachte die Gebrauchsanleitung für die Chiffriermaschine (H. Dv. g. 13)
-
-1. Zur Säuberung der Walzenkontakte alle Walzen mehrmals gegenseitig vor- und rückwärtsdrehen.
-
-2. Zur Säuberung der Tastenkontakte sämtliche Tasten vor Einschaltung des Stromes mehrmals kräftig herunterdrücken und
-hochschnellen lassen, wobei eine Taste dauernd gedrückt bleibt.
-
-3. Bei Einstellung der in den Fenstern sichtbaren Zeichen beachten, daß die Walzen richtig gerastet sind.
-
-4. Die unverwechselbaren doppelpoligen Stecker sind bis zum Anschlag in ihre Buchsenpaare einzuführen.
-Die vordere Holzklappe ist danach zu schließen, da sonst 3 Lampen zugleich aufleuchten können.
-
-5. Leuchtet bei Tastendruck keine Lampe auf, so sind die Batterie, ihre Kontaktfedern, ihre Anschlüsse am
-Umschalter und der Umschalter zu prüfen.
-
-6. Leuchten bei Tastendruck eine oder mehrere Lampen nicht auf, so sind die entsprechenden Lampen, die
-Kontakte unter ihnen, die Kabel der doppelpoligen Stecker, die Steckerbuchsen einschließlich ihrer Kurzschlußbleche,
-die Walzenkontakte, die Arbeitskontakte unter den jeweils gedrückten Tasten und die Ruhekontakte unter den mit ihnen
-korrespondierenden Tasten zu prüfen und bei etwa vorhandenen Verschmutzungen und Oxydationen zu säubern. (Siehe auch Ziffer 2).
-Von Maschine Nr. A 4388 ab dient zur Lampenprüfung die Öffnung auf der rechten Lampenfeldseite.
-Von Maschine Nr. A 4388 ab dienen zur Kabelprüfung die äußerste linke und rechte Buchse der mittleren
-Reihe am Steckerbrett und die Kabelprüflampe auf der linken Lampenfeldseite.
-
-7. Walzenachse und Walzenbuchsen sind sauber zu halten und wie alle übrigen Lagerstellen hin und
-wieder mit harz- und säurefreiem Öl leicht einzufetten. Die festen Kontakte der Walzen sind alle
-6–8 Wochen mit Polierpapier überzuschleifen und mit einem wenig getränkten Öllappen abzureiben.
-Die Tastenkontakte, die Lampenkontakte und die Kurzschlußbleche sind vor Öl zu schützen.
-
-8. Schlüsselangaben erfolgen entweder durch Zahlen oder Buchstaben.
-Zum Umsetzen der Zahlen in Buchstaben oder umgekehrt dient nachstehende Tafel:
-
-A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z
-01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-"""
-
-
-labels = ['A-01', 'B-02', 'C-03', 'D-04', 'E-05', 'F-06', 'G-07', 'H-08', 'I-09', 'J-10', 'K-11', 'L-12', 'M-13',
-          'N-14', 'O-15', 'P-16', 'Q-17', 'R-18', 'S-19', 'T-20', 'U-21', 'V-22', 'W-23', 'X-24', 'Y-25', 'Z-26']
-
-# For the GUI plug board
-layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 24, 23, 2, 21, 1, 13, 12, 11]]
 
 
 # Stators
@@ -174,51 +127,6 @@ historical_data = {
         )
     }
 }
-
-
-def init_component(model, comp_type, label=None):
-    """
-    Initializes a Stator, Rotor or Reflector.
-    :param model: {str} Enigma machine model
-    :param comp_type: {str} "Stator", "Rotor" or "Reflector"
-    :param label: {str} or {int} Component label like "I", "II", "UKW-B" or numerical index
-                  of their position in historical data (0 = "I", 2 = "II", ...)
-    """
-    data = historical_data[model]
-
-    if label is None and comp_type != "Stator":
-        raise TypeError("A label has to be supplied for Rotor and Reflector" \
-                        "object!")
-
-    assert model in historical_data, "The model argument must be in historical" \
-                                     "Enigma models!"
-
-    i = 0
-    if comp_type == "Rotor":
-        for rotor in data["rotors"]:
-            if rotor['label'] == label or label == i:
-                return Rotor(**rotor)
-            i += 1
-    elif comp_type == "Reflector":
-        for reflector in data["reflectors"]:
-            if reflector['label'] == label or label == i:
-                return Reflector(**reflector)
-            i += 1
-    elif comp_type == "Stator":
-        return Stator(**data["stator"])
-    else:
-        raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
-
-
-def init_enigma(model, rotor_labels, reflector_label):
-    rotors = []
-    for label in rotor_labels:
-        rotors.append(init_component(model, "Rotor", label))
-
-    reflector = init_component(model, "Reflector", reflector_label)
-    stator = init_component(model, "Stator")
-
-    return Enigma(model, reflector, rotors, stator)
 
 
 class Plugboard:
@@ -494,9 +402,3 @@ class Enigma:
     def set_plug_pairs(self, plug_pairs):
         self._plugboard.set_plug_pairs(plug_pairs)
 
-    def __str__(self):
-        header = "=== %s instance data ===" % self.model
-        footer = "="*len(header)
-        message = "\nRotors:              %s\nRotor positions:     %s\nRotor ring settings: %s \nReflector: %s\n"  # \nPlugboard pairs: %s
-        rotors = ' '.join([rotor.label for rotor in self.rotors])
-        return header + message % (rotors, ' '.join(self.positions), ' '.join(map(str, self.ring_settings)), self._reflector.label) + footer
