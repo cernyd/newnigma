@@ -25,11 +25,11 @@ def cli(default_api, args):
         exit(-1)
 
     if args.positions is not None:  # TODO: Implement into EnigmaAPI
-        enigma_api.positions = args.positions
+        enigma_api.positions(args.positions)
     if args.ring_settings is not None:
-        enigma_api.ring_settings = map(int, args.ring_settings)
+        enigma_api.ring_settings(map(int, args.ring_settings))
     if args.plug_pairs is not None:
-        enigma_api.set_plug_pairs(args.plug_pairs)
+        enigma_api.plug_pairs(args.plug_pairs)
 
     print(enigma_api)
     print("Encrypted message:")

@@ -399,6 +399,11 @@ class Enigma:
 
         return output
 
-    def set_plug_pairs(self, plug_pairs):
-        self._plugboard.set_plug_pairs(plug_pairs)
+    @property
+    def plug_pairs(self):
+        return self._plugboard.plug_pairs
+
+    @plug_pairs.setter
+    def plug_pairs(self, new_plug_pairs):
+        self._plugboard.set_plug_pairs(new_plug_pairs)
 

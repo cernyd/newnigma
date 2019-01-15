@@ -161,7 +161,7 @@ def test_historical_messages(model, rotors, reflector, positions, ring_settings,
     enigma = EnigmaAPI.generate_enigma(model, reflector, rotors)
     enigma.positions = positions
     enigma.ring_settings = ring_settings
-    enigma.set_plug_pairs(plug_pairs)
+    enigma.plug_pairs = plug_pairs
 
     result = ''
     for letter in message:

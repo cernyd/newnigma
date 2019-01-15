@@ -28,8 +28,23 @@ class EnigmaAPI:
     def rotors(self):  # ROTORS PLUG
         return self._enigma.rotors
 
-    def positions(self):  # POSITIONS PLUG
-        return self._enigma.positions
+    def positions(self, new_positions=None):  # POSITIONS PLUG
+        if new_positions is not None:
+            self._enigma.positions = new_positions
+        else:
+            return self._enigma.positions
+    
+    def ring_settings(self, new_ring_settings=None):
+        if new_ring_settings is not None:
+            self._enigma.ring_settings = new_ring_settings
+        else:
+            return self._enigma.ring_settings
+
+    def plug_pairs(self, new_plug_pairs=None):
+        if new_plug_pairs is not None:
+            self._enigma.plug_pairs = new_plug_pairs
+        else:
+            return self._enigma.plug_pairs
 
     def encrypt(self, letter):
         """
