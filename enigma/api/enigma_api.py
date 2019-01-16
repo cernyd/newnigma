@@ -53,6 +53,17 @@ class EnigmaAPI:
         """
         return self._enigma.press_key(letter)
 
+    def rotate_rotor(self, rotor_id, by=1, callback=False):
+        """
+        :param rotor_id: {int} Integer position of the rotor (0 = first rotor, ...)
+        :param by: {int} Positive or negative integer describing the number of spaces
+        :param callback: {bool} Returns callable wrapped method if True, else only executes, needed to bypass python lambda evaluation problems in for loops
+        """
+        if callback is True:
+            return lambda: self._enigma.rotors[rotor_id].rotate(by)
+        else:
+            return self._enigma.rotors[rotor_id].rotate(by)
+
     # Generators
 
     @classmethod
