@@ -55,7 +55,7 @@ class Root(QWidget):
 
         # ================
         # Rotors init
-        self._rotors = _RotorsHandler(self, self._api.positions, self._api.rotate_rotor)
+        self._rotors = _RotorsHandler(self, self._api.positions, self._api.rotate_rotor, enigma_api)
 
         # Lightboard frame
         lb_frame = QFrame(self)
@@ -111,23 +111,43 @@ class Root(QWidget):
 
 
 class Settings(QDialog):
-    def __init__(self, master):
+    def __init__(self, master, enigma_api):
         super().__init__(master)
-        main_layout = QVBoxLayout(self)
+        main_layout = QHBoxLayout(self)
         self.setLayout(main_layout)
 
-        img = QLabel("", self)
-        pixmap = QPixmap('enigma/interface/assets/icons/enigma_200px.png')
-        img.setPixmap(pixmap)
+        #img = QLabel("", self)
+        #pixmap = QPixmap('enigma/interface/assets/icons/enigma_200px.png')
+        #img.setPixmap(pixmap)
+        for rotor in enigma_api.rotors():
+            frame = QFrame(self)
+            frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
+            layout = QVBoxLayout(frame)
+            
 
-        main_layout.addWidget(img)
-        main_layout.addWidget(QLabel("Created by David Cerny; 2018-2019", self))
+            # Ringstellung combo box
+            combobox = QComboBox(self)
+            combobox.addItems(labels)
+
+            layout.addWidget(QLabel("ROTOR MODEL"))
+            for model in ["I", "II", "III", "IV", "V"]:
+                radios = QRadioButton(model, self)
+                layout.addWidget(radios)
+
+            layout.addWidget(QLabel("RING SETTING"))
+            layout.addWidget(combobox, alignment=Qt.AlignBottom)
+
+            main_layout.addWidget(frame)
+
+        #main_layout.addWidget(img)
+        #main_layout.addWidget(QLabel("Created by David Cerny; 2018-2019", self))
+
         self.resize(200, 200)
         self.setWindowTitle("Settings")
 
 
 class _RotorsHandler(QFrame):
-    def __init__(self, master, position_plug, rotate_plug):
+    def __init__(self, master, position_plug, rotate_plug, enigma_api):
         """
         :param master: {Qt} Master qt object
         :param position_plug: {callable} Callable method for getting rotor positions
@@ -149,7 +169,7 @@ class _RotorsHandler(QFrame):
         button.setIconSize(QSize(50, 50))
         button.setToolTip("Edit Enigma rotor and reflector settings")
 
-        settings = Settings(master)
+        settings = Settings(master, enigma_api)
         #button.clicked.connect(lambda: print("ROTORS BUTTON CLICKED"))
         button.clicked.connect(settings.show)
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -198,13 +218,11 @@ class _RotorHandler(QFrame):
         self._indicator.setText(position)
 
     def increment(self):
-        #self._indicator.setText('X')
         print("Incrementation of rotor nr. %d called!" % self._id)
         self.plus_plug()
         self.master.set_positions()
 
     def decrement(self):
-        #self._indicator.setText('Y')
         print("Decrementation of rotor nr. %d called!" % self._id)
         self.minus_plug()
         self.master.set_positions()
