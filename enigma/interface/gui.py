@@ -147,57 +147,112 @@ class Lightboard(QWidget):
 class Plugboard(QDialog):
     def __init__(self, master):
         super().__init__(master)
-        main_layout = QHBoxLayout(self)
         self.resize(200, 200)
         self.setWindowTitle("Settings")
-
+        main_layout = QVBoxLayout(self)
+        frame = QFrame(self)
         
+        """
+        self.plugs = {}
+        for row in layout:
+            row_frame = QFrame(frame)
+            row_layout = QHBoxLayout(row_frame)
+
+            for letter in row:
+                label = QLabel(labels[letter])
+                #label.setStyleSheet("QLabel{background-color: gray; border: 1px solid black; border-radius: 10px;}")
+                self.plugs[letter] = label
+                row_layout.addWidget(label)
+
+            main_layout.addWidget(row_frame)
+            """
+
 
 class Settings(QDialog):
     def __init__(self, master, enigma_api):
         super().__init__(master)
-        main_layout = QHBoxLayout(self)
-        self.setLayout(main_layout)
+        master_layout = QVBoxLayout(self)
+        main_frame = QFrame(self)
+        main_layout = QHBoxLayout(main_frame)
+        self.setLayout(master_layout)
 
         img = QLabel("", self)
         img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
         main_layout.addWidget(img)
 
+        # Generate radios for components
+
         reflector_frame = QFrame(self)
         reflector_layout = QVBoxLayout(reflector_frame)
         reflector_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
         reflector_layout.addWidget(QLabel("REFLECTOR MODEL"), alignment=Qt.AlignTop)
-        for model in ["UKW-B", "UKW-C"]:
+        self.reflector_group = QButtonGroup()
+
+        for i, model in enumerate(["UKW-B", "UKW-C"]):
             radio = QRadioButton(model, self)
             radio.setToolTip("Reflector is an Enigma component that \nreflects letters from the rotors back to the lightboard")
+            self.reflector_group.addButton(radio)
+            self.reflector_group.setId(radio, i)
             reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
+
+        self.reflector_group.button(0).setChecked(True)
         main_layout.addWidget(reflector_frame)
 
+        # Generate radio and ring settings
+        self.radio_selectors = []
+        self.ring_selectors = []
         for rotor in enigma_api.rotors():
             frame = QFrame(self)
             frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
             layout = QVBoxLayout(frame)
             
-
+            button_group = QButtonGroup()
+            layout.addWidget(QLabel("ROTOR MODEL"))
+            for i, model in enumerate(["I", "II", "III", "IV", "V"]):
+                radios = QRadioButton(model, self)
+                button_group.addButton(radios)
+                button_group.setId(radios, i)
+                layout.addWidget(radios, alignment=Qt.AlignTop)
+            button_group.button(0).setChecked(True)
             # Ringstellung combo box
             combobox = QComboBox(self)
             combobox.addItems(labels)
 
-            layout.addWidget(QLabel("ROTOR MODEL"))
-            for model in ["I", "II", "III", "IV", "V"]:
-                radios = QRadioButton(model, self)
-                layout.addWidget(radios, alignment=Qt.AlignTop)
-
             layout.addWidget(QLabel("RING SETTING"))
             layout.addWidget(combobox, alignment=Qt.AlignBottom)
+            self.ring_selectors.append(combobox)
 
+            self.radio_selectors.append(button_group)
             main_layout.addWidget(frame)
 
-        #main_layout.addWidget(img)
-        #main_layout.addWidget(QLabel("Created by David Cerny; 2018-2019", self))
+        apply_btn = QPushButton("Apply")
+        apply_btn.clicked.connect(self.collect)
+        master_layout.addWidget(main_frame)
+        master_layout.addWidget(apply_btn)
+        master_layout.addWidget(QPushButton("Storno"))
 
         self.resize(200, 200)
         self.setWindowTitle("Settings")
+
+    def collect(self):
+        """
+        Collects all data to be set
+        """
+        checked_ref = self.reflector_group.checkedButton() # REFLECTOR CHOICES
+        if checked_ref is not None:
+            print(checked_ref.text())
+        else:
+            print("Reflector not chosen")
+
+        for group in self.radio_selectors:  # ROTOR CHOICES
+            checked = group.checkedButton()
+            if checked is not None:
+                print(checked.text())
+            else:
+                print("Not checked!")
+
+        for ring in self.ring_selectors:  # RING SETTING CHOICES
+            print(ring.currentIndex())
 
 
 class _RotorsHandler(QFrame):
@@ -224,7 +279,6 @@ class _RotorsHandler(QFrame):
         button.setToolTip("Edit Enigma rotor and reflector settings")
 
         settings = Settings(master, enigma_api)
-        #button.clicked.connect(lambda: print("ROTORS BUTTON CLICKED"))
         button.clicked.connect(settings.show)
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
