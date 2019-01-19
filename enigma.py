@@ -70,7 +70,7 @@ if __name__ == '__main__':
         cli(enigma_api, args)
     else:
         logging.info('Launching newnigma Qt Application...')
-        runtime = Runtime(enigma_api)
+        runtime = Runtime(enigma_api, cfg.load)
         runtime.run()
     # ====================================================
 

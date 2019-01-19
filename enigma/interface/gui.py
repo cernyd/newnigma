@@ -8,6 +8,7 @@ from PyQt5.QtGui import *
 from time import sleep
 import copy
 import sys
+from string import ascii_uppercase as alphabet
 
 
 labels = ['A-01', 'B-02', 'C-03', 'D-04', 'E-05', 'F-06', 'G-07', 'H-08', 'I-09', 'J-10', 'K-11', 'L-12', 'M-13',
@@ -20,12 +21,12 @@ layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 2
 class Runtime:
     """
     """
-    def __init__(self, api):
+    def __init__(self, api, cfg_load_plug):
         self.app = QApplication(sys.argv)  # Needed for process name
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
         self.app.setWindowIcon(QIcon('enigma/interface/assets/icons/enigma_200px.png'))
-        self.root = Root(api)
+        self.root = Root(api, cfg_load_plug)
     
     def run(self):
         self.app.exec()
@@ -33,12 +34,13 @@ class Runtime:
 
 class Root(QWidget):
     """Root window for Enigma Qt GUI"""
-    def __init__(self, enigma_api):
+    def __init__(self, enigma_api, cfg_load_plug):
         """
         Initializes Root QT window widgets
         """
         super().__init__()
 
+        self.cfg_load_plug = cfg_load_plug
         main_layout = QVBoxLayout(self)
         self._api = enigma_api
 
@@ -49,9 +51,9 @@ class Root(QWidget):
 
         # Menu on top bar
         menu = QMenuBar(self)
-        menu.addMenu("Load")
-        menu.addMenu("Save")
-        menu.addMenu("About")
+        menu.addAction("Load", lambda: print(self.cfg_load_plug()))
+        menu.addAction("Save", lambda: print("Save action"))
+        menu.addAction("About", lambda: QDesktopServices.openUrl(QUrl("https://www.cryptomuseum.com/index.htm")))
 
         # ================
         # Rotors init
@@ -61,7 +63,8 @@ class Root(QWidget):
         lb_frame = QFrame(self)
         lb_frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         lb_frame_layout = QGridLayout(lb_frame)
-        lb_frame_layout.addWidget(QLabel('LIGHTBOARD PLACEHOLDER', self))
+        lightboard = Lightboard(self)
+        lb_frame_layout.addWidget(lightboard)
 
         # ===================================================================
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION
@@ -70,8 +73,7 @@ class Root(QWidget):
         io_frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         io_frame_layout = QGridLayout(io_frame)
 
-        self.o_textbox = _OutputTextBox(self)
-        #i_textbox = _InputTextBox(self, lambda l: 'Q', self.o_textbox)
+        self.o_textbox = _OutputTextBox(self, lightboard.light_up, lightboard.power_off)
         i_textbox = _InputTextBox(self, enigma_api.encrypt, self.o_textbox.insert)
 
         io_frame_layout.addWidget(QLabel('INPUT', self))
@@ -91,17 +93,13 @@ class Root(QWidget):
         # Plug and uhr buttons
         plug_button = QPushButton('Plugboard')
         plug_button.setToolTip("Edit plugboard letter pairs")
-        plug_button.clicked.connect(lambda: print("PLUGBOARD BUTTON CLICKED"))
-        uhr_button = QPushButton('Uhr')
-        uhr_button.setToolTip("Connect the Uhr extension and set pairs")
-        uhr_button.clicked.connect(lambda: print("UHR BUTTON CLICKED"))
+        plugboard = Plugboard(self)
+        plug_button.clicked.connect(plugboard.show)
         main_layout.addWidget(plug_button)
-        main_layout.addWidget(uhr_button)
 
         # ================
         # Rotors init
         main_layout.addWidget(plug_button)
-        main_layout.addWidget(uhr_button)
 
         # ================
 
@@ -110,15 +108,71 @@ class Root(QWidget):
         self.show()
 
 
+class Lightboard(QWidget):
+    def __init__(self, master):
+        super().__init__(master)
+
+        self.bulbs = {}
+        lb_layout = QVBoxLayout(self)
+        frame = QFrame(self)
+
+        for row in layout:
+            row_frame = QFrame(frame)
+            row_layout = QHBoxLayout(row_frame)
+
+            for letter in row:
+                ltr = alphabet[letter]
+                label = QLabel(alphabet[letter])
+                label.setStyleSheet("QLabel{background-color: gray; border: 1px solid black; border-radius: 10px;}")
+                self.bulbs[ltr] = label
+                row_layout.addWidget(label)
+
+            lb_layout.addWidget(row_frame)
+
+
+    def light_up(self, letter):
+        """
+        Lights up letters on the lightboard
+        """
+        self.bulbs[letter].setStyleSheet("QLabel{color: yellow; background-color: gray; border: 1px solid black; border-radius: 10px;}")
+
+    def power_off(self):
+        """
+        Disables the lit up letters
+        """
+        for bulb in self.bulbs.values():
+            bulb.setStyleSheet("QLabel{background-color: gray; border: 1px solid black; border-radius: 10px;}")
+
+
+class Plugboard(QDialog):
+    def __init__(self, master):
+        super().__init__(master)
+        main_layout = QHBoxLayout(self)
+        self.resize(200, 200)
+        self.setWindowTitle("Settings")
+
+        
+
 class Settings(QDialog):
     def __init__(self, master, enigma_api):
         super().__init__(master)
         main_layout = QHBoxLayout(self)
         self.setLayout(main_layout)
 
-        #img = QLabel("", self)
-        #pixmap = QPixmap('enigma/interface/assets/icons/enigma_200px.png')
-        #img.setPixmap(pixmap)
+        img = QLabel("", self)
+        img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
+        main_layout.addWidget(img)
+
+        reflector_frame = QFrame(self)
+        reflector_layout = QVBoxLayout(reflector_frame)
+        reflector_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
+        reflector_layout.addWidget(QLabel("REFLECTOR MODEL"), alignment=Qt.AlignTop)
+        for model in ["UKW-B", "UKW-C"]:
+            radio = QRadioButton(model, self)
+            radio.setToolTip("Reflector is an Enigma component that \nreflects letters from the rotors back to the lightboard")
+            reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
+        main_layout.addWidget(reflector_frame)
+
         for rotor in enigma_api.rotors():
             frame = QFrame(self)
             frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
@@ -132,7 +186,7 @@ class Settings(QDialog):
             layout.addWidget(QLabel("ROTOR MODEL"))
             for model in ["I", "II", "III", "IV", "V"]:
                 radios = QRadioButton(model, self)
-                layout.addWidget(radios)
+                layout.addWidget(radios, alignment=Qt.AlignTop)
 
             layout.addWidget(QLabel("RING SETTING"))
             layout.addWidget(combobox, alignment=Qt.AlignBottom)
@@ -247,11 +301,14 @@ class _InputTextBox(QTextEdit):
 
 
 class _OutputTextBox(QTextEdit):
-    def __init__(self, master):
+    def __init__(self, master, light_up_plug, power_off_plug):
         super().__init__(master)
         self.setPlaceholderText("Encrypted message will appear here")
-        #self.setReadOnly(True)
+        self.light_up_plug = light_up_plug
+        self.power_off_plug = power_off_plug
 
     def insert(self, letter):
         self.moveCursor(QTextCursor.End)
+        self.power_off_plug()
         self.insertPlainText(letter)
+        self.light_up_plug(letter)
