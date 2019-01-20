@@ -19,13 +19,13 @@ layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 2
 
 
 class Runtime:
-    """
-    """
     def __init__(self, api, cfg_load_plug):
         self.app = QApplication(sys.argv)  # Needed for process name
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
-        self.app.setWindowIcon(QIcon('enigma/interface/assets/icons/enigma_200px.png'))
+        self.app.setWindowIcon(
+            QIcon('enigma/interface/assets/icons/enigma_200px.png')
+        )
         self.root = Root(api, cfg_load_plug)
     
     def run(self):
@@ -76,8 +76,7 @@ class Root(QWidget):
 
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ===============================
 
-        self.o_textbox = _OutputTextBox(self, lightboard.light_up,
-                                        lightboard.power_off)
+        self.o_textbox = _OutputTextBox(self, lightboard.light_up)
         i_textbox = _InputTextBox(self, enigma_api.encrypt, 
                                   self.o_textbox.insert,
                                   self._rotors.set_positions)
@@ -113,9 +112,18 @@ class Lightboard(QWidget):
     def __init__(self, master):
         super().__init__(master)
 
-        self.bulbs = {}
+        # BASIC QT SETTINGS  ===================================================
+
         lb_layout = QVBoxLayout(self)
         frame = QFrame(self)
+
+        # ATTRIBUTES ===========================================================
+
+        self._lightbulbs = {}
+        self._base_style = "QLabel{background-color: gray; color: %s;" \
+                           "border: 1px solid black; border-radius: 10px;}"
+
+        # CONSTRUCT LIGHTBOARD =================================================
 
         for row in layout:
             row_frame = QFrame(frame)
@@ -123,9 +131,9 @@ class Lightboard(QWidget):
 
             for letter in row:
                 ltr = alphabet[letter]
-                label = QLabel(alphabet[letter])
-                label.setStyleSheet("QLabel{background-color: gray; border: 1px solid black; border-radius: 10px;}")
-                self.bulbs[ltr] = label
+                label = QLabel(ltr, styleSheet=self._base_style % "black")
+
+                self._lightbulbs[ltr] = label
                 row_layout.addWidget(label)
 
             lb_layout.addWidget(row_frame)
@@ -134,24 +142,25 @@ class Lightboard(QWidget):
     def light_up(self, letter):
         """
         Lights up letters on the lightboard
+        :param letter: {char} Letter to light up
         """
-        self.bulbs[letter].setStyleSheet("QLabel{color: yellow; background-color: gray; border: 1px solid black; border-radius: 10px;}")
+        for bulb in self._lightbulbs.values():  # Power off all lightbulbs
+            bulb.setStyleSheet(self._base_style % "black")
 
-    def power_off(self):
-        """
-        Disables the lit up letters
-        """
-        for bulb in self.bulbs.values():
-            bulb.setStyleSheet("QLabel{background-color: gray; border: 1px solid black; border-radius: 10px;}")
+        self._lightbulbs[letter].setStyleSheet(self._base_style % "yellow")
 
 
 class Plugboard(QDialog):
     def __init__(self, master):
         super().__init__(master)
+
+        # QT WINDOW SETTINGS ===================================================
+
         self.resize(200, 200)
-        self.setWindowTitle("Settings")
+        self.setWindowTitle("Plugboard")
         main_layout = QVBoxLayout(self)
         frame = QFrame(self)
+        self.setLayout = (main_layout)
         
         """
         self.plugs = {}
@@ -172,26 +181,37 @@ class Plugboard(QDialog):
 class Settings(QDialog):
     def __init__(self, master, enigma_api):
         super().__init__(master)
+
+        # QT WINDOW SETTINGS ===================================================
+
         master_layout = QVBoxLayout(self)
         main_frame = QFrame(self)
         main_layout = QHBoxLayout(main_frame)
+        self.setWindowTitle("Settings")
+
         self.setLayout(master_layout)
+        self.resize(200, 200)
 
-        img = QLabel("", self)
-        img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
-        main_layout.addWidget(img)
+        # SAMPLE IMAGE =========================================================
 
-        # Generate radios for components
+        #img = QLabel("", self)
+        #img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
+
+        # REFLECTOR SETTINGS ===================================================
 
         reflector_frame = QFrame(self)
-        reflector_layout = QVBoxLayout(reflector_frame)
         reflector_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
-        reflector_layout.addWidget(QLabel("REFLECTOR MODEL"), alignment=Qt.AlignTop)
-        self.reflector_group = QButtonGroup()
 
+        reflector_layout = QVBoxLayout(reflector_frame)
+        reflector_layout.addWidget(
+            QLabel("REFLECTOR MODEL"), alignment=Qt.AlignTop
+        )
+
+        self.reflector_group = QButtonGroup()
         for i, model in enumerate(["UKW-B", "UKW-C"]):
             radio = QRadioButton(model, self)
-            radio.setToolTip("Reflector is an Enigma component that \nreflects letters from the rotors back to the lightboard")
+            radio.setToolTip("Reflector is an Enigma component that \nreflects "
+                             "letters from the rotors back to the lightboard")
             self.reflector_group.addButton(radio)
             self.reflector_group.setId(radio, i)
             reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
@@ -199,9 +219,11 @@ class Settings(QDialog):
         self.reflector_group.button(0).setChecked(True)
         main_layout.addWidget(reflector_frame)
 
-        # Generate radio and ring settings
+        # ROTOR SETTINGS =======================================================
+
         self.radio_selectors = []
         self.ring_selectors = []
+
         for rotor in enigma_api.rotors():
             frame = QFrame(self)
             frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
@@ -214,8 +236,11 @@ class Settings(QDialog):
                 button_group.addButton(radios)
                 button_group.setId(radios, i)
                 layout.addWidget(radios, alignment=Qt.AlignTop)
+
             button_group.button(0).setChecked(True)
+            
             # Ringstellung combo box
+
             combobox = QComboBox(self)
             combobox.addItems(labels)
 
@@ -226,24 +251,28 @@ class Settings(QDialog):
             self.radio_selectors.append(button_group)
             main_layout.addWidget(frame)
 
+        # BUTTONS ==============================================================
+
         apply_btn = QPushButton("Apply")
         apply_btn.clicked.connect(self.collect)
-        master_layout.addWidget(main_frame)
-        master_layout.addWidget(apply_btn)
+
         storno = QPushButton("Storno")
         storno.clicked.connect(self.close)
-        master_layout.addWidget(storno)
 
-        self.resize(200, 200)
-        self.setWindowTitle("Settings")
+        # SHOW WIDGETS =========================================================
+
+        master_layout.addWidget(main_frame)
+        master_layout.addWidget(apply_btn)
+        master_layout.addWidget(storno)
+        #main_layout.addWidget(img)
 
     def collect(self):
         """
         Collects all selected settings for rotors and other components,
         applies them to the enigma object
         """
-        print("here")
         checked_ref = self.reflector_group.checkedButton() # REFLECTOR CHOICES
+
         if checked_ref is not None:
             print(checked_ref.text())
         else:
@@ -276,7 +305,7 @@ class _RotorsHandler(QFrame):
         self._rotor_indicators = []
 
         for i in range(len(position_plug())):  # Rotor controls
-            indicator = _RotorHandler(i, self, rotate_plug(i, 1, True), rotate_plug(i, -1, True))
+            indicator = _RotorHandler(self, i, rotate_plug(i, 1, True), rotate_plug(i, -1, True), self.set_positions)
             self._layout.addWidget(indicator)
             self._rotor_indicators.append(indicator)
         
@@ -303,44 +332,66 @@ class _RotorsHandler(QFrame):
 
 class _RotorHandler(QFrame):
     """Holds component references for particular rotor"""
-    def __init__(self, i, master, plus_plug, minus_plug):
+    def __init__(self, master, i, plus_plug, minus_plug, set_pos_plug):
+        """
+        :param master: Qt parent object
+        :param i: {int} Rotor index that determines fast/medium/slow rotor
+        :param plus_plug: {callable} Callable that rotates the corresponding
+                                     rotor one position forward
+        :param minus_plug: {callable} Callable that rotates the corresponding
+                                      rotor one position backward
+        :param set_pos_plug: {callable} Callable that sets enigma object
+                                        position to the current position
+        """
         super().__init__(master)
-        self._id = i
-        self._master = master
+
+        # QT WINDOW SETTINGS ===================================================
+
         self._layout = QVBoxLayout(self)
+            
+        # SAVE ATTRIBUTES ======================================================
+
+        self._id = i
+        self.plus_plug = plus_plug
+        self.minus_plug = minus_plug
+        self.master = master
+        self.set_positions = set_pos_plug
+
+        # ROTATE FORWARD =======================================================
 
         position_plus = QPushButton('+', self)
-        position_plus.setToolTip("Rotates rotor forwards by one place")
         position_plus.clicked.connect(self.increment)
-        self._layout.addWidget(position_plus, alignment=Qt.AlignTop)
+        position_plus.setToolTip("Rotates rotor forwards by one place")
+
+        # POSITION INDICATOR ===================================================
 
         self._indicator = QLabel('A', self)
         self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-        self._indicator.setLineWidth(3)
         self._indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
-        self._layout.addWidget(self._indicator)
+        self._indicator.setLineWidth(8)
 
-        self.plus_plug = plus_plug
-        self.minus_plug = minus_plug
+        # ROTATE FORWARD =======================================================
+
         position_minus = QPushButton('-', self)
-        position_minus.setToolTip("Rotates rotors backwards by one place")
         position_minus.clicked.connect(self.decrement)
+        position_minus.setToolTip("Rotates rotors backwards by one place")
 
+        # SHOW WIDGETS =========================================================
+
+        self._layout.addWidget(position_plus, alignment=Qt.AlignTop)
+        self._layout.addWidget(self._indicator)
         self._layout.addWidget(position_minus, alignment=Qt.AlignBottom)
-        self.master = master
 
     def set(self, position):
         self._indicator.setText(position)
 
     def increment(self):
-        print("Incrementation of rotor nr. %d called!" % self._id)
         self.plus_plug()
-        self.master.set_positions()
+        self.set_positions()
 
     def decrement(self):
-        print("Decrementation of rotor nr. %d called!" % self._id)
         self.minus_plug()
-        self.master.set_positions()
+        self.set_positions()
 
 
 class _InputTextBox(QTextEdit):
@@ -355,15 +406,25 @@ class _InputTextBox(QTextEdit):
         :param refresh_plug: {callable} A callable that should refresh a rotor positions
         """
         super().__init__(master)
+
+        # QT WIDGET SETTINGS ===================================================
+
         self.setPlaceholderText("Type your message here")
         self.textChanged.connect(self.input_detected)
-        self.encrypt_plug = encrypt_plug  # Decoupled plug for encryption
+
+        # PLUGS ================================================================
+
+        self.encrypt_plug = encrypt_plug
         self.output_plug = output_plug
         self.refresh_plug = refresh_plug
-        # TODO: Implement drag and drop maybe
 
     def input_detected(self):
+        """
+        Responds to the text input event by encrypting the newly typed letter
+        and sending it to the output text box.
+        """
         text = self.toPlainText()
+
         if len(text) > 0:
             last_input = text[-1].upper()
             encrypted = self.encrypt_plug(last_input)
@@ -374,14 +435,23 @@ class _InputTextBox(QTextEdit):
 
 
 class _OutputTextBox(QTextEdit):
-    def __init__(self, master, light_up_plug, power_off_plug):
+    def __init__(self, master, light_up_plug):
+        """
+        Shows text inserted trough the .insert() plug
+        :param master: Qt parent object
+        :param light_up_plug: {callable} Callable that accepts a single letter
+                                         that should light up on the lightboard
+        """
         super().__init__(master)
+
         self.setPlaceholderText("Encrypted message will appear here")
         self.light_up_plug = light_up_plug
-        self.power_off_plug = power_off_plug
 
     def insert(self, letter):
+        """
+        Appends text into the textbox
+        :param letter: {char} Letter to be appended
+        """
         self.moveCursor(QTextCursor.End)
-        self.power_off_plug()
         self.insertPlainText(letter)
         self.light_up_plug(letter)

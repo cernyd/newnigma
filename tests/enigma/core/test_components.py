@@ -33,6 +33,19 @@ def test_routing():
                 "Backwards routing doesn't return to the original location!"
             base.rotate(i)
 
+def test_implementation():
+    """
+    Tests the implementation by encrypting each letter of the alphabet
+    4000 times and checking if the encrypted message does not contain the 
+    letter (this must always be true because the Enigma worked this way)
+
+    The number of iterations is arbitrary (not to slow down the testing process)
+    """
+    enigma = EnigmaAPI.generate_enigma('EnigmaM3', "UKW-B", ["I", "II", "III"])
+
+    for letter in alphabet:
+        for _ in range(4000):
+            assert enigma.press_key(letter) != letter, "Enigma implementation wrong!"
 
 @pytest.mark.parametrize('offset_by, result', (
     (5, 5), (-1, 25), (26, 0), (15, 15), (50, 24), (-40, 12), (25, 25)

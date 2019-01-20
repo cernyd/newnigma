@@ -18,17 +18,32 @@ class EnigmaAPI:
         self._enigma = self.generate_enigma(model, reflector, rotors)
 
     # PLUGS
+
+    def model_data(self):
+        """
+        Returns data for the currently selected enigma model
+        """
+        return self._data
         
-    def model(self):  # MODEL PLUG
-        return self._enigma.model
+    def model(self, new_model=None):
+        if new_model is not None:
+            self._enigma = generate_enigma()
+        else:
+            return self._enigma.model
 
-    def reflector(self):  # REFLECTOR PLUG
-        return self._enigma.reflector
+    def reflector(self, new_reflector=None):
+        if new_reflector is not None:
+            self._enigma.reflector = new_reflector
+        else:
+            return self._enigma.reflector
 
-    def rotors(self):  # ROTORS PLUG
-        return self._enigma.rotors
+    def rotors(self, new_rotors=None):
+        if new_rotors is not None:
+            self._enigma.rotors = new_rotors
+        else:
+            return self._enigma.rotors
 
-    def positions(self, new_positions=None):  # POSITIONS PLUG
+    def positions(self, new_positions=None):
         if new_positions is not None:
             self._enigma.positions = new_positions
         else:
@@ -55,9 +70,13 @@ class EnigmaAPI:
 
     def rotate_rotor(self, rotor_id, by=1, callback=False):
         """
-        :param rotor_id: {int} Integer position of the rotor (0 = first rotor, ...)
-        :param by: {int} Positive or negative integer describing the number of spaces
-        :param callback: {bool} Returns callable wrapped method if True, else only executes, needed to bypass python lambda evaluation problems in for loops
+        :param rotor_id: {int} Integer position of the rotor
+                               (0 = first rotor, ...)
+        :param by: {int} Positive or negative integer 
+                         describing the number of spaces
+        :param callback: {bool} Returns callable wrapped method if True, else 
+                                only executes, needed to bypass python 
+                                lambda evaluation problems in for loops
         """
         if callback is True:
             return lambda: self._enigma.rotors[rotor_id].rotate(by)
