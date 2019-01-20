@@ -37,74 +37,75 @@ class Root(QWidget):
     def __init__(self, enigma_api, cfg_load_plug):
         """
         Initializes Root QT window widgets
+        :param enigma_api: {EnigmaAPI} Initialized EnigmaAPI object
+        :param cfg_load_plug: {callable} callable that returns loaded config
         """
         super().__init__()
 
-        self.cfg_load_plug = cfg_load_plug
-        main_layout = QVBoxLayout(self)
-        self._api = enigma_api
+        # QT WINDOW SETTINGS ===================================================
 
         self.title = 'Enigma'
-        self.setWindowTitle(self._api.model())
-        self.setWindowIcon(QIcon('enigma/interface/assets/icons/enigma_200px.png'))
-        #self.setStyleSheet("background-color: gray")  # TODO: Decide on stylesheet
+        self.setWindowTitle(enigma_api.model())
+        self.setWindowIcon(
+            QIcon('enigma/interface/assets/icons/enigma_200px.png')
+        )
+        #self.setStyleSheet("background-color: gray")
+        main_layout = QVBoxLayout(self)
+        self.setLayout(main_layout)
+        
+        # SAVE ATTRIBUTES ======================================================
 
-        # Menu on top bar
+        self._api = enigma_api
+
+        # MENU BAR =============================================================
+
         menu = QMenuBar(self)
         menu.addAction("Load", lambda: print(self.cfg_load_plug()))
         menu.addAction("Save", lambda: print("Save action"))
-        menu.addAction("About", lambda: QDesktopServices.openUrl(QUrl("https://www.cryptomuseum.com/index.htm")))
+        url = QUrl("https://www.cryptomuseum.com/index.htm")
+        menu.addAction("About", lambda: QDesktopServices.openUrl(url))
 
-        # ================
-        # Rotors init
-        self._rotors = _RotorsHandler(self, self._api.positions, self._api.rotate_rotor, enigma_api)
+        # ROTORS INDICATOR =====================================================
 
-        # Lightboard frame
-        lb_frame = QFrame(self)
-        lb_frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-        lb_frame_layout = QGridLayout(lb_frame)
+        self._rotors = _RotorsHandler(self, self._api.positions, 
+                                      self._api.rotate_rotor, enigma_api)
+
+        # LIGHTBOARD FRAME =====================================================
+
         lightboard = Lightboard(self)
-        lb_frame_layout.addWidget(lightboard)
 
-        # ===================================================================
-        # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION
+        # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ===============================
 
-        io_frame = QFrame(self)
-        io_frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-        io_frame_layout = QGridLayout(io_frame)
+        self.o_textbox = _OutputTextBox(self, lightboard.light_up,
+                                        lightboard.power_off)
+        i_textbox = _InputTextBox(self, enigma_api.encrypt, 
+                                  self.o_textbox.insert,
+                                  self._rotors.set_positions)
 
-        self.o_textbox = _OutputTextBox(self, lightboard.light_up, lightboard.power_off)
-        i_textbox = _InputTextBox(self, enigma_api.encrypt, self.o_textbox.insert)
+        # PLUGBOARD BUTTONS ====================================================
 
-        io_frame_layout.addWidget(QLabel('INPUT', self))
-        io_frame_layout.addWidget(i_textbox)
-        io_frame_layout.addWidget(QLabel('OUTPUT', self))
-        io_frame_layout.addWidget(self.o_textbox)
-
-        # ===================================================================
-
-        # Main layout - whole window
-        main_layout.addWidget(menu, alignment=Qt.AlignTop)
-        main_layout.addWidget(self._rotors, alignment=Qt.AlignBottom)
-        main_layout.addWidget(lb_frame, alignment=Qt.AlignBottom)
-        main_layout.addWidget(io_frame, alignment=Qt.AlignBottom)
-
-
-        # Plug and uhr buttons
+        plugboard = Plugboard(self)
         plug_button = QPushButton('Plugboard')
         plug_button.setToolTip("Edit plugboard letter pairs")
-        plugboard = Plugboard(self)
         plug_button.clicked.connect(plugboard.show)
+
+        # SHOW WIDGETS =========================================================
+
+        main_layout.addWidget(menu, alignment=Qt.AlignTop)
+        main_layout.addWidget(self._rotors, alignment=Qt.AlignBottom)
+        main_layout.addWidget(lightboard)
+        main_layout.addWidget(QLabel('INPUT', self))
+        main_layout.addWidget(i_textbox)
+        main_layout.addWidget(QLabel('OUTPUT', self))
+        main_layout.addWidget(self.o_textbox)
         main_layout.addWidget(plug_button)
 
-        # ================
-        # Rotors init
-        main_layout.addWidget(plug_button)
+        # PLUGS ================================================================
 
-        # ================
+        self.cfg_load_plug = cfg_load_plug
 
-        self.setLayout(main_layout)
-        QSound('enigma/interface/assets/sounds/click.wav').play()
+        # SHOW WINDOW ==========================================================
+
         self.show()
 
 
@@ -229,15 +230,19 @@ class Settings(QDialog):
         apply_btn.clicked.connect(self.collect)
         master_layout.addWidget(main_frame)
         master_layout.addWidget(apply_btn)
-        master_layout.addWidget(QPushButton("Storno"))
+        storno = QPushButton("Storno")
+        storno.clicked.connect(self.close)
+        master_layout.addWidget(storno)
 
         self.resize(200, 200)
         self.setWindowTitle("Settings")
 
     def collect(self):
         """
-        Collects all data to be set
+        Collects all selected settings for rotors and other components,
+        applies them to the enigma object
         """
+        print("here")
         checked_ref = self.reflector_group.checkedButton() # REFLECTOR CHOICES
         if checked_ref is not None:
             print(checked_ref.text())
@@ -253,6 +258,8 @@ class Settings(QDialog):
 
         for ring in self.ring_selectors:  # RING SETTING CHOICES
             print(ring.currentIndex())
+
+        self.close()
 
 
 class _RotorsHandler(QFrame):
@@ -337,12 +344,22 @@ class _RotorHandler(QFrame):
 
 
 class _InputTextBox(QTextEdit):
-    def __init__(self, master, encrypt_plug, output_plug):
+    def __init__(self, master, encrypt_plug, output_plug, refresh_plug):
+        """
+        Input textbox where text is entered, the last input letter is then encrypted and sent to
+        the output widget
+        :param master: {QWidget} Parent Qt object
+        :param encrypt_plug: {callable} A callable that accepts one letter
+                                        and returns one letter, should provide encryption
+        :param output_plug: {callable} A callable that accepts one letter, should output it somewhere
+        :param refresh_plug: {callable} A callable that should refresh a rotor positions
+        """
         super().__init__(master)
         self.setPlaceholderText("Type your message here")
         self.textChanged.connect(self.input_detected)
         self.encrypt_plug = encrypt_plug  # Decoupled plug for encryption
         self.output_plug = output_plug
+        self.refresh_plug = refresh_plug
         # TODO: Implement drag and drop maybe
 
     def input_detected(self):
@@ -352,6 +369,8 @@ class _InputTextBox(QTextEdit):
             encrypted = self.encrypt_plug(last_input)
 
             self.output_plug(encrypted)
+
+        self.refresh_plug()
 
 
 class _OutputTextBox(QTextEdit):
