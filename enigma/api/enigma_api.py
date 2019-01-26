@@ -39,7 +39,7 @@ class EnigmaAPI:
 
     def rotors(self, new_rotors=None):
         if new_rotors is not None:
-            self._enigma.rotors = new_rotors
+            self._enigma.rotors = self.generate_rotors(self.model(), new_rotors)
         else:
             return self._enigma.rotors
 
@@ -86,6 +86,13 @@ class EnigmaAPI:
     # Generators
 
     @classmethod
+    def generate_rotors(cls, model, rotor_labels):
+        rotors = []
+        for label in rotor_labels:
+            rotors.append(cls.generate_component(model, "Rotor", label))
+        return rotors
+
+    @classmethod
     def generate_enigma(cls, model, reflector_label, rotor_labels):
         """
         Initializes a complete Enigma instance based on input parameters
@@ -93,9 +100,7 @@ class EnigmaAPI:
         :param reflector_label: {str} Reflector label like "UKW-B"
         :param rotor_labels: {[str, str, str]} List of rotor labels like "I", "II", "III"
         """
-        rotors = []
-        for label in rotor_labels:
-            rotors.append(cls.generate_component(model, "Rotor", label))
+        rotors = cls.generate_rotors(model, rotor_labels)
 
         reflector = cls.generate_component(model, "Reflector", reflector_label)
         stator = cls.generate_component(model, "Stator")

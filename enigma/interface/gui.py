@@ -18,6 +18,24 @@ labels = ['A-01', 'B-02', 'C-03', 'D-04', 'E-05', 'F-06', 'G-07', 'H-08', 'I-09'
 layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 24, 23, 2, 21, 1, 13, 12, 11]]
 
 
+# Data for enigma settings model wiki
+
+view_data = {
+    'Enigma1': {'description': "The Enigma M1 model was used primarily before the second world war", 'img':'enigma/interface/assets/icons/enigma1.jpg'},
+    'EnigmaM3': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmam3.jpg'},
+    'EnigmaM4': {'description': "temp"},
+    'Norenigma': {'description': "temp"},
+    'EnigmaG': {'description': "temp"},
+    'EnigmaD': {'description': "temp"},
+    'EnigmaK': {'description': "temp"},
+    'SwissK': {'description': "temp"},
+    'Railway': {'description': "temp"},
+    'Tirpitz': {'description': "temp"}
+}
+        #img = QLabel("", self)
+        #img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
+
+
 class Runtime:
     def __init__(self, api, cfg_load_plug):
         self.app = QApplication(sys.argv)  # Needed for process name
@@ -49,7 +67,7 @@ class Root(QWidget):
         self.setWindowIcon(
             QIcon('enigma/interface/assets/icons/enigma_200px.png')
         )
-        #self.setStyleSheet("background-color: gray")
+        #self.setStyleSheet("QFrame{ border-radius: 5px}")
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
         
@@ -86,7 +104,7 @@ class Root(QWidget):
         plugboard = Plugboard(self)
         plug_button = QPushButton('Plugboard')
         plug_button.setToolTip("Edit plugboard letter pairs")
-        plug_button.clicked.connect(plugboard.show)
+        plug_button.clicked.connect(plugboard.exec)
 
         # SHOW WIDGETS =========================================================
 
@@ -115,6 +133,7 @@ class Lightboard(QWidget):
         # BASIC QT SETTINGS  ===================================================
 
         lb_layout = QVBoxLayout(self)
+        lb_layout.setSpacing(10)
         frame = QFrame(self)
 
         # ATTRIBUTES ===========================================================
@@ -128,6 +147,7 @@ class Lightboard(QWidget):
         for row in layout:
             row_frame = QFrame(frame)
             row_layout = QHBoxLayout(row_frame)
+            row_layout.setSpacing(10)
 
             for letter in row:
                 ltr = alphabet[letter]
@@ -162,22 +182,50 @@ class Plugboard(QDialog):
         frame = QFrame(self)
         self.setLayout = (main_layout)
         
-        """
         self.plugs = {}
         for row in layout:
             row_frame = QFrame(frame)
             row_layout = QHBoxLayout(row_frame)
 
             for letter in row:
-                label = QLabel(labels[letter])
+                socket_frame = QFrame(row_frame)
+                socket_layout = QVBoxLayout(socket_frame)
+
+                label = QLabel(alphabet[letter])
                 #label.setStyleSheet("QLabel{background-color: gray; border: 1px solid black; border-radius: 10px;}")
                 self.plugs[letter] = label
-                row_layout.addWidget(label)
+                linedit = QLineEdit()
+                socket_layout.addWidget(label)
+                socket_layout.addWidget(linedit)
+                row_layout.addWidget(socket_frame)
 
             main_layout.addWidget(row_frame)
-            """
+
+        main_layout.addWidget(QPushButton("Apply"))
+        main_layout.addWidget(QPushButton("Storno"))
+        uhr = QPushButton("Uhr")
+        self.uhrmenu = Uhr(self)
+        uhr.clicked.connect(self.uhrmenu.exec)
+        main_layout.addWidget(uhr)
+        main_layout.addWidget(QCheckBox("Enable Uhr"))
 
 
+class Uhr(QDialog):
+    def __init__(self, master):
+        super().__init__(master)
+
+        # QT WINDOW SETTINGS ===================================================
+
+        self.setWindowTitle("Uhr")
+        main_layout = QVBoxLayout(self)
+        self.setLayout(main_layout)
+
+        # UHR
+
+        main_layout.addWidget(QLabel("INDICATOR"))
+        main_layout.addWidget(QDial())
+
+        
 class Settings(QDialog):
     def __init__(self, master, enigma_api):
         super().__init__(master)
@@ -192,10 +240,15 @@ class Settings(QDialog):
         self.setLayout(master_layout)
         self.resize(200, 200)
 
+        # SAVE ATTRIBUTES ======================================================
+
+        self.enigma_api = enigma_api
+
         # SAMPLE IMAGE =========================================================
 
         #img = QLabel("", self)
         #img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
+
 
         # REFLECTOR SETTINGS ===================================================
 
@@ -259,9 +312,20 @@ class Settings(QDialog):
         storno = QPushButton("Storno")
         storno.clicked.connect(self.close)
 
+        # ENIGMA WIKI===========================================================
+
+
+
+        # TAB WIDGET ===========================================================
+
+        tab_widget = QTabWidget()
+        tab_widget.addTab(_EnigmaView(self, "EnigmaM3"), "Enigma Model")
+        tab_widget.addTab(main_frame, "Component settings")
+
         # SHOW WIDGETS =========================================================
 
-        master_layout.addWidget(main_frame)
+        #master_layout.addWidget(main_frame)
+        master_layout.addWidget(tab_widget)
         master_layout.addWidget(apply_btn)
         master_layout.addWidget(storno)
         #main_layout.addWidget(img)
@@ -273,20 +337,22 @@ class Settings(QDialog):
         """
         checked_ref = self.reflector_group.checkedButton() # REFLECTOR CHOICES
 
-        if checked_ref is not None:
-            print(checked_ref.text())
-        else:
-            print("Reflector not chosen")
 
+        new_rotors = []
         for group in self.radio_selectors:  # ROTOR CHOICES
             checked = group.checkedButton()
-            if checked is not None:
-                print(checked.text())
-            else:
-                print("Not checked!")
+            new_rotors.append(checked.text())
 
+        ring_settings = []
         for ring in self.ring_selectors:  # RING SETTING CHOICES
-            print(ring.currentIndex())
+            ring_settings.append(ring.currentIndex())
+
+        #print(checked_ref.text())
+        #print(new_rotors)
+        #print(ring_settings)
+        self.enigma_api.reflector(checked_ref)
+        self.enigma_api.rotors(new_rotors)
+        self.enigma_api.ring_settings(ring_settings)
 
         self.close()
 
@@ -314,8 +380,8 @@ class _RotorsHandler(QFrame):
         button.setIconSize(QSize(50, 50))
         button.setToolTip("Edit Enigma rotor and reflector settings")
 
-        settings = Settings(master, enigma_api)
-        button.clicked.connect(settings.show)
+        self.settings = Settings(master, enigma_api)
+        button.clicked.connect(self.open_settings)
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self._layout.addWidget(button)
@@ -325,7 +391,17 @@ class _RotorsHandler(QFrame):
 
         self.set_positions()
 
+    def open_settings(self):
+        """
+        Opens settings and reload afterwards
+        """
+        self.settings.exec()
+        self.set_positions()
+
     def set_positions(self):
+        """
+        Refreshes position indicators to show new positions
+        """
         for rotor, position in zip(self._rotor_indicators, self.position_plug()):
             rotor.set(position)
 
@@ -455,3 +531,30 @@ class _OutputTextBox(QTextEdit):
         self.moveCursor(QTextCursor.End)
         self.insertPlainText(letter)
         self.light_up_plug(letter)
+
+
+class _EnigmaView(QWidget):
+    def __init__(self, master, model):
+        super().__init__(master)
+
+        self.model = model
+        self.description = view_data[model]['description']  # TODO: Decouple
+        self.img = QLabel("")
+        pixmap = QPixmap(view_data[model]['img']).scaled(200, 200)
+        self.img.setPixmap(pixmap)
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
+        # =========================================
+
+        self.title_frame = QFrame(self)
+        self.title_layout = QVBoxLayout(self.title_frame)
+        self.title_layout.addWidget(QLabel(model))
+        self.title_layout.addWidget(self.img)
+
+        # =========================================
+        self.wiki_text = QTextBrowser()
+        self.wiki_text.setPlainText(self.description)  # setHtml sets html
+        # =========================================
+
+        self.main_layout.addWidget(self.title_frame)
+        self.main_layout.addWidget(self.wiki_text)
