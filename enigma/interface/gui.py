@@ -23,14 +23,14 @@ layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 2
 view_data = {
     'Enigma1': {'description': "The Enigma M1 model was used primarily before the second world war", 'img':'enigma/interface/assets/icons/enigma1.jpg'},
     'EnigmaM3': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmam3.jpg'},
-    'EnigmaM4': {'description': "temp"},
-    'Norenigma': {'description': "temp"},
-    'EnigmaG': {'description': "temp"},
-    'EnigmaD': {'description': "temp"},
-    'EnigmaK': {'description': "temp"},
-    'SwissK': {'description': "temp"},
-    'Railway': {'description': "temp"},
-    'Tirpitz': {'description': "temp"}
+    'EnigmaM4': {'description': "Naval version featuring 4 rotors, the last rotor is stationary", 'img': 'enigma/interface/assets/icons/enigmam4.jpg'},
+    'Norenigma': {'description': "Enigma 1 with modified wiring, used by the Norway secret service", 'img': 'enigma/interface/assets/icons/enigma1.jpg'},
+    'EnigmaG': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmag.jpg'},
+    'EnigmaD': {'description': "Features a rotatable reflector, https://www.cryptomuseum.com/crypto/enigma/d/index.htm", 'img': 'enigma/interface/assets/icons/enigmad.jpg'},  # UKW CAN ROTATE
+    'EnigmaK': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmak.jpg'},
+    'SwissK': {'description': "Used by the Swiss army, originally with conventional Enigma D wiring, but was frequently rewired during the war", 'img': 'enigma/interface/assets/icons/swissk.png'},
+    'Railway': {'description': "Rewired version of the Enigma K used by the german railway", 'img': 'enigma/interface/assets/icons/enigmak.jpg'},
+    'Tirpitz': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmak.jpg'}
 }
         #img = QLabel("", self)
         #img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
@@ -304,31 +304,26 @@ class Settings(QDialog):
             self.radio_selectors.append(button_group)
             main_layout.addWidget(frame)
 
+        # TAB WIDGET ===========================================================
+
+        tab_widget = QTabWidget()
+        models = ViewSwitcher(self)
+        tab_widget.addTab(models, "Enigma Model")
+        tab_widget.addTab(main_frame, "Component settings")
+
         # BUTTONS ==============================================================
 
         apply_btn = QPushButton("Apply")
-        apply_btn.clicked.connect(self.collect)
+        apply_btn.clicked.connect(models.switch_view)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.close)
 
-        # ENIGMA WIKI===========================================================
-
-
-
-        # TAB WIDGET ===========================================================
-
-        tab_widget = QTabWidget()
-        tab_widget.addTab(_EnigmaView(self, "EnigmaM3"), "Enigma Model")
-        tab_widget.addTab(main_frame, "Component settings")
-
         # SHOW WIDGETS =========================================================
 
-        #master_layout.addWidget(main_frame)
         master_layout.addWidget(tab_widget)
         master_layout.addWidget(apply_btn)
         master_layout.addWidget(storno)
-        #main_layout.addWidget(img)
 
     def collect(self):
         """
@@ -538,17 +533,26 @@ class _EnigmaView(QWidget):
         super().__init__(master)
 
         self.model = model
-        self.description = view_data[model]['description']  # TODO: Decouple
-        self.img = QLabel("")
-        pixmap = QPixmap(view_data[model]['img']).scaled(200, 200)
-        self.img.setPixmap(pixmap)
         self.main_layout = QHBoxLayout()
         self.setLayout(self.main_layout)
-        # =========================================
+
+        # MODEL IMAGE ==========================================================
+
+        self.description = view_data[model]['description']  # TODO: Decouple
+        self.img = QLabel("")
+        pixmap = QPixmap(view_data[model]['img']).scaled(300, 400)
+        self.img.setPixmap(pixmap)
+        self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
+        self.img.setLineWidth(5)
+
+        # ======================================================================
 
         self.title_frame = QFrame(self)
         self.title_layout = QVBoxLayout(self.title_frame)
-        self.title_layout.addWidget(QLabel(model))
+        label = QLabel(model)
+        label.setStyleSheet('font: 20px')
+
+        self.title_layout.addWidget(label, alignment=Qt.AlignCenter)
         self.title_layout.addWidget(self.img)
 
         # =========================================
@@ -558,3 +562,35 @@ class _EnigmaView(QWidget):
 
         self.main_layout.addWidget(self.title_frame)
         self.main_layout.addWidget(self.wiki_text)
+
+
+class ViewSwitcher(QWidget):
+    def __init__(self, master):
+        super().__init__(master)
+
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+
+        # =========================================
+
+        self.model_list = QListWidget()
+        self.model_list.currentRowChanged.connect(self.switch_view)
+
+        # =========================================
+
+        self.count = 0
+        self.models = QStackedWidget()
+        for model in view_data.keys():
+            self.model_list.insertItem(self.count, model)
+            self.models.addWidget(_EnigmaView(self, model))
+            self.count += 1
+
+        self.i = 0
+        self.layout.addWidget(self.model_list)
+        self.layout.addWidget(self.models)
+
+    def switch_view(self, i):
+        self.models.setCurrentIndex(i)
+        
+    def chosen_model(self):
+        return self.model_list.currentIndex()
