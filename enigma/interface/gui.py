@@ -244,12 +244,6 @@ class Settings(QDialog):
 
         self.enigma_api = enigma_api
 
-        # SAMPLE IMAGE =========================================================
-
-        #img = QLabel("", self)
-        #img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
-
-
         # REFLECTOR SETTINGS ===================================================
 
         reflector_frame = QFrame(self)
@@ -259,9 +253,10 @@ class Settings(QDialog):
         reflector_layout.addWidget(
             QLabel("REFLECTOR MODEL"), alignment=Qt.AlignTop
         )
+        reflector_labels = [ref['label'] for ref in enigma_api.model_data()['reflectors']]
 
         self.reflector_group = QButtonGroup()
-        for i, model in enumerate(["UKW-B", "UKW-C"]):
+        for i, model in enumerate(reflector_labels):
             radio = QRadioButton(model, self)
             radio.setToolTip("Reflector is an Enigma component that \nreflects "
                              "letters from the rotors back to the lightboard")
@@ -284,7 +279,10 @@ class Settings(QDialog):
             
             button_group = QButtonGroup()
             layout.addWidget(QLabel("ROTOR MODEL"))
-            for i, model in enumerate(["I", "II", "III", "IV", "V"]):
+
+            rotor_labels = [rotor['label'] for rotor in enigma_api.model_data()['rotors']]
+
+            for i, model in enumerate(rotor_labels):
                 radios = QRadioButton(model, self)
                 button_group.addButton(radios)
                 button_group.setId(radios, i)
@@ -307,14 +305,14 @@ class Settings(QDialog):
         # TAB WIDGET ===========================================================
 
         tab_widget = QTabWidget()
-        models = ViewSwitcher(self)
-        tab_widget.addTab(models, "Enigma Model")
+        self.models = ViewSwitcher(self, enigma_api.model)
+        tab_widget.addTab(self.models, "Enigma Model")
         tab_widget.addTab(main_frame, "Component settings")
 
         # BUTTONS ==============================================================
 
         apply_btn = QPushButton("Apply")
-        apply_btn.clicked.connect(models.switch_view)
+        apply_btn.clicked.connect(self.collect)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.close)
@@ -333,6 +331,8 @@ class Settings(QDialog):
         checked_ref = self.reflector_group.checkedButton() # REFLECTOR CHOICES
 
 
+        new_model = self.models.chosen_model()
+
         new_rotors = []
         for group in self.radio_selectors:  # ROTOR CHOICES
             checked = group.checkedButton()
@@ -345,6 +345,7 @@ class Settings(QDialog):
         #print(checked_ref.text())
         #print(new_rotors)
         #print(ring_settings)
+        self.enigma_api.model(new_model)
         self.enigma_api.reflector(checked_ref)
         self.enigma_api.rotors(new_rotors)
         self.enigma_api.ring_settings(ring_settings)
@@ -550,7 +551,7 @@ class _EnigmaView(QWidget):
         self.title_frame = QFrame(self)
         self.title_layout = QVBoxLayout(self.title_frame)
         label = QLabel(model)
-        label.setStyleSheet('font: 20px')
+        label.setStyleSheet('font: 30px')
 
         self.title_layout.addWidget(label, alignment=Qt.AlignCenter)
         self.title_layout.addWidget(self.img)
@@ -565,7 +566,7 @@ class _EnigmaView(QWidget):
 
 
 class ViewSwitcher(QWidget):
-    def __init__(self, master):
+    def __init__(self, master, model_plug):
         super().__init__(master)
 
         self.layout = QHBoxLayout()
@@ -589,8 +590,15 @@ class ViewSwitcher(QWidget):
         self.layout.addWidget(self.model_list)
         self.layout.addWidget(self.models)
 
+        # Sets initially viewed
+        selected = list(view_data.keys()).index(model_plug())
+        self.models.setCurrentIndex(selected)
+        self.model_list.item(selected).setSelected(True)
+        self.current_selected = -1
+
     def switch_view(self, i):
         self.models.setCurrentIndex(i)
+        self.current_selected = i
         
     def chosen_model(self):
-        return self.model_list.currentIndex()
+        return list(view_data.keys())[self.current_selected]  # TODO: This info should not be from the view data

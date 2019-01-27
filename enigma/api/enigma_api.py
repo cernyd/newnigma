@@ -27,7 +27,7 @@ class EnigmaAPI:
         
     def model(self, new_model=None):
         if new_model is not None:
-            self._enigma = generate_enigma()
+            self._enigma = self.generate_enigma(new_model)
         else:
             return self._enigma.model
 
