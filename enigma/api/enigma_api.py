@@ -93,17 +93,21 @@ class EnigmaAPI:
         return rotors
 
     @classmethod
-    def generate_enigma(cls, model, reflector_label, rotor_labels):
+    def generate_enigma(cls, model, reflector_label=None, rotor_labels=None, default=None):
         """
         Initializes a complete Enigma instance based on input parameters
         :param model: {str} Enigma model
         :param reflector_label: {str} Reflector label like "UKW-B"
         :param rotor_labels: {[str, str, str]} List of rotor labels like "I", "II", "III"
+        :param default: {Bool} Generates enigma with default settings
         """
-        rotors = cls.generate_rotors(model, rotor_labels)
+        if reflector_label and rotor_labels:
+            rotors = cls.generate_rotors(model, rotor_labels)
 
-        reflector = cls.generate_component(model, "Reflector", reflector_label)
-        stator = cls.generate_component(model, "Stator")
+            reflector = cls.generate_component(model, "Reflector", reflector_label)
+            stator = cls.generate_component(model, "Stator")
+        elif default:
+            rotors = []
 
         return Enigma(model, reflector, rotors, stator)
 

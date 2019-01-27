@@ -31,6 +31,7 @@ ENIGMA_D_K = {
         {'label': 'II', 'wiring': 'SLVGBTFXJQOHEWIRZYAMKPCNDU', 'turnover': 'E'},
         {'label': 'III', 'wiring': 'CJGDPSHKTURAWZXFMYNQOBVLIE', 'turnover': 'N'},
     ),
+    'rotor_n': 3,
     'reflectors': (
         {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
     )
@@ -41,14 +42,18 @@ historical_data = {
     'Enigma1': {
         'stator': ETW,
         'rotors': (I, II, III, IV, V),
+        'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW-A', 'wiring': "EJMZALYXVBWFCRQUONTSPIKHGD"}, UKW_B, UKW_C
-        )
+        ),
+        'rotatable_ref': False
     },
     'EnigmaM3': {
         'stator': ETW,
         'rotors': (I, II, III, IV, V, VI, VII, VIII),
-        'reflectors': (UKW_B, UKW_C)
+        'rotor_n': 3,
+        'reflectors': (UKW_B, UKW_C),
+        'rotatable_ref': False
     },
     'EnigmaM4': {
         'stator': ETW,
@@ -57,10 +62,12 @@ historical_data = {
             {'label': 'Beta', 'wiring': 'LEYJVCNIXWPBQMDRTAKZGFUHOS'},
             {'label': 'Gamma', 'wiring': 'FSOKANUERHMBTIYCWLQPZXVGJD'}
         ),
+        'rotor_n': 4,
         'reflectors': (
             {'label': 'UKW-b', 'wiring': "ENKQAUYWJICOPBLMDXZVFTHRGS"},
             {'label': 'UKW-c', 'wiring': "RDOBJNTKVEHMLFCWZAXGYIPSUQ"}
-        )
+        ),
+        'rotatable_ref': False
     },
     'Norenigma': {
         'stator': ETW,
@@ -71,9 +78,11 @@ historical_data = {
             {'label': 'IV', 'wiring': 'ESOVPZJAYQUIRHXLNFTGKDCMWB', 'turnover': 'J'},
             {'label': 'V', 'wiring': 'HEJXQOTZBVFDASCILWPGYNMURK', 'turnover': 'Z'}
         ),
+        'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "MOWJYPUXNDSRAIBFVLKZGQCHET"},
-        )
+        ),
+        'rotatable_ref': False
     },
     'EnigmaG': {
         'stator': ETW_QWERTZ,
@@ -82,9 +91,11 @@ historical_data = {
             {'label': 'II', 'wiring': 'SLVGBTFXJQOHEWIRZYAMKPCNDU', 'turnover': 'STVYZACDFGHKMNQ'},
             {'label': 'III', 'wiring': 'CJGDPSHKTURAWZXFMYNQOBVLIE', 'turnover': 'UWXAEFHKMNR'},
         ),
+        'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-        )
+        ),
+        'rotatable_ref': False
     },
     'EnigmaD': ENIGMA_D_K,
     'EnigmaK': ENIGMA_D_K,
@@ -95,9 +106,11 @@ historical_data = {
             {'label': 'II', 'wiring': 'ZOUESYDKFWPCIQXHMVBLGNJRAT', 'turnover': 'E'},
             {'label': 'III', 'wiring': 'EHRVXGAOBQUSIMZFLYNWKTPDJC', 'turnover': 'N'},
         ),
+        'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-        )
+        ),
+        'rotatable_ref': False
     },
     'Railway': {
         'stator': ETW_QWERTZ,
@@ -106,9 +119,11 @@ historical_data = {
             {'label': 'II', 'wiring': 'NTZPSFBOKMWRCJDIVLAEYUXHGQ', 'turnover': 'E'},
             {'label': 'III', 'wiring': 'JVIUBHTCDYAKEQZPOSGXNRMWFL', 'turnover': 'Y'},
         ),
+        'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "QYHOGNECVPUZTFDJAXWMKISRBL"},
-        )
+        ),
+        'rotatable_ref': False
     },
     'Tirpitz': {
         'stator': {'label': 'ETW', 'back_board': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
@@ -122,9 +137,11 @@ historical_data = {
             {'label': 'VII', 'wiring': 'BJVFTXPLNAYOZIKWGDQERUCHSM', 'turnover': 'YCFKR'},
             {'label': 'VIII', 'wiring': 'YMTPNZHWKODAJXELUQVGCBISFR', 'turnover': 'XEIMQ'}
         ),
+        'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "GEKPBTAUMOCNILJDXZYFHWVQSR"},
-        )
+        ),
+        'rotatable_ref': False
     }
 }
 

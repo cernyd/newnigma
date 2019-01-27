@@ -3,7 +3,7 @@
 import argparse
 import pytest
 from enigma.utils.cfg_handler import Config
-from enigma.interface.gui import Runtime
+from enigma.interface.gui.gui import Runtime
 from enigma.interface.cli import cli
 from enigma.api.enigma_api import EnigmaAPI
 import logging

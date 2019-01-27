@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtGui import *
 from time import sleep
+from enigma.interface.gui.settings import *
 import copy
 import sys
 from string import ascii_uppercase as alphabet
@@ -18,31 +19,13 @@ labels = ['A-01', 'B-02', 'C-03', 'D-04', 'E-05', 'F-06', 'G-07', 'H-08', 'I-09'
 layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 24, 23, 2, 21, 1, 13, 12, 11]]
 
 
-# Data for enigma settings model wiki
-
-view_data = {
-    'Enigma1': {'description': "The Enigma M1 model was used primarily before the second world war", 'img':'enigma/interface/assets/icons/enigma1.jpg'},
-    'EnigmaM3': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmam3.jpg'},
-    'EnigmaM4': {'description': "Naval version featuring 4 rotors, the last rotor is stationary", 'img': 'enigma/interface/assets/icons/enigmam4.jpg'},
-    'Norenigma': {'description': "Enigma 1 with modified wiring, used by the Norway secret service", 'img': 'enigma/interface/assets/icons/enigma1.jpg'},
-    'EnigmaG': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmag.jpg'},
-    'EnigmaD': {'description': "Features a rotatable reflector, https://www.cryptomuseum.com/crypto/enigma/d/index.htm", 'img': 'enigma/interface/assets/icons/enigmad.jpg'},  # UKW CAN ROTATE
-    'EnigmaK': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmak.jpg'},
-    'SwissK': {'description': "Used by the Swiss army, originally with conventional Enigma D wiring, but was frequently rewired during the war", 'img': 'enigma/interface/assets/icons/swissk.png'},
-    'Railway': {'description': "Rewired version of the Enigma K used by the german railway", 'img': 'enigma/interface/assets/icons/enigmak.jpg'},
-    'Tirpitz': {'description': "temp", 'img': 'enigma/interface/assets/icons/enigmak.jpg'}
-}
-        #img = QLabel("", self)
-        #img.setPixmap(QPixmap('enigma/interface/assets/icons/enigma1.jpg'))
-
-
 class Runtime:
     def __init__(self, api, cfg_load_plug):
         self.app = QApplication(sys.argv)  # Needed for process name
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
         self.app.setWindowIcon(
-            QIcon('enigma/interface/assets/icons/enigma_200px.png')
+            QIcon(base_dir + 'enigma_200px.png')
         )
         self.root = Root(api, cfg_load_plug)
     
@@ -65,7 +48,7 @@ class Root(QWidget):
         self.title = 'Enigma'
         self.setWindowTitle(enigma_api.model())
         self.setWindowIcon(
-            QIcon('enigma/interface/assets/icons/enigma_200px.png')
+            QIcon(base_dir + 'enigma_200px.png')
         )
         #self.setStyleSheet("QFrame{ border-radius: 5px}")
         main_layout = QVBoxLayout(self)
@@ -182,32 +165,119 @@ class Plugboard(QDialog):
         frame = QFrame(self)
         self.setLayout = (main_layout)
         
+        self.pairs = {}
         self.plugs = {}
         for row in layout:
             row_frame = QFrame(frame)
             row_layout = QHBoxLayout(row_frame)
 
             for letter in row:
-                socket_frame = QFrame(row_frame)
-                socket_layout = QVBoxLayout(socket_frame)
-
-                label = QLabel(alphabet[letter])
-                #label.setStyleSheet("QLabel{background-color: gray; border: 1px solid black; border-radius: 10px;}")
-                self.plugs[letter] = label
-                linedit = QLineEdit()
-                socket_layout.addWidget(label)
-                socket_layout.addWidget(linedit)
-                row_layout.addWidget(socket_frame)
+                letter = alphabet[letter]
+                socket = Socket(row_frame, letter, self.connect_sockets, self.refresh_apply)
+                self.plugs[letter] = socket
+                self.pairs[letter] = None
+                row_layout.addWidget(socket)
 
             main_layout.addWidget(row_frame)
 
-        main_layout.addWidget(QPushButton("Apply"))
-        main_layout.addWidget(QPushButton("Storno"))
-        uhr = QPushButton("Uhr")
+        self.apply_btn = QPushButton("Apply")
+        self.apply_btn.clicked.connect(self.collect)
+        main_layout.addWidget(self.apply_btn)
+        storno = QPushButton("Storno")
+        storno.clicked.connect(self.hide)
+        main_layout.addWidget(storno)
+
+        self.uhr = QPushButton("Uhr")
         self.uhrmenu = Uhr(self)
-        uhr.clicked.connect(self.uhrmenu.exec)
-        main_layout.addWidget(uhr)
-        main_layout.addWidget(QCheckBox("Enable Uhr"))
+        self.uhr.clicked.connect(self.uhrmenu.exec)
+
+        self.enable_uhr = QCheckBox("Enable Uhr")  # In that case all plugs must be occupied! (and red/white)
+        self.enable_uhr.stateChanged.connect(self.change_uhr_status)
+
+        main_layout.addWidget(self.uhr)
+        main_layout.addWidget(self.enable_uhr)
+
+        self.change_uhr_status()
+
+    def refresh_apply(self):
+        if self.enable_uhr.isChecked():
+            self.apply_btn.setEnabled(False)
+            self.apply_btn.setToolTip("When using the Uhr, all plug pairs must be connected!")
+        else:
+            self.apply_btn.setEnabled(True)
+            self.apply_btn.setToolTip(None)
+
+    def change_uhr_status(self):
+        self.refresh_apply()
+        if self.enable_uhr.isChecked():
+            self.uhr.setEnabled(True)
+        else:
+            self.uhr.setEnabled(False)
+            self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
+
+    def collect(self):
+        pairs = []
+        for pair in self.pairs.items():
+            if pair[::-1] not in pairs and all(pair):
+                pairs.append(pair)
+        print(pairs)
+
+    def connect_sockets(self, socket, other_socket):
+        """Returns connection plug to obj"""
+        if other_socket is None:
+            other = self.pairs[socket]
+
+            self.pairs[other] = None
+            self.pairs[socket] = None
+            self.plugs[socket].set_text('')
+            self.plugs[other].set_text('')
+        else:
+            print("else")
+            if self.pairs[other_socket] is not None:
+                self.plugs[socket].set_text('')
+            elif socket == other_socket:
+                self.plugs[socket].set_text('')
+            else:
+                self.pairs[socket] = other_socket
+                self.pairs[other_socket] = socket
+                self.plugs[socket].set_text(other_socket)
+                self.plugs[other_socket].set_text(socket)
+
+
+class Socket(QFrame):
+    def __init__(self, master, letter, connect_plug, apply_plug):
+        super().__init__(master)
+
+        self.connect_plug = connect_plug
+        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self.letter = letter
+        layout = QVBoxLayout(self)
+        self.apply_plug = apply_plug
+
+        label = QLabel(letter)
+        self.entry = QLineEdit()
+        self.entry.setMaxLength(1)
+        self.entry.textChanged.connect(self.entry_event)
+
+        layout.addWidget(label, alignment=Qt.AlignCenter)
+        layout.addWidget(self.entry)
+        self.connected_to = None
+
+    def entry_event(self):
+        self.apply_plug()
+        text = self.entry.text().upper()
+        if self.entry.isModified():  # Prevents recursive event calls
+            if text:
+                 self.connect_plug(self.letter, text)
+            else:
+                 self.connect_plug(self.letter, None)
+
+    def set_text(self, letter):
+        if letter:
+            self.entry.setStyleSheet("background-color: black; color: white")
+        else:
+            self.entry.setStyleSheet("background-color: white; color: black")
+        self.entry.setText(letter)
 
 
 class Uhr(QDialog):
@@ -222,137 +292,22 @@ class Uhr(QDialog):
 
         # UHR
 
-        main_layout.addWidget(QLabel("INDICATOR"))
-        main_layout.addWidget(QDial())
+        self.indicator = QLabel("00")
 
-        
-class Settings(QDialog):
-    def __init__(self, master, enigma_api):
-        super().__init__(master)
-
-        # QT WINDOW SETTINGS ===================================================
-
-        master_layout = QVBoxLayout(self)
-        main_frame = QFrame(self)
-        main_layout = QHBoxLayout(main_frame)
-        self.setWindowTitle("Settings")
-
-        self.setLayout(master_layout)
-        self.resize(200, 200)
-
-        # SAVE ATTRIBUTES ======================================================
-
-        self.enigma_api = enigma_api
-
-        # REFLECTOR SETTINGS ===================================================
-
-        reflector_frame = QFrame(self)
-        reflector_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
-
-        reflector_layout = QVBoxLayout(reflector_frame)
-        reflector_layout.addWidget(
-            QLabel("REFLECTOR MODEL"), alignment=Qt.AlignTop
-        )
-        reflector_labels = [ref['label'] for ref in enigma_api.model_data()['reflectors']]
-
-        self.reflector_group = QButtonGroup()
-        for i, model in enumerate(reflector_labels):
-            radio = QRadioButton(model, self)
-            radio.setToolTip("Reflector is an Enigma component that \nreflects "
-                             "letters from the rotors back to the lightboard")
-            self.reflector_group.addButton(radio)
-            self.reflector_group.setId(radio, i)
-            reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
-
-        self.reflector_group.button(0).setChecked(True)
-        main_layout.addWidget(reflector_frame)
-
-        # ROTOR SETTINGS =======================================================
-
-        self.radio_selectors = []
-        self.ring_selectors = []
-
-        for rotor in enigma_api.rotors():
-            frame = QFrame(self)
-            frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
-            layout = QVBoxLayout(frame)
-            
-            button_group = QButtonGroup()
-            layout.addWidget(QLabel("ROTOR MODEL"))
-
-            rotor_labels = [rotor['label'] for rotor in enigma_api.model_data()['rotors']]
-
-            for i, model in enumerate(rotor_labels):
-                radios = QRadioButton(model, self)
-                button_group.addButton(radios)
-                button_group.setId(radios, i)
-                layout.addWidget(radios, alignment=Qt.AlignTop)
-
-            button_group.button(0).setChecked(True)
-            
-            # Ringstellung combo box
-
-            combobox = QComboBox(self)
-            combobox.addItems(labels)
-
-            layout.addWidget(QLabel("RING SETTING"))
-            layout.addWidget(combobox, alignment=Qt.AlignBottom)
-            self.ring_selectors.append(combobox)
-
-            self.radio_selectors.append(button_group)
-            main_layout.addWidget(frame)
-
-        # TAB WIDGET ===========================================================
-
-        tab_widget = QTabWidget()
-        self.models = ViewSwitcher(self, enigma_api.model)
-        tab_widget.addTab(self.models, "Enigma Model")
-        tab_widget.addTab(main_frame, "Component settings")
-
-        # BUTTONS ==============================================================
+        dial = QDial()
+        dial.setWrapping(True)
+        dial.setRange(1, 40)
+        dial.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        dial.valueChanged.connect(lambda: self.indicator.setText(str(dial.value())))
 
         apply_btn = QPushButton("Apply")
-        apply_btn.clicked.connect(self.collect)
+        apply_btn.clicked.connect(self.close)
 
-        storno = QPushButton("Storno")
-        storno.clicked.connect(self.close)
+        main_layout.addWidget(self.indicator, alignment=Qt.AlignCenter)
+        main_layout.addWidget(dial, alignment=Qt.AlignCenter)
+        main_layout.addWidget(apply_btn)
 
-        # SHOW WIDGETS =========================================================
-
-        master_layout.addWidget(tab_widget)
-        master_layout.addWidget(apply_btn)
-        master_layout.addWidget(storno)
-
-    def collect(self):
-        """
-        Collects all selected settings for rotors and other components,
-        applies them to the enigma object
-        """
-        checked_ref = self.reflector_group.checkedButton() # REFLECTOR CHOICES
-
-
-        new_model = self.models.chosen_model()
-
-        new_rotors = []
-        for group in self.radio_selectors:  # ROTOR CHOICES
-            checked = group.checkedButton()
-            new_rotors.append(checked.text())
-
-        ring_settings = []
-        for ring in self.ring_selectors:  # RING SETTING CHOICES
-            ring_settings.append(ring.currentIndex())
-
-        #print(checked_ref.text())
-        #print(new_rotors)
-        #print(ring_settings)
-        self.enigma_api.model(new_model)
-        self.enigma_api.reflector(checked_ref)
-        self.enigma_api.rotors(new_rotors)
-        self.enigma_api.ring_settings(ring_settings)
-
-        self.close()
-
-
+        
 class _RotorsHandler(QFrame):
     def __init__(self, master, position_plug, rotate_plug, enigma_api):
         """
@@ -371,7 +326,7 @@ class _RotorsHandler(QFrame):
             self._layout.addWidget(indicator)
             self._rotor_indicators.append(indicator)
         
-        rotor_icon = QIcon('enigma/interface/assets/icons/settings.png')
+        rotor_icon = QIcon(base_dir + 'settings.png')
         button = QPushButton(rotor_icon, '', self)
         button.setIconSize(QSize(50, 50))
         button.setToolTip("Edit Enigma rotor and reflector settings")
@@ -528,77 +483,3 @@ class _OutputTextBox(QTextEdit):
         self.insertPlainText(letter)
         self.light_up_plug(letter)
 
-
-class _EnigmaView(QWidget):
-    def __init__(self, master, model):
-        super().__init__(master)
-
-        self.model = model
-        self.main_layout = QHBoxLayout()
-        self.setLayout(self.main_layout)
-
-        # MODEL IMAGE ==========================================================
-
-        self.description = view_data[model]['description']  # TODO: Decouple
-        self.img = QLabel("")
-        pixmap = QPixmap(view_data[model]['img']).scaled(300, 400)
-        self.img.setPixmap(pixmap)
-        self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
-        self.img.setLineWidth(5)
-
-        # ======================================================================
-
-        self.title_frame = QFrame(self)
-        self.title_layout = QVBoxLayout(self.title_frame)
-        label = QLabel(model)
-        label.setStyleSheet('font: 30px')
-
-        self.title_layout.addWidget(label, alignment=Qt.AlignCenter)
-        self.title_layout.addWidget(self.img)
-
-        # =========================================
-        self.wiki_text = QTextBrowser()
-        self.wiki_text.setPlainText(self.description)  # setHtml sets html
-        # =========================================
-
-        self.main_layout.addWidget(self.title_frame)
-        self.main_layout.addWidget(self.wiki_text)
-
-
-class ViewSwitcher(QWidget):
-    def __init__(self, master, model_plug):
-        super().__init__(master)
-
-        self.layout = QHBoxLayout()
-        self.setLayout(self.layout)
-
-        # =========================================
-
-        self.model_list = QListWidget()
-        self.model_list.currentRowChanged.connect(self.switch_view)
-
-        # =========================================
-
-        self.count = 0
-        self.models = QStackedWidget()
-        for model in view_data.keys():
-            self.model_list.insertItem(self.count, model)
-            self.models.addWidget(_EnigmaView(self, model))
-            self.count += 1
-
-        self.i = 0
-        self.layout.addWidget(self.model_list)
-        self.layout.addWidget(self.models)
-
-        # Sets initially viewed
-        selected = list(view_data.keys()).index(model_plug())
-        self.models.setCurrentIndex(selected)
-        self.model_list.item(selected).setSelected(True)
-        self.current_selected = -1
-
-    def switch_view(self, i):
-        self.models.setCurrentIndex(i)
-        self.current_selected = i
-        
-    def chosen_model(self):
-        return list(view_data.keys())[self.current_selected]  # TODO: This info should not be from the view data
