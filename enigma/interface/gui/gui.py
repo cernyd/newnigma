@@ -12,15 +12,26 @@ import sys
 from string import ascii_uppercase as alphabet
 
 
-labels = ['A-01', 'B-02', 'C-03', 'D-04', 'E-05', 'F-06', 'G-07', 'H-08', 'I-09', 'J-10', 'K-11', 'L-12', 'M-13',
-          'N-14', 'O-15', 'P-16', 'Q-17', 'R-18', 'S-19', 'T-20', 'U-21', 'V-22', 'W-23', 'X-24', 'Y-25', 'Z-26']
+labels = [
+    'A-01', 'B-02', 'C-03', 'D-04', 'E-05', 'F-06', 'G-07', 'H-08', 'I-09',
+    'J-10', 'K-11', 'L-12', 'M-13', 'N-14', 'O-15', 'P-16', 'Q-17', 'R-18',
+    'S-19', 'T-20', 'U-21', 'V-22', 'W-23', 'X-24', 'Y-25', 'Z-26'
+]
 
-# For the GUI plug board
-layout = [[16, 22, 4, 17, 19, 25, 20, 8, 14], [0, 18, 3, 5, 6, 7, 9, 10], [15, 24, 23, 2, 21, 1, 13, 12, 11]]
+layout = [
+    [16, 22, 4, 17, 19, 25, 20, 8, 14],
+    [0, 18, 3, 5, 6, 7, 9, 10],
+    [15, 24, 23, 2, 21, 1, 13, 12, 11]
+]
 
 
 class Runtime:
     def __init__(self, api, cfg_load_plug):
+        """
+        Runtime object wrapping the root window
+        :param api: {EnigmaAPI}
+        :param cfg_load_plug: {callable} Returns loaded config
+        """
         self.app = QApplication(sys.argv)  # Needed for process name
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
@@ -317,6 +328,8 @@ class _RotorsHandler(QFrame):
         """ # TODO: Change plus and minus plug to be more decoupled
         super().__init__(master)
 
+        # QT WINDOW SETTINGS ===================================================
+
         self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._layout = QHBoxLayout(self)
         self._rotor_indicators = []
@@ -326,27 +339,31 @@ class _RotorsHandler(QFrame):
             self._layout.addWidget(indicator)
             self._rotor_indicators.append(indicator)
         
-        rotor_icon = QIcon(base_dir + 'settings.png')
-        button = QPushButton(rotor_icon, '', self)
-        button.setIconSize(QSize(50, 50))
-        button.setToolTip("Edit Enigma rotor and reflector settings")
+
+        # SETTINGS ICON ========================================================
 
         self.settings = Settings(master, enigma_api)
-        button.clicked.connect(self.open_settings)
+
+        button = QPushButton(QIcon(base_dir + 'settings.png'), '', self)
+        button.setIconSize(QSize(50, 50))
+        button.setToolTip("Edit Enigma rotor and reflector settings")
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        button.clicked.connect(self.open_settings)
+
+        # PLUGS ================================================================
+
+        self.position_plug = position_plug
+        self.set_positions()
+
+        # SHOW WINDOW ==========================================================
 
         self._layout.addWidget(button)
-
-        # PLUGS
-        self.position_plug = position_plug
-
-        self.set_positions()
 
     def open_settings(self):
         """
         Opens settings and reload afterwards
         """
-        self.settings.exec()
+        self.settings.exec()  # Exec gives focus to top window, unlike .show
         self.set_positions()
 
     def set_positions(self):
@@ -395,7 +412,7 @@ class _RotorHandler(QFrame):
         self._indicator = QLabel('A', self)
         self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
-        self._indicator.setLineWidth(8)
+        self._indicator.setLineWidth(3)
 
         # ROTATE FORWARD =======================================================
 
@@ -413,10 +430,16 @@ class _RotorHandler(QFrame):
         self._indicator.setText(position)
 
     def increment(self):
+        """
+        Increments rotor position by one
+        """
         self.plus_plug()
         self.set_positions()
 
     def decrement(self):
+        """
+        Decrements rotor position by one
+        """
         self.minus_plug()
         self.set_positions()
 
