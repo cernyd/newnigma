@@ -27,7 +27,7 @@ class EnigmaAPI:
         
     def model(self, new_model=None):
         if new_model is not None:
-            self._enigma = self.generate_enigma(new_model)
+            self._enigma = self.generate_enigma(new_model, default=True)
         else:
             return self._enigma.model
 
@@ -101,16 +101,18 @@ class EnigmaAPI:
         :param rotor_labels: {[str, str, str]} List of rotor labels like "I", "II", "III"
         :param default: {Bool} Generates enigma with default settings
         """
-        if reflector_label and rotor_labels:
+        if reflector_label and rotor_labels:  # Non-default
             rotors = cls.generate_rotors(model, rotor_labels)
 
             reflector = cls.generate_component(model, "Reflector", reflector_label)
             stator = cls.generate_component(model, "Stator")
         elif default:
-            rotors = []
-
+            data = historical_data[model]
+            rotors = cls.generate_rotors(model, [rotor['label'] for rotor in data['rotors'][:historical_data[model]['rotor_n']]])
+            reflector = cls.generate_component(model, 'Reflector', data['reflectors'][0]['label'])
+            stator = cls.generate_component(model, 'Stator')
+            
         return Enigma(model, reflector, rotors, stator)
-
 
     @classmethod
     def generate_component(cls, model, comp_type, label=None):

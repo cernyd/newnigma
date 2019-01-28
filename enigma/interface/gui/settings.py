@@ -26,8 +26,6 @@ class Settings(QDialog):
 
         self.enigma_api = enigma_api
 
-
-
         # REFLECTOR SETTINGS ===================================================
 
         reflector_frame = QFrame(self)
