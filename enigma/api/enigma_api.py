@@ -89,8 +89,6 @@ class EnigmaAPI:
     def generate_rotors(cls, model, rotor_labels):
         rotors = []
         for label in rotor_labels:
-            print("label")
-            print(label)
             rotors.append(cls.generate_component(model, "Rotor", label))
         return rotors
 

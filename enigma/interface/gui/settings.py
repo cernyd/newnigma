@@ -113,6 +113,9 @@ class Settings(QDialog):
         master_layout.addWidget(apply_btn)
         master_layout.addWidget(storno)
 
+    def generate_components(self):
+        pass
+
     def collect(self):
         """
         Collects all selected settings for rotors and other components,
