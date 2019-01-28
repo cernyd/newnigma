@@ -21,7 +21,7 @@ class Settings(QDialog):
 
         main_layout = QVBoxLayout(self)
         settings_frame = QFrame(self)
-        settings_layout = QHBoxLayout(settings_frame)
+        self.settings_layout = QHBoxLayout(settings_frame)
         self.setWindowTitle("Settings")
 
         self.setLayout(main_layout)
@@ -35,7 +35,7 @@ class Settings(QDialog):
         
         reflector_labels = [ref['label'] for ref in enigma_api.model_data()['reflectors']]
         rotor_labels = [rotor['label'] for rotor in enigma_api.model_data()['rotors']]
-        self.generate_components(settings_layout, reflector_labels, rotor_labels)
+        self.generate_components(self.settings_layout, reflector_labels, rotor_labels)
 
         # TAB WIDGET ===========================================================
 
@@ -123,6 +123,15 @@ class Settings(QDialog):
 
             layout.addWidget(frame)
 
+    def clear_components(self):  # TODO: Should clear recursively
+        self.settings_layout
+        while True:
+            child = self.settings_layout.takeAt(0)
+            if child:
+                print(child.widget())
+                child.widget().destroy()  # Destruction works
+            else:
+                break
 
     def collect(self):
         """
@@ -142,7 +151,8 @@ class Settings(QDialog):
         self.enigma_api.rotors(new_rotors)
         self.enigma_api.ring_settings(ring_settings)
 
-        self.close()
+        self.clear_components()
+        #self.close()
 
 
 class ViewSwitcher(QWidget):
