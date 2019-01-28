@@ -89,6 +89,8 @@ class EnigmaAPI:
     def generate_rotors(cls, model, rotor_labels):
         rotors = []
         for label in rotor_labels:
+            print("label")
+            print(label)
             rotors.append(cls.generate_component(model, "Rotor", label))
         return rotors
 
@@ -101,16 +103,23 @@ class EnigmaAPI:
         :param rotor_labels: {[str, str, str]} List of rotor labels like "I", "II", "III"
         :param default: {Bool} Generates enigma with default settings
         """
+        print("generating with model %s" % model)
         if reflector_label and rotor_labels:  # Non-default
             rotors = cls.generate_rotors(model, rotor_labels)
-
             reflector = cls.generate_component(model, "Reflector", reflector_label)
             stator = cls.generate_component(model, "Stator")
         elif default:
+            print("============================================================")
+            print("DEFAULT")
             data = historical_data[model]
-            rotors = cls.generate_rotors(model, [rotor['label'] for rotor in data['rotors'][:historical_data[model]['rotor_n']]])
+            rotor_labels = [rotor['label'] for rotor in data['rotors'][:historical_data[model]['rotor_n']]]
+            print(rotor_labels)
+            print("generating_rotors")
+            rotors = cls.generate_rotors(model, rotor_labels)  # TODO: Only returns first label
+            print([rotor.label for rotor in rotors])
             reflector = cls.generate_component(model, 'Reflector', data['reflectors'][0]['label'])
             stator = cls.generate_component(model, 'Stator')
+            print("============================================================")
             
         return Enigma(model, reflector, rotors, stator)
 
@@ -147,6 +156,16 @@ class EnigmaAPI:
             return Stator(**data["stator"])
         else:
             raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
+
+    def get_config(self):
+        """
+        Converts enigma settings to a json serializable dict.
+        """
+        data = {}
+        data['model'] = self._enigma.model
+        data['rotors'] = [rotor.label for rotor in self._enigma.rotors]
+        data['reflector'] = self._enigma._reflector.label
+        print(data)
 
     def __str__(self):
         header = "=== %s instance data ===" % self._enigma.model
