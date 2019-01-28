@@ -10,6 +10,11 @@ from enigma.interface.gui import *
 
 class Settings(QDialog):
     def __init__(self, master, enigma_api):
+        """
+        Submenu for setting Enigma model and component settings
+        :param master: Qt parent object
+        :param enigma_api: {EnigmaAPI}
+        """
         super().__init__(master)
 
         # QT WINDOW SETTINGS ===================================================
@@ -113,22 +118,16 @@ class Settings(QDialog):
         Collects all selected settings for rotors and other components,
         applies them to the enigma object
         """
-        checked_ref = self.reflector_group.checkedButton() # REFLECTOR CHOICES
+        new_reflector = self.reflector_group.checkedButton() # REFLECTOR CHOICES
 
         new_model = self.models.currently_selected
 
-        new_rotors = []
-        for group in self.radio_selectors:  # ROTOR CHOICES
-            checked = group.checkedButton()
-            new_rotors.append(checked.text())
+        new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
 
-        ring_settings = []
-        for ring in self.ring_selectors:  # RING SETTING CHOICES
-            ring_settings.append(ring.currentIndex())
+        ring_settings = [ring.currentIndex() for ring in self.ring_selectors]
 
-        print(new_model)
         self.enigma_api.model(new_model)
-        self.enigma_api.reflector(checked_ref)
+        self.enigma_api.reflector(new_reflector)
         self.enigma_api.rotors(new_rotors)
         self.enigma_api.ring_settings(ring_settings)
 
@@ -137,17 +136,21 @@ class Settings(QDialog):
 
 class ViewSwitcher(QWidget):
     def __init__(self, master, model_plug):
+        """
+        :param master: Qt parent object
+        :param model_plug: {callable} Returns current enigma model
+        """
         super().__init__(master)
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
 
-        # =========================================
+        # LIST OF AVAILABLE MODELS =============================================
 
         self.model_list = QListWidget()
         self.model_list.currentRowChanged.connect(self.switch_view)
 
-        # =========================================
+        # STACKED MODEL VIEWS ==================================================
 
         self.count = 0
         self.models = QStackedWidget()
@@ -170,16 +173,33 @@ class ViewSwitcher(QWidget):
         self.currently_selected = model_plug()
 
     def switch_view(self, i):
+        """
+        Switches view to the newly selected model
+        :param i: {int} Contains index in stacked model views, used 
+                        to switch models
+        """
         self.models.setCurrentIndex(i)
         self.currently_viewed = i
 
     def select_model(self, model):
+        """
+        Called when the "Use this model" button is pressed
+        :param model: {str} Newly selected models
+        """
         self.currently_selected = model
 
 
 class _EnigmaView(QWidget):
     def __init__(self, master, model, select_plug):
+        """
+        :param master: Qt parent object
+        :param model: {str} Enigma model
+        :param select_plug: {callable} Callback that accepts the newly selected 
+                                       model
+        """
         super().__init__(master)
+
+        # QT WINDOW SETTINGS ===================================================
 
         self.model = model
         self.main_layout = QHBoxLayout()
@@ -194,27 +214,28 @@ class _EnigmaView(QWidget):
         self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
         self.img.setLineWidth(5)
 
-        # ======================================================================
+        # MODEL TITLE AND IMAGE ================================================
 
         self.title_frame = QFrame(self)
         self.title_layout = QVBoxLayout(self.title_frame)
+
         label = QLabel(model)
         label.setStyleSheet('font: 30px')
 
         self.title_layout.addWidget(label, alignment=Qt.AlignCenter)
         self.title_layout.addWidget(self.img)
 
-        # =========================================
+        # MODEL WIKI ===========================================================
 
         self.wiki_text = QTextBrowser()
         self.wiki_text.setPlainText(self.description)  # setHtml sets html
 
-        # =========================================
+        # BUTTONS ==============================================================
 
         self.select_button = QPushButton("Use this model")
         self.select_button.clicked.connect(lambda: select_plug(self.model))
 
-        # =========================================
+        # SHOW WIDGETS =========================================================
 
         self.main_layout.addWidget(self.title_frame)
         self.main_layout.addWidget(self.wiki_text)
