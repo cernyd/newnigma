@@ -100,6 +100,11 @@ class Root(QWidget):
         plug_button.setToolTip("Edit plugboard letter pairs")
         plug_button.clicked.connect(plugboard.exec)
 
+
+        # PLUGS ================================================================
+
+        self.cfg_load_plug = cfg_load_plug
+
         # SHOW WIDGETS =========================================================
 
         main_layout.addWidget(menu, alignment=Qt.AlignTop)
@@ -110,12 +115,6 @@ class Root(QWidget):
         main_layout.addWidget(QLabel('OUTPUT', self))
         main_layout.addWidget(self.o_textbox)
         main_layout.addWidget(plug_button)
-
-        # PLUGS ================================================================
-
-        self.cfg_load_plug = cfg_load_plug
-
-        # SHOW WINDOW ==========================================================
 
         self.show()
 
@@ -174,7 +173,9 @@ class Plugboard(QDialog):
         self.setWindowTitle("Plugboard")
         main_layout = QVBoxLayout(self)
         frame = QFrame(self)
-        self.setLayout = (main_layout)
+        self.setLayout(main_layout)
+
+        # GENERATE PAIRS =======================================================
         
         self.pairs = {}
         self.plugs = {}
@@ -191,12 +192,12 @@ class Plugboard(QDialog):
 
             main_layout.addWidget(row_frame)
 
+        # BUTTONS ==============================================================
+
         self.apply_btn = QPushButton("Apply")
         self.apply_btn.clicked.connect(self.collect)
-        main_layout.addWidget(self.apply_btn)
         storno = QPushButton("Storno")
         storno.clicked.connect(self.hide)
-        main_layout.addWidget(storno)
 
         self.uhr = QPushButton("Uhr")
         self.uhrmenu = Uhr(self)
@@ -205,12 +206,20 @@ class Plugboard(QDialog):
         self.enable_uhr = QCheckBox("Enable Uhr")  # In that case all plugs must be occupied! (and red/white)
         self.enable_uhr.stateChanged.connect(self.change_uhr_status)
 
+        # SHOW WIDGETS =========================================================
+
+        main_layout.addWidget(storno)
+        main_layout.addWidget(self.apply_btn)
         main_layout.addWidget(self.uhr)
         main_layout.addWidget(self.enable_uhr)
 
         self.change_uhr_status()
 
     def refresh_apply(self):
+        """
+        Refreshes the Apply button to see if conditions for it being enabled are
+        met
+        """
         if self.enable_uhr.isChecked():
             self.apply_btn.setEnabled(False)
             self.apply_btn.setToolTip("When using the Uhr, all plug pairs must be connected!")
@@ -219,6 +228,9 @@ class Plugboard(QDialog):
             self.apply_btn.setToolTip(None)
 
     def change_uhr_status(self):
+        """
+        Enables "Uhr" button if the checkmark is enabled
+        """
         self.refresh_apply()
         if self.enable_uhr.isChecked():
             self.uhr.setEnabled(True)
@@ -227,6 +239,9 @@ class Plugboard(QDialog):
             self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
 
     def collect(self):
+        """
+        Collects all unique letter pairs
+        """
         pairs = []
         for pair in self.pairs.items():
             if pair[::-1] not in pairs and all(pair):
@@ -234,7 +249,10 @@ class Plugboard(QDialog):
         print(pairs)
 
     def connect_sockets(self, socket, other_socket):
-        """Returns connection plug to obj"""
+        """
+        Connects two cosckets without unnecessary interaction of two sockets
+        to avoid recursive event calls)
+        """
         if other_socket is None:
             other = self.pairs[socket]
 
@@ -243,7 +261,6 @@ class Plugboard(QDialog):
             self.plugs[socket].set_text('')
             self.plugs[other].set_text('')
         else:
-            print("else")
             if self.pairs[other_socket] is not None:
                 self.plugs[socket].set_text('')
             elif socket == other_socket:
@@ -257,24 +274,43 @@ class Plugboard(QDialog):
 
 class Socket(QFrame):
     def __init__(self, master, letter, connect_plug, apply_plug):
+        """
+        One sockets with label and text entry
+        :param master: Qt parent object
+        :param letter: Letter to serve as the label
+        :param connect_plug: 
+        """
         super().__init__(master)
 
-        self.connect_plug = connect_plug
-        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-        self.letter = letter
+        # QT WINDOW SETTINGS ===================================================
+
         layout = QVBoxLayout(self)
+        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
+        # ATTRIBUTES ===========================================================
+
+        self.connect_plug = connect_plug
+        self.letter = letter
         self.apply_plug = apply_plug
+        self.connected_to = None
+
+        # ENTRY ================================================================
 
         label = QLabel(letter)
+
         self.entry = QLineEdit()
         self.entry.setMaxLength(1)
         self.entry.textChanged.connect(self.entry_event)
 
+        # SHOW WIDGETS
+
         layout.addWidget(label, alignment=Qt.AlignCenter)
         layout.addWidget(self.entry)
-        self.connected_to = None
 
     def entry_event(self):
+        """
+        Responds to a event when something changes in the plug entry
+        """
         self.apply_plug()
         text = self.entry.text().upper()
         if self.entry.isModified():  # Prevents recursive event calls
@@ -284,6 +320,10 @@ class Socket(QFrame):
                  self.connect_plug(self.letter, None)
 
     def set_text(self, letter):
+        """
+        Sets text to the plug entrybox and sets white (vacant) or black
+        (occupied) background color
+        """
         if letter:
             self.entry.setStyleSheet("background-color: black; color: white")
         else:
@@ -293,6 +333,10 @@ class Socket(QFrame):
 
 class Uhr(QDialog):
     def __init__(self, master):
+        """
+        Uhr plugboard device
+        :param master: Qt parent widget
+        """
         super().__init__(master)
 
         # QT WINDOW SETTINGS ===================================================
@@ -301,22 +345,32 @@ class Uhr(QDialog):
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
 
-        # UHR
+        # UHR POSITION DIAL ====================================================
 
         self.indicator = QLabel("00")
 
-        dial = QDial()
-        dial.setWrapping(True)
-        dial.setRange(1, 40)
-        dial.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        dial.valueChanged.connect(lambda: self.indicator.setText(str(dial.value())))
+        self.dial = QDial()
+        self.dial.setWrapping(True)
+        self.dial.setRange(1, 40)
+        self.dial.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.dial.valueChanged.connect(self.refresh_indicator)
+
+        # BUTTONS ==============================================================
 
         apply_btn = QPushButton("Apply")
         apply_btn.clicked.connect(self.close)
 
+        # SHOW WIDGETS =========================================================
+
         main_layout.addWidget(self.indicator, alignment=Qt.AlignCenter)
-        main_layout.addWidget(dial, alignment=Qt.AlignCenter)
+        main_layout.addWidget(self.dial, alignment=Qt.AlignCenter)
         main_layout.addWidget(apply_btn)
+
+    def refresh_indicator(self):
+        """
+        Sets displayed indicator value to current dial value
+        """
+        self.indicator.setText("%02d" % self.dial.value())
 
         
 class _RotorsHandler(QFrame):
@@ -325,7 +379,7 @@ class _RotorsHandler(QFrame):
         :param master: {Qt} Master qt object
         :param position_plug: {callable} Callable method for getting rotor positions
         :param rotate_plug: {callable} Temporary callable for getting rotor offset handlers
-        """ # TODO: Change plus and minus plug to be more decoupled
+        """
         super().__init__(master)
 
         # QT WINDOW SETTINGS ===================================================
@@ -398,7 +452,6 @@ class _RotorHandler(QFrame):
         self._id = i
         self.plus_plug = plus_plug
         self.minus_plug = minus_plug
-        self.master = master
         self.set_positions = set_pos_plug
 
         # ROTATE FORWARD =======================================================
@@ -427,6 +480,9 @@ class _RotorHandler(QFrame):
         self._layout.addWidget(position_minus, alignment=Qt.AlignBottom)
 
     def set(self, position):
+        """
+        Sets indicator position to specified text
+        """
         self._indicator.setText(position)
 
     def increment(self):
