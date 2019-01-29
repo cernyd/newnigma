@@ -10,6 +10,7 @@ from enigma.interface.gui.settings import *
 import copy
 import sys
 from string import ascii_uppercase as alphabet
+from re import sub
 
 
 labels = [
@@ -91,6 +92,7 @@ class Root(QWidget):
         self.o_textbox = _OutputTextBox(self, lightboard.light_up)
         i_textbox = _InputTextBox(self, enigma_api.encrypt, 
                                   self.o_textbox.insert,
+                                  self.o_textbox.sync_length,
                                   self._rotors.set_positions)
 
         # PLUGBOARD BUTTONS ====================================================
@@ -152,15 +154,19 @@ class Lightboard(QWidget):
             lb_layout.addWidget(row_frame)
 
 
-    def light_up(self, letter):
-        """
-        Lights up letters on the lightboard
-        :param letter: {char} Letter to light up
-        """
-        for bulb in self._lightbulbs.values():  # Power off all lightbulbs
+    def power_off(self):
+        for bulb in self._lightbulbs.values():
             bulb.setStyleSheet(self._base_style % "black")
 
-        self._lightbulbs[letter].setStyleSheet(self._base_style % "yellow")
+    def light_up(self, letter):
+        """
+        Lights up letters on the lightboard, only powers off if letter not found
+        :param letter: {char} Letter to light up
+        """
+        self.power_off()
+        
+        if letter in self._lightbulbs:
+            self._lightbulbs[letter].setStyleSheet(self._base_style % "yellow")
 
 
 class Plugboard(QDialog):
@@ -500,8 +506,8 @@ class _RotorHandler(QFrame):
         self.set_positions()
 
 
-class _InputTextBox(QTextEdit):
-    def __init__(self, master, encrypt_plug, output_plug, refresh_plug):
+class _InputTextBox(QPlainTextEdit):
+    def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug):
         """
         Input textbox where text is entered, the last input letter is then encrypted and sent to
         the output widget
@@ -509,6 +515,7 @@ class _InputTextBox(QTextEdit):
         :param encrypt_plug: {callable} A callable that accepts one letter
                                         and returns one letter, should provide encryption
         :param output_plug: {callable} A callable that accepts one letter, should output it somewhere
+        :param sync_plug: {callable} Sets output text widget to the desired length
         :param refresh_plug: {callable} A callable that should refresh a rotor positions
         """
         super().__init__(master)
@@ -522,20 +529,36 @@ class _InputTextBox(QTextEdit):
 
         self.encrypt_plug = encrypt_plug
         self.output_plug = output_plug
+        self.sync_plug = sync_plug
         self.refresh_plug = refresh_plug
+
+        # ATTRIBUTES ===========================================================
+
+        self.last_len = 0
 
     def input_detected(self):
         """
         Responds to the text input event by encrypting the newly typed letter
         and sending it to the output text box.
         """
-        text = self.toPlainText()
+        text = self.toPlainText().upper()
+        text = sub('[^A-Z]+', '', text)
 
-        if len(text) > 0:
+        self.blockSignals(True)  # Blocks programatical edits to the widget
+        self.setPlainText(text)
+        self.moveCursor(QTextCursor.End)
+        self.blockSignals(False)
+        
+
+        if len(text) > self.last_len:  # If text longer than before
             last_input = text[-1].upper()
             encrypted = self.encrypt_plug(last_input)
 
             self.output_plug(encrypted)
+        else:
+            self.sync_plug(len(text))
+
+        self.last_len = len(text)
 
         self.refresh_plug()
 
@@ -551,14 +574,24 @@ class _OutputTextBox(QTextEdit):
         super().__init__(master)
 
         self.setPlaceholderText("Encrypted message will appear here")
+        self.setReadOnly(True)
         self.light_up_plug = light_up_plug
+
+    def sync_length(self, length):
+        """
+        Sets widget length to the desired length
+        """
+        self.light_up_plug('')
+        self.setPlainText(self.toPlainText()[:length])
 
     def insert(self, letter):
         """
         Appends text into the textbox
         :param letter: {char} Letter to be appended
         """
+        text = (self.toPlainText() + letter)
+
         self.moveCursor(QTextCursor.End)
-        self.insertPlainText(letter)
+        self.setPlainText(text)
         self.light_up_plug(letter)
 

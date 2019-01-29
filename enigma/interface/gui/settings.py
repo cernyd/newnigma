@@ -128,7 +128,6 @@ class Settings(QDialog):
         while True:
             child = self.settings_layout.takeAt(0)
             if child:
-                print(child.widget())
                 child.widget().destroy()  # Destruction works
             else:
                 break
@@ -152,7 +151,7 @@ class Settings(QDialog):
         self.enigma_api.ring_settings(ring_settings)
 
         self.clear_components()
-        #self.close()
+        self.close()
 
 
 class ViewSwitcher(QWidget):
