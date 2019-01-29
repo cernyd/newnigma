@@ -109,7 +109,7 @@ class Root(QWidget):
 
         # PLUGBOARD BUTTONS ====================================================
 
-        plugboard = Plugboard(self)
+        plugboard = Plugboard(self, enigma_api.plug_pairs)
         plug_button = QPushButton('Plugboard')
         plug_button.setToolTip("Edit plugboard letter pairs")
         plug_button.clicked.connect(plugboard.exec)
@@ -182,7 +182,13 @@ class Lightboard(QWidget):
 
 
 class Plugboard(QDialog):
-    def __init__(self, master):
+    def __init__(self, master, pairs_plug):
+        """
+        Allows choosing and viewing current plugboard pairs
+        :param master: Qt parent object
+        :param pairs_plug: {callable} Provides access to setting and viewing plug
+                                      pairs from api
+        """
         super().__init__(master)
 
         # QT WINDOW SETTINGS ===================================================
@@ -194,7 +200,7 @@ class Plugboard(QDialog):
         self.setLayout(main_layout)
 
         # GENERATE PAIRS =======================================================
-        
+
         self.pairs = {}
         self.plugs = {}
         for row in layout:
@@ -223,6 +229,10 @@ class Plugboard(QDialog):
 
         self.enable_uhr = QCheckBox("Enable Uhr")  # In that case all plugs must be occupied! (and red/white)
         self.enable_uhr.stateChanged.connect(self.change_uhr_status)
+
+        # SHOW WIDGETS =========================================================
+        
+        self.pairs_plug = pairs_plug
 
         # SHOW WIDGETS =========================================================
 
@@ -264,7 +274,8 @@ class Plugboard(QDialog):
         for pair in self.pairs.items():
             if pair[::-1] not in pairs and all(pair):
                 pairs.append(pair)
-        print(pairs)
+
+        self.pairs_plug(pairs)
 
     def connect_sockets(self, socket, other_socket):
         """
@@ -569,7 +580,6 @@ class _InputTextBox(QTextEdit):
 
         if len(text) > self.last_len:  # If text longer than before
             last_input = text[-1].upper()
-            print("last_input : %s" % last_input)
             encrypted = self.encrypt_plug(last_input)
 
             self.output_plug(encrypted)
