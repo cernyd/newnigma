@@ -126,7 +126,7 @@ historical_data = {
         'rotatable_ref': False
     },
     'Tirpitz': {
-        'stator': {'label': 'ETW', 'back_board': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
+        'stator': {'wiring': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
         'rotors': (
             {'label': 'I', 'wiring': 'KPTYUELOCVGRFQDANJMBSWHZXI', 'turnover': 'WZEKQ'},
             {'label': 'II', 'wiring': 'UPHZLWEQMTDJXCAKSOIGVBYFNR', 'turnover': 'WZFLR'},
@@ -329,16 +329,6 @@ class Enigma:
         """
         self.model = model
         self._reflector = reflector
-
-        if model == "EnigmaM4":
-            assert len(rotors) == 4, "Enigma M4 model must have " \
-                                     "exactly 4 rotors!"
-        elif model in historical_data:
-            assert len(rotors) == 3, "%s model must have " \
-                                    "exactly 3 rotors!" % model
-        else:
-            raise AssertionError('Invalid Enigma model "%s"' % model)
-
         self.rotors = rotors
         self._stator = stator
         self._plugboard = Plugboard(plug_pairs)

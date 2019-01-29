@@ -14,20 +14,32 @@ class EnigmaAPI:
         :param reflector: {str} Reflector label like "UKW-B"
         :param rotors: {[str, str, str]} Rotor labels
         """
-        self._data = historical_data[model]
         self._enigma = self.generate_enigma(model, reflector, rotors)
+        self._model = model
+
+    @property
+    def _data(self):
+        return historical_data[self._model]
 
     # PLUGS
 
-    def model_data(self):
-        """
-        Returns data for the currently selected enigma model
-        """
-        return self._data
-        
+    def model_labels(self, model=None):
+        if model is None:
+            model = self._model
+        refs = [reflector['label'] for reflector in historical_data[model]['reflectors']]
+        rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
+        return {'reflectors': refs, 'rotors': rotors}
+
     def model(self, new_model=None):
         if new_model is not None:
-            self._enigma = self.generate_enigma(new_model, default=True)
+            self._model = new_model
+
+            labels = self.model_labels()
+
+            rotors = labels['rotors'][:self._data['rotor_n']]
+            reflector = labels['reflectors'][0]
+
+            self._enigma = self.generate_enigma(new_model, reflector, rotors)
         else:
             return self._enigma.model
 
@@ -93,31 +105,16 @@ class EnigmaAPI:
         return rotors
 
     @classmethod
-    def generate_enigma(cls, model, reflector_label=None, rotor_labels=None, default=None):
+    def generate_enigma(cls, model, reflector_label=None, rotor_labels=None):
         """
         Initializes a complete Enigma instance based on input parameters
         :param model: {str} Enigma model
         :param reflector_label: {str} Reflector label like "UKW-B"
         :param rotor_labels: {[str, str, str]} List of rotor labels like "I", "II", "III"
-        :param default: {Bool} Generates enigma with default settings
         """
-        print("generating with model %s" % model)
-        if reflector_label and rotor_labels:  # Non-default
-            rotors = cls.generate_rotors(model, rotor_labels)
-            reflector = cls.generate_component(model, "Reflector", reflector_label)
-            stator = cls.generate_component(model, "Stator")
-        elif default:
-            print("============================================================")
-            print("DEFAULT")
-            data = historical_data[model]
-            rotor_labels = [rotor['label'] for rotor in data['rotors'][:historical_data[model]['rotor_n']]]
-            print(rotor_labels)
-            print("generating_rotors")
-            rotors = cls.generate_rotors(model, rotor_labels)  # TODO: Only returns first label
-            print([rotor.label for rotor in rotors])
-            reflector = cls.generate_component(model, 'Reflector', data['reflectors'][0]['label'])
-            stator = cls.generate_component(model, 'Stator')
-            print("============================================================")
+        rotors = cls.generate_rotors(model, rotor_labels)
+        reflector = cls.generate_component(model, "Reflector", reflector_label)
+        stator = cls.generate_component(model, "Stator")
             
         return Enigma(model, reflector, rotors, stator)
 

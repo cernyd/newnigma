@@ -190,14 +190,15 @@ class _RotorsHandler(QFrame):
         self._layout = QHBoxLayout(self)
         self._rotor_indicators = []
 
-        for i in range(len(position_plug())):  # Rotor controls
-            indicator = _RotorHandler(self, i, rotate_plug(i, 1, True), rotate_plug(i, -1, True), self.set_positions)
-            self._layout.addWidget(indicator)
-            self._rotor_indicators.append(indicator)
-        
         # ATTRIBUTES ===========================================================
 
         self.enigma_api = enigma_api
+        self._rotate_plug = rotate_plug
+        self._position_plug = position_plug
+
+        # GENERATE_ROTORS ======================================================
+
+        self.generate_rotors()
 
         # SETTINGS ICON ========================================================
 
@@ -213,8 +214,22 @@ class _RotorsHandler(QFrame):
         self.set_positions()
 
         # SHOW WINDOW ==========================================================
+        
+        self._layout.addWidget(button, alignment=Qt.AlignRight)
 
-        self._layout.addWidget(button)
+    def generate_rotors(self):
+        """
+        Regenerates rotor views
+        """
+        for indicator in self._rotor_indicators:
+            indicator.deleteLater()
+
+        self._rotor_indicators = []
+
+        for i in range(len(self._position_plug())):  # Rotor controls
+            indicator = _RotorHandler(self, i, self._rotate_plug(i, 1, True), self._rotate_plug(i, -1, True), self.set_positions)
+            self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
+            self._rotor_indicators.append(indicator)
 
     def open_settings(self):
         """
@@ -224,6 +239,7 @@ class _RotorsHandler(QFrame):
         settings.exec()  # Exec gives focus to top window, unlike .show
         self.set_positions()
         del settings
+        self.generate_rotors()
 
     def set_positions(self):
         """
