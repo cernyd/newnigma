@@ -26,6 +26,18 @@ layout = [
 ]
 
 
+def letter_groups(text, group_size=5):
+    output = ''
+    i = 0
+    for letter in text:
+        if i == group_size:
+            i = 0
+            output += ' '
+        output += letter
+        i += 1
+    return output
+
+
 class Runtime:
     def __init__(self, api, cfg_load_plug):
         """
@@ -506,7 +518,7 @@ class _RotorHandler(QFrame):
         self.set_positions()
 
 
-class _InputTextBox(QPlainTextEdit):
+class _InputTextBox(QTextEdit):
     def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug):
         """
         Input textbox where text is entered, the last input letter is then encrypted and sent to
@@ -524,6 +536,11 @@ class _InputTextBox(QPlainTextEdit):
 
         self.setPlaceholderText("Type your message here")
         self.textChanged.connect(self.input_detected)
+
+        # FONT =================================================================
+        
+        font = QFont("Monospace", 10)
+        self.setFont(font)
 
         # PLUGS ================================================================
 
@@ -545,13 +562,14 @@ class _InputTextBox(QPlainTextEdit):
         text = sub('[^A-Z]+', '', text)
 
         self.blockSignals(True)  # Blocks programatical edits to the widget
-        self.setPlainText(text)
+        self.setPlainText(letter_groups(text))
         self.moveCursor(QTextCursor.End)
         self.blockSignals(False)
         
 
         if len(text) > self.last_len:  # If text longer than before
             last_input = text[-1].upper()
+            print("last_input : %s" % last_input)
             encrypted = self.encrypt_plug(last_input)
 
             self.output_plug(encrypted)
@@ -577,21 +595,27 @@ class _OutputTextBox(QTextEdit):
         self.setReadOnly(True)
         self.light_up_plug = light_up_plug
 
+        # FONT =================================================================
+
+        font = QFont("Monospace", 10)
+        self.setFont(font)
+
     def sync_length(self, length):
         """
         Sets widget length to the desired length
         """
         self.light_up_plug('')
-        self.setPlainText(self.toPlainText()[:length])
+        text = letter_groups(self.toPlainText().replace(' ', '')[:length])
+        self.setPlainText(text)
+        self.moveCursor(QTextCursor.End)
 
     def insert(self, letter):
         """
         Appends text into the textbox
         :param letter: {char} Letter to be appended
         """
-        text = (self.toPlainText() + letter)
-
+        text = (self.toPlainText().replace(' ', '') + letter)
+        self.setPlainText(letter_groups(text))
         self.moveCursor(QTextCursor.End)
-        self.setPlainText(text)
         self.light_up_plug(letter)
 
