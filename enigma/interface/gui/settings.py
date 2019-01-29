@@ -30,6 +30,8 @@ class Settings(QDialog):
         # SAVE ATTRIBUTES ======================================================
 
         self.enigma_api = enigma_api
+        self.radio_selectors = []
+        self.ring_selectors = []
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
         
@@ -88,7 +90,7 @@ class Settings(QDialog):
         self.radio_selectors = []
         self.ring_selectors = []
 
-        for rotor in range(3):
+        for rotor in range(3):  # TODO: Generate correct rotor count
             rotor_frame = QFrame(self.settings_frame)
             rotor_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
             rotor_layout = QVBoxLayout(rotor_frame)
@@ -125,7 +127,7 @@ class Settings(QDialog):
 
             self.settings_layout.addWidget(rotor_frame)
 
-    def clear_components(self):  # TODO: Should clear recursively
+    def clear_components(self):
         while True:
             child = self.settings_layout.takeAt(0)
             if child:
@@ -134,9 +136,21 @@ class Settings(QDialog):
                 del wgt
             else:
                 break
+
+        return
+        del self.reflector_group
+        self.reflector_group = None
+        
+        for rotor in self.radio_selectors:
+            del rotor
+        self.radio_selectors = None
+
+        for ring in self.ring_selectors:
+            del ring
+
+        self.ring_selectors = None
     
     def regen_model(self, new_model):
-        print(new_model)
         self.clear_components()
 
         self.generate_components(
@@ -149,15 +163,15 @@ class Settings(QDialog):
         Collects all selected settings for rotors and other components,
         applies them to the enigma object
         """
-        new_reflector = self.reflector_group.checkedButton() # REFLECTOR CHOICES
+        new_model = self.stacked_wikis.currently_selected
+        new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
         new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
         ring_settings = [ring.currentIndex() for ring in self.ring_selectors]
 
+        self.enigma_api.model(new_model)
         self.enigma_api.reflector(new_reflector)
         self.enigma_api.rotors(new_rotors)
         self.enigma_api.ring_settings(ring_settings)
-
-        print(self.enigma_api)
 
         self.close()
 

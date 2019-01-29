@@ -81,7 +81,7 @@ class Root(QWidget):
         # ROTORS INDICATOR =====================================================
 
         self._rotors = _RotorsHandler(self, self._api.positions, 
-                                      self._api.rotate_rotor, enigma_api)
+                                      self._api.rotate_rotor, enigma_api, self.reload_title)
 
         # LIGHTBOARD FRAME =====================================================
 
@@ -90,7 +90,7 @@ class Root(QWidget):
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ===============================
 
         self.o_textbox = _OutputTextBox(self, lightboard.light_up)
-        i_textbox = _InputTextBox(self, enigma_api.encrypt, 
+        self.i_textbox = _InputTextBox(self, enigma_api.encrypt, 
                                   self.o_textbox.insert,
                                   self.o_textbox.sync_length,
                                   self._rotors.set_positions)
@@ -111,7 +111,7 @@ class Root(QWidget):
         main_layout.addWidget(self._rotors, alignment=Qt.AlignBottom)
         main_layout.addWidget(lightboard)
         main_layout.addWidget(QLabel('INPUT', self))
-        main_layout.addWidget(i_textbox)
+        main_layout.addWidget(self.i_textbox)
         main_layout.addWidget(QLabel('OUTPUT', self))
         main_layout.addWidget(self.o_textbox)
         main_layout.addWidget(plug_button)
@@ -122,6 +122,10 @@ class Root(QWidget):
         plugboard = Plugboard(self, self._api.plug_pairs)
         plugboard.exec()
         del plugboard
+    
+    def reload_title(self):
+        self.setWindowTitle(self._api.model())
+        self.i_textbox.clear()
 
     def get_settings(self):
         pass
@@ -176,7 +180,7 @@ class Lightboard(QWidget):
 
 
 class _RotorsHandler(QFrame):
-    def __init__(self, master, position_plug, rotate_plug, enigma_api):
+    def __init__(self, master, position_plug, rotate_plug, enigma_api, label_plug):
         """
         :param master: {Qt} Master qt object
         :param position_plug: {callable} Callable method for getting rotor positions
@@ -195,32 +199,31 @@ class _RotorsHandler(QFrame):
         self.enigma_api = enigma_api
         self._rotate_plug = rotate_plug
         self._position_plug = position_plug
+        self._label_plug = label_plug
+
+        # SETTINGS ICON ========================================================
+
+        self.settings_button = QPushButton(QIcon(base_dir + 'settings.png'), '', self)
+        self.settings_button.setIconSize(QSize(50, 50))
+        self.settings_button.setToolTip("Edit Enigma rotor and reflector settings")
+        self.settings_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.settings_button.clicked.connect(self.open_settings)
 
         # GENERATE_ROTORS ======================================================
 
         self.generate_rotors()
-
-        # SETTINGS ICON ========================================================
-
-        button = QPushButton(QIcon(base_dir + 'settings.png'), '', self)
-        button.setIconSize(QSize(50, 50))
-        button.setToolTip("Edit Enigma rotor and reflector settings")
-        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        button.clicked.connect(self.open_settings)
 
         # PLUGS ================================================================
 
         self.position_plug = position_plug
         self.set_positions()
 
-        # SHOW WINDOW ==========================================================
-        
-        self._layout.addWidget(button, alignment=Qt.AlignRight)
-
     def generate_rotors(self):
         """
         Regenerates rotor views
         """
+        self._layout.removeWidget(self.settings_button)
+
         for indicator in self._rotor_indicators:
             indicator.deleteLater()
 
@@ -231,6 +234,8 @@ class _RotorsHandler(QFrame):
             self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
             self._rotor_indicators.append(indicator)
 
+        self._layout.addWidget(self.settings_button)
+
     def open_settings(self):
         """
         Opens settings and reload afterwards
@@ -240,6 +245,7 @@ class _RotorsHandler(QFrame):
         self.set_positions()
         del settings
         self.generate_rotors()
+        self._label_plug()
 
     def set_positions(self):
         """
@@ -355,7 +361,7 @@ class _InputTextBox(QTextEdit):
         # ATTRIBUTES ===========================================================
 
         self.last_len = 0
-
+        
     def input_detected(self):
         """
         Responds to the text input event by encrypting the newly typed letter

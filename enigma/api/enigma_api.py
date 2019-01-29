@@ -15,30 +15,28 @@ class EnigmaAPI:
         :param rotors: {[str, str, str]} Rotor labels
         """
         self._enigma = self.generate_enigma(model, reflector, rotors)
-        self._model = model
 
     @property
     def _data(self):
-        return historical_data[self._model]
+        return historical_data[self.model()]
 
     # PLUGS
 
     def model_labels(self, model=None):
         if model is None:
-            model = self._model
+            model = self.model()
         refs = [reflector['label'] for reflector in historical_data[model]['reflectors']]
         rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
         return {'reflectors': refs, 'rotors': rotors}
 
     def model(self, new_model=None):
         if new_model is not None:
-            self._model = new_model
-
-            labels = self.model_labels()
+            labels = self.model_labels(new_model)
 
             rotors = labels['rotors'][:self._data['rotor_n']]
             reflector = labels['reflectors'][0]
 
+            del self._enigma
             self._enigma = self.generate_enigma(new_model, reflector, rotors)
         else:
             return self._enigma.model
