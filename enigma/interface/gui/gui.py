@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-import PyQt5 as qt
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtMultimedia import *
-from PyQt5.QtGui import *
+import PySide2 as qt
+from PySide2.QtWidgets import *
+from PySide2.QtCore import *
+from PySide2.QtMultimedia import *
+from PySide2.QtGui import *
 from time import sleep
 from enigma.interface.gui.settings import *
 from enigma.interface.gui.plugboard import *
@@ -42,7 +42,7 @@ class Runtime:
         self.root = Root(api, cfg_load_plug)
     
     def run(self):
-        self.app.exec()
+        self.app.exec_()
 
 
 class Root(QWidget):

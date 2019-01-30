@@ -1,8 +1,8 @@
-import PyQt5 as qt
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtMultimedia import *
-from PyQt5.QtGui import *
+import PySide2 as qt
+from PySide2.QtWidgets import *
+from PySide2.QtCore import *
+from PySide2.QtMultimedia import *
+from PySide2.QtGui import *
 from enigma.interface.gui import *
 
 
