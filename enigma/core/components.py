@@ -148,27 +148,34 @@ historical_data = {
 
 class Plugboard:
     def __init__(self, pairs=None):
-        self.pairs = {}
-        self.set_plug_pairs(pairs)
+        self._pairs = {}
+        self.pairs(pairs)
 
-    def set_plug_pairs(self, pairs=None):
+    def pairs(self, pairs=None):
         """
         Sets plugboard pairs to the supplied pairs
         :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
                       where each letter can only be used once
         :return: {dict} dictionary with pairs usable by the plugboard
         """
-        result_pairs = {}
+        if pairs is not None:
+            result_pairs = {}
 
-        if pairs is None:
-            return {}
+            if pairs is None:
+                return {}
 
-        for pair in pairs:
-            a, b = pair
-            result_pairs[a] = b
-            result_pairs[b] = a
+            for pair in pairs:
+                a, b = pair
+                result_pairs[a] = b
+                result_pairs[b] = a
 
-        self.pairs = result_pairs
+            self._pairs = result_pairs
+        else:
+            pairs = []
+            for pair in self._pairs.items():
+                if pair[::-1] not in pairs and all(pair):
+                    pairs.append(pair)
+            return pairs
 
     def route(self, letter):
         """
@@ -176,7 +183,7 @@ class Plugboard:
         :param letter: {char} input letter
         :return: {char} output routed letter
 e       """
-        return self.pairs.get(letter, letter)
+        return self._pairs.get(letter, letter)
 
 
 class Stator:
@@ -332,7 +339,7 @@ class Enigma:
         self.rotors = rotors
         self._stator = stator
         self._plugboard = Plugboard(plug_pairs)
-
+    
     def step_rotors(self):
         """Advance rotor positions"""
         if self.rotors[-1].in_turnover:
@@ -408,9 +415,9 @@ class Enigma:
 
     @property
     def plug_pairs(self):
-        return self._plugboard.pairs
+        return self._plugboard.pairs()
 
     @plug_pairs.setter
     def plug_pairs(self, new_plug_pairs):
-        self._plugboard.set_plug_pairs(new_plug_pairs)
+        self._plugboard.pairs(new_plug_pairs)
 

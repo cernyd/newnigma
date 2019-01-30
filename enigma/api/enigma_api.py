@@ -1,6 +1,7 @@
 #! /usr/env python3
 
 from enigma.core.components import *
+from math import factorial
 
 
 class EnigmaAPI:
@@ -16,24 +17,58 @@ class EnigmaAPI:
         """
         self._enigma = self.generate_enigma(model, reflector, rotors)
 
+    def total_permutations(self, with_reflectors=False):
+        """
+        Returns total possible permutations for all rotors
+        """
+        total_rotors = len(self._data['rotors'])
+        rotor_combinations = int(factorial(total_rotors)/factorial(total_rotors-self.rotor_n()))
+        total_reflectors = len(self._data['reflectors'])
+        reflector_combinations = int(factorial(total_reflectors)/factorial(total_reflectors-1))
+        rotor_settings = 26**self.rotor_n()
+        total_plugboard = int(factorial(26)/(factorial(26-20)*(2**10)*factorial(10)))  # CORRECT
+        
+        result = rotor_combinations*rotor_settings*total_plugboard
+        if with_reflectors:
+            return result*reflector_combinations
+        else:
+            return result
+
     @property
     def _data(self):
         return historical_data[self.model()]
 
     # PLUGS
 
+    def rotor_n(self, model=None):
+        if model is None:
+            return self._data['rotor_n']
+        else:
+            return historical_data[model]['rotor_n']
+
     def model_labels(self, model=None):
+        """
+        Returns all available labels for rotors and reflectors for the select
+        model
+        :param model: {str} Enigma model
+        """
         if model is None:
             model = self.model()
+
         refs = [reflector['label'] for reflector in historical_data[model]['reflectors']]
         rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
+
         return {'reflectors': refs, 'rotors': rotors}
 
     def model(self, new_model=None):
+        """
+        Returns model or sets a new one if new_model is overriden
+        :param new_model: {str}
+        """
         if new_model is not None:
             labels = self.model_labels(new_model)
 
-            rotors = labels['rotors'][:self._data['rotor_n']]
+            rotors = labels['rotors'][:historical_data[new_model]['rotor_n']]
             reflector = labels['reflectors'][0]
 
             del self._enigma
@@ -42,30 +77,50 @@ class EnigmaAPI:
             return self._enigma.model
 
     def reflector(self, new_reflector=None):
+        """
+        Returns reflector or sets a new one if new_reflector is overriden
+        :param new_reflector: {str}
+        """
         if new_reflector is not None:
-            self._enigma.reflector = new_reflector
+            self._enigma._reflector = self.generate_component(self.model(), 'Reflector', new_reflector)
         else:
-            return self._enigma.reflector
+            return self._enigma._reflector
 
     def rotors(self, new_rotors=None):
+        """
+        Returns rotors or sets a new one if new_rotors is overriden
+        :param new_rotors: {str}
+        """
         if new_rotors is not None:
             self._enigma.rotors = self.generate_rotors(self.model(), new_rotors)
         else:
             return self._enigma.rotors
 
     def positions(self, new_positions=None):
+        """
+        Returns positions or sets a new one if new_positions is overriden
+        :param new_positions: {str}
+        """
         if new_positions is not None:
             self._enigma.positions = new_positions
         else:
             return self._enigma.positions
     
     def ring_settings(self, new_ring_settings=None):
+        """
+        Returns ring_settings or sets a new one if new_ring_settings is overriden
+        :param ring_settings: {str}
+        """
         if new_ring_settings is not None:
             self._enigma.ring_settings = new_ring_settings
         else:
             return self._enigma.ring_settings
 
     def plug_pairs(self, new_plug_pairs=None):
+        """
+        Returns plug_pairs or sets a new one if new_plug_pairs is overriden
+        :param new_plug_pairs: {str}
+        """
         if new_plug_pairs is not None:
             self._enigma.plug_pairs = new_plug_pairs
         else:
@@ -97,6 +152,10 @@ class EnigmaAPI:
 
     @classmethod
     def generate_rotors(cls, model, rotor_labels):
+        """
+        Generates rotors from supplied labels
+        :param rotor_labels: {[str, str, str]}
+        """
         rotors = []
         for label in rotor_labels:
             rotors.append(cls.generate_component(model, "Rotor", label))

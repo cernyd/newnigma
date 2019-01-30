@@ -35,10 +35,7 @@ class Settings(QDialog):
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
         
-        self.generate_components(
-            enigma_api.model_labels()['reflectors'],
-            enigma_api.model_labels()['rotors']
-        )
+        self.regen_model(self.enigma_api.model(), True)
 
         # TAB WIDGET ===========================================================
 
@@ -61,7 +58,7 @@ class Settings(QDialog):
         main_layout.addWidget(apply_btn)
         main_layout.addWidget(storno)
 
-    def generate_components(self, reflectors, rotors):
+    def generate_components(self, reflectors, rotors, rotor_n):
         # REFLECTOR SETTINGS ===================================================
         
         reflector_frame = QFrame(self.settings_frame)
@@ -90,7 +87,7 @@ class Settings(QDialog):
         self.radio_selectors = []
         self.ring_selectors = []
 
-        for rotor in range(3):  # TODO: Generate correct rotor count
+        for rotor in range(rotor_n):  # TODO: Generate correct rotor count
             rotor_frame = QFrame(self.settings_frame)
             rotor_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
             rotor_layout = QVBoxLayout(rotor_frame)
@@ -136,27 +133,39 @@ class Settings(QDialog):
                 del wgt
             else:
                 break
-
-        return
-        del self.reflector_group
-        self.reflector_group = None
-        
-        for rotor in self.radio_selectors:
-            del rotor
-        self.radio_selectors = None
-
-        for ring in self.ring_selectors:
-            del ring
-
-        self.ring_selectors = None
     
-    def regen_model(self, new_model):
+    def regen_model(self, new_model, from_api=False):
+        """
+        Regenerates component settings
+        :param new_model: {str} Enigma model
+        :param from_api: {boo} Sets settings to current api settings if True
+        """
         self.clear_components()
 
+        reflectors = self.enigma_api.model_labels(new_model)['reflectors']
+        rotors = self.enigma_api.model_labels(new_model)['rotors']
+        rotor_n = self.enigma_api.rotor_n(new_model)
+
         self.generate_components(
-            self.enigma_api.model_labels(new_model)['reflectors'],
-            self.enigma_api.model_labels(new_model)['rotors']
+            reflectors,
+            rotors,
+            rotor_n
         )
+        
+        if from_api:
+            # Get from api
+            reflector_i = reflectors.index(self.enigma_api.reflector().label)
+            self.reflector_group.button(reflector_i).setChecked(True)
+            
+            for i, rotor in enumerate(self.enigma_api.rotors()):
+                rotor_i = rotors.index(rotor.label)
+                self.radio_selectors[i].button(rotor_i).setChecked(True)
+            
+            for i, ring in enumerate(self.enigma_api.ring_settings()):
+                self.ring_selectors[i].setCurrentIndex(ring)
+        else:
+            for i in range(rotor_n):
+                self.radio_selectors[i].button(i).setChecked(True)
 
     def collect(self):
         """
@@ -166,12 +175,13 @@ class Settings(QDialog):
         new_model = self.stacked_wikis.currently_selected
         new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
         new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
-        ring_settings = [ring.currentIndex() for ring in self.ring_selectors]
+        ring_settings = [ring.currentIndex()+1 for ring in self.ring_selectors]
 
         self.enigma_api.model(new_model)
         self.enigma_api.reflector(new_reflector)
         self.enigma_api.rotors(new_rotors)
         self.enigma_api.ring_settings(ring_settings)
+        print(self.enigma_api)
 
         self.close()
 

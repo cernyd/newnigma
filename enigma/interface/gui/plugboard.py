@@ -55,9 +55,11 @@ class Plugboard(QDialog):
         self.enable_uhr = QCheckBox("Enable Uhr")  # In that case all plugs must be occupied! (and red/white)
         self.enable_uhr.stateChanged.connect(self.change_uhr_status)
 
-        # SHOW WIDGETS =========================================================
+        # CONNECTS SOCKETS =====================================================
         
         self.pairs_plug = pairs_plug
+        for pair in self.pairs_plug():
+            self.connect_sockets(*pair)
 
         # SHOW WIDGETS =========================================================
 
