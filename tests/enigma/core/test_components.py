@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from enigma.core.components import Enigma, Plugboard
+from enigma.core.components import Enigma, Plugboard, Uhr
 from enigma.api.enigma_api import EnigmaAPI
 from string import ascii_uppercase as alphabet
 
@@ -19,6 +19,10 @@ def test_single_encrypt():
     base.rotate(24)
     assert base.forward('A') == 'E'
 
+def test_uhr():
+    uhr = Uhr()
+    uhr.pairs(['AB', 'CD', 'EF', 'GH', 'IJ', 'KL', 'MN', 'OP', 'QR', 'ST'])
+    print(uhr.route('A'))
 
 def test_routing():
     """

@@ -285,11 +285,11 @@ class _EnigmaView(QWidget):
 
         # BUTTONS ==============================================================
 
-        self.select_button = QPushButton("Use this model")
-        self.select_button.clicked.connect(lambda: select_plug(self.model))
+        #jself.select_button = QPushButton("Use this model")
+        #self.select_button.clicked.connect(lambda: select_plug(self.model))
 
         # SHOW WIDGETS =========================================================
 
         self.main_layout.addWidget(self.title_frame)
         self.main_layout.addWidget(self.wiki_text)
-        self.main_layout.addWidget(self.select_button)
+        #self.main_layout.addWidget(self.select_button)

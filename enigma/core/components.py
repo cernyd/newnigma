@@ -200,7 +200,7 @@ class Plugboard:
         Routes letter trough the wiring pair (if the letter is wired), otherwise returns the same letter
         :param letter: {char} input letter
         :return: {char} output routed letter
-e       """
+        """
         return self._pairs.get(letter, letter)
 
 
@@ -254,7 +254,52 @@ class UKWD(Plugboard):
 
 
 class Uhr:
-    pass
+    def __init__(self):
+        # Way contacts 00 ... 39 are steckered with the A board
+        self.contacts = [26, 11, 24, 21, 2, 31, 0, 25, 30, 39, 28, 13, 22, 35, 20,
+                    37, 6, 23, 4, 33, 34, 19, 32, 9, 18, 7, 16, 17, 10, 3, 8,
+                    1, 38, 27, 36, 29, 14, 15, 12, 5]
+
+        # The first contact of each plug hole (1a, 2a, 3a, ...)
+        self.a_pairs = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
+        # The first contact of each plug hole (1b, 2b, 3b, ...)
+        self.b_pairs = [4, 16, 28, 36, 24, 12, 0, 8, 20, 32]
+
+        self._pairs = []
+
+        self._offset = 0  # Scrambler disc offset
+    
+    def pairs(self, pairs):
+        """
+        Sets pairs
+        """
+        self._pairs = pairs
+
+        print(self._pairs)
+
+    def route(self, letter):
+        coords = []
+        for i, pair in enumerate(self._pairs):
+            coords.append(('a', pair[0], self.a_pairs[i], self.a_pairs[i]+2))
+            coords.append(('b', pair[1], self.b_pairs[i], self.b_pairs[i]+2))
+        
+        # THICC contact = send
+        # Thin contact = receive
+        for plug in coords:
+            if plug[1] == letter:
+                send_pin = plug[2]
+                board = 'a' if plug[0] == 'b' else 'b'
+                break
+        
+        send_pin = (send_pin + self._offset) % 40
+        if board == 'a':
+            receive_pin = self.contacts[send_pin]
+        else:
+            receive_pin = self.contacts.index(send_pin)
+        
+        for plug in coords:
+            if plug[0] == board and plug[3] == receive_pin:
+                return plug[1]
 
 
 class Rotor:

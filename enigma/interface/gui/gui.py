@@ -82,7 +82,7 @@ class Root(QWidget):
         # ROTORS INDICATOR =====================================================
 
         self._rotors = _RotorsHandler(self, self._api.positions, 
-                                      self._api.rotate_rotor, enigma_api, self.reload_title)
+                                      self._api.rotate_rotor, enigma_api, self.refresh_gui)
 
         # LIGHTBOARD FRAME =====================================================
 
@@ -99,9 +99,9 @@ class Root(QWidget):
 
         # PLUGBOARD BUTTONS ====================================================
 
-        plug_button = QPushButton('Plugboard')
-        plug_button.setToolTip("Edit plugboard letter pairs")
-        plug_button.clicked.connect(self.get_pairs)
+        self.plug_button = QPushButton('Plugboard')
+        self.plug_button.setToolTip("Edit plugboard letter pairs")
+        self.plug_button.clicked.connect(self.get_pairs)
 
         # PLUGS ================================================================
 
@@ -117,7 +117,7 @@ class Root(QWidget):
         main_layout.addWidget(self.i_textbox)
         main_layout.addWidget(QLabel('OUTPUT', self))
         main_layout.addWidget(self.o_textbox)
-        main_layout.addWidget(plug_button)
+        main_layout.addWidget(self.plug_button)
 
         self.show()
     
@@ -126,14 +126,18 @@ class Root(QWidget):
         plugboard.exec()
         del plugboard
     
-    def reload_title(self):
+    def refresh_gui(self):
         self.setWindowTitle(self._api.model())
         self.i_textbox.clear()
+        if self._api._data['plugboard']:
+            self.plug_button.show()
+        else:
+            self.plug_button.hide()
 
     def load_config(self):
         data = self.cfg_load_plug()
         self._api.load_from_config(data['saved'])
-        self.reload_title()
+        self.refresh_gui()
         self._rotors.set_positions()
 
     def save_config(self):
