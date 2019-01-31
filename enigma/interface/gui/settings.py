@@ -109,7 +109,8 @@ class Settings(QDialog):
             # RINGSTELLUNG =====================================================
 
             combobox = QComboBox(rotor_frame)
-            combobox.addItems(labels)
+            for i, label in enumerate(labels):
+                combobox.addItem(label, i)
 
             hr = QFrame(rotor_frame)
             hr.setFrameShape(QFrame.HLine)
@@ -162,7 +163,7 @@ class Settings(QDialog):
                 self.radio_selectors[i].button(rotor_i).setChecked(True)
             
             for i, ring in enumerate(self.enigma_api.ring_settings()):
-                self.ring_selectors[i].setCurrentIndex(ring)
+                self.ring_selectors[i].setCurrentIndex(ring-1)
         else:
             for i in range(rotor_n):
                 self.radio_selectors[i].button(i).setChecked(True)
@@ -176,10 +177,17 @@ class Settings(QDialog):
         new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
         new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
         ring_settings = [ring.currentIndex()+1 for ring in self.ring_selectors]
+        
+        print(new_model)
+        print(self.enigma_api.model())
+        if new_model != self.enigma_api.model():
+            self.enigma_api.model(new_model)
 
-        self.enigma_api.model(new_model)
         self.enigma_api.reflector(new_reflector)
-        self.enigma_api.rotors(new_rotors)
+
+        if new_rotors != [rotor.label for rotor in self.enigma_api.rotors()]:
+            self.enigma_api.rotors(new_rotors)
+
         self.enigma_api.ring_settings(ring_settings)
         print(self.enigma_api)
 

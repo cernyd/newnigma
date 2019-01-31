@@ -34,7 +34,9 @@ ENIGMA_D_K = {
     'rotor_n': 3,
     'reflectors': (
         {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-    )
+    ),
+    'letter_group': 5,
+    'plugboard': False
 }
 
 
@@ -46,14 +48,18 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW-A', 'wiring': "EJMZALYXVBWFCRQUONTSPIKHGD"}, UKW_B, UKW_C
         ),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 5,
+        'plugboard': True
     },
     'EnigmaM3': {
         'stator': ETW,
         'rotors': (I, II, III, IV, V, VI, VII, VIII),
         'rotor_n': 3,
         'reflectors': (UKW_B, UKW_C),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 5,
+        'plugboard': True
     },
     'EnigmaM4': {
         'stator': ETW,
@@ -67,7 +73,9 @@ historical_data = {
             {'label': 'UKW-b', 'wiring': "ENKQAUYWJICOPBLMDXZVFTHRGS"},
             {'label': 'UKW-c', 'wiring': "RDOBJNTKVEHMLFCWZAXGYIPSUQ"}
         ),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 4,
+        'plugboard': True
     },
     'Norenigma': {
         'stator': ETW,
@@ -82,7 +90,9 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "MOWJYPUXNDSRAIBFVLKZGQCHET"},
         ),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 5,
+        'plugboard': True
     },
     'EnigmaG': {
         'stator': ETW_QWERTZ,
@@ -95,7 +105,9 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
         ),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 5,
+        'plugboard': False
     },
     'EnigmaD': ENIGMA_D_K,
     'EnigmaK': ENIGMA_D_K,
@@ -110,7 +122,9 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
         ),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 5,
+        'plugboard': False
     },
     'Railway': {
         'stator': ETW_QWERTZ,
@@ -123,7 +137,9 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "QYHOGNECVPUZTFDJAXWMKISRBL"},
         ),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 5,
+        'plugboard': False
     },
     'Tirpitz': {
         'stator': {'wiring': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
@@ -141,7 +157,9 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "GEKPBTAUMOCNILJDXZYFHWVQSR"},
         ),
-        'rotatable_ref': False
+        'rotatable_ref': False,
+        'letter_group': 5,
+        'plugboard': False
     }
 }
 
@@ -341,7 +359,8 @@ class Enigma:
         self._plugboard = Plugboard(plug_pairs)
     
     def step_rotors(self):
-        """Advance rotor positions"""
+        """Advance rotor positions, the fourth rotor is not included because
+        it never rotates"""
         if self.rotors[-1].in_turnover:
             self.rotors[-2].rotate()
 
@@ -378,16 +397,17 @@ class Enigma:
         Returns rotor positions
         :return: {[int, int, int]}
         """
-        return [rotor.ring_offset for rotor in self.rotors]
+        return [rotor.ring_offset+1 for rotor in self.rotors]
 
     @ring_settings.setter
     def ring_settings(self, new_ring_settings):
         """
-        Returns rotor positions
+        Returns rotor positions, internal ring settings are different than the
+        real ones! (01 in normal notation is 00 in internal notation)
         :param new_ring_settings: {[int, int, int]} new ring settings
         """
         for setting, rotor in zip(new_ring_settings, self.rotors):
-            rotor.set_ring(setting)
+            rotor.set_ring(setting-1)
 
     def press_key(self, key):
         """

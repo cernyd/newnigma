@@ -27,11 +27,12 @@ def letter_groups(text, group_size=5):
 
 
 class Runtime:
-    def __init__(self, api, cfg_load_plug):
+    def __init__(self, api, cfg_load_plug, cfg_save_plug):
         """
         Runtime object wrapping the root window
         :param api: {EnigmaAPI}
         :param cfg_load_plug: {callable} Returns loaded config
+        :param cfg_save_plug: {callable} Allows to save data to config file
         """
         self.app = QApplication(sys.argv)  # Needed for process name
         self.app.setApplicationName("Enigma")
@@ -39,7 +40,7 @@ class Runtime:
         self.app.setWindowIcon(
             QIcon(base_dir + 'enigma_200px.png')
         )
-        self.root = Root(api, cfg_load_plug)
+        self.root = Root(api, cfg_load_plug, cfg_save_plug)
     
     def run(self):
         self.app.exec_()
@@ -47,7 +48,7 @@ class Runtime:
 
 class Root(QWidget):
     """Root window for Enigma Qt GUI"""
-    def __init__(self, enigma_api, cfg_load_plug):
+    def __init__(self, enigma_api, cfg_load_plug, cfg_save_plug):
         """
         Initializes Root QT window widgets
         :param enigma_api: {EnigmaAPI} Initialized EnigmaAPI object
@@ -73,8 +74,8 @@ class Root(QWidget):
         # MENU BAR =============================================================
 
         menu = QMenuBar(self)
-        menu.addAction("Load", lambda: print(self.cfg_load_plug()))
-        menu.addAction("Save", lambda: print("Save action"))
+        menu.addAction("Load", self.load_config)
+        menu.addAction("Save", self.save_config)
         url = QUrl("https://www.cryptomuseum.com/index.htm")
         menu.addAction("About", lambda: QDesktopServices.openUrl(url))
 
@@ -89,11 +90,12 @@ class Root(QWidget):
 
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ===============================
 
-        self.o_textbox = _OutputTextBox(self, lightboard.light_up)
+        self.o_textbox = _OutputTextBox(self, lightboard.light_up, enigma_api.letter_group)
         self.i_textbox = _InputTextBox(self, enigma_api.encrypt, 
                                   self.o_textbox.insert,
                                   self.o_textbox.sync_length,
-                                  self._rotors.set_positions)
+                                  self._rotors.set_positions,
+                                  enigma_api.letter_group)
 
         # PLUGBOARD BUTTONS ====================================================
 
@@ -104,6 +106,7 @@ class Root(QWidget):
         # PLUGS ================================================================
 
         self.cfg_load_plug = cfg_load_plug
+        self.cfg_save_plug = cfg_save_plug
 
         # SHOW WIDGETS =========================================================
 
@@ -127,9 +130,17 @@ class Root(QWidget):
         self.setWindowTitle(self._api.model())
         self.i_textbox.clear()
 
-    def get_settings(self):
-        pass
+    def load_config(self):
+        data = self.cfg_load_plug()
+        self._api.load_from_config(data['saved'])
+        self.reload_title()
+        self._rotors.set_positions()
 
+    def save_config(self):
+        data = self._api.get_config()
+        old_data = self.cfg_load_plug()
+        old_data['saved'] = data
+        self.cfg_save_plug(old_data)
 
 class Lightboard(QWidget):
     def __init__(self, master):
@@ -328,7 +339,7 @@ class _RotorHandler(QFrame):
 
 
 class _InputTextBox(QTextEdit):
-    def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug):
+    def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug, letter_group_plug):
         """
         Input textbox where text is entered, the last input letter is then encrypted and sent to
         the output widget
@@ -357,6 +368,7 @@ class _InputTextBox(QTextEdit):
         self.output_plug = output_plug
         self.sync_plug = sync_plug
         self.refresh_plug = refresh_plug
+        self.letter_group_plug = letter_group_plug
 
         # ATTRIBUTES ===========================================================
 
@@ -371,7 +383,7 @@ class _InputTextBox(QTextEdit):
         text = sub('[^A-Z]+', '', text)
 
         self.blockSignals(True)  # Blocks programatical edits to the widget
-        self.setPlainText(letter_groups(text))
+        self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)
         self.blockSignals(False)
         
@@ -390,7 +402,7 @@ class _InputTextBox(QTextEdit):
 
 
 class _OutputTextBox(QTextEdit):
-    def __init__(self, master, light_up_plug):
+    def __init__(self, master, light_up_plug, letter_group_plug):
         """
         Shows text inserted trough the .insert() plug
         :param master: Qt parent object
@@ -402,6 +414,7 @@ class _OutputTextBox(QTextEdit):
         self.setPlaceholderText("Encrypted message will appear here")
         self.setReadOnly(True)
         self.light_up_plug = light_up_plug
+        self.letter_group_plug = letter_group_plug
 
         # FONT =================================================================
 
@@ -413,7 +426,7 @@ class _OutputTextBox(QTextEdit):
         Sets widget length to the desired length
         """
         self.light_up_plug('')
-        text = letter_groups(self.toPlainText().replace(' ', '')[:length])
+        text = letter_groups(self.toPlainText().replace(' ', '')[:length], self.letter_group_plug())
         self.setPlainText(text)
         self.moveCursor(QTextCursor.End)
 
@@ -423,7 +436,7 @@ class _OutputTextBox(QTextEdit):
         :param letter: {char} Letter to be appended
         """
         text = (self.toPlainText().replace(' ', '') + letter)
-        self.setPlainText(letter_groups(text))
+        self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)
         self.light_up_plug(letter)
 

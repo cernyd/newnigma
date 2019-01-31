@@ -46,6 +46,9 @@ class EnigmaAPI:
         else:
             return historical_data[model]['rotor_n']
 
+    def letter_group(self):
+        return self._data['letter_group']
+
     def model_labels(self, model=None):
         """
         Returns all available labels for rotors and reflectors for the select
@@ -209,6 +212,17 @@ class EnigmaAPI:
         else:
             raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
 
+    def load_from_config(self, config):
+        """
+        Loads data from dict
+        """
+        self.model(config['model'])
+        self.reflector(config['reflector'])
+        self.rotors(config['rotors'])
+        self.positions(config['rotor_positions'])
+        self.plug_pairs(config['plugs'])
+        self.ring_settings(config['ring_settings'])
+    
     def get_config(self):
         """
         Converts enigma settings to a json serializable dict.
@@ -216,8 +230,16 @@ class EnigmaAPI:
         data = {}
         data['model'] = self._enigma.model
         data['rotors'] = [rotor.label for rotor in self._enigma.rotors]
+        data['rotor_positions'] = self._enigma.positions
+        data['ring_settings'] = self._enigma.ring_settings
         data['reflector'] = self._enigma._reflector.label
-        print(data)
+
+        plugs = []
+        for plug in self._enigma.plug_pairs:
+            plugs.append(''.join(plug))
+        data['plugs'] = plugs
+
+        return data
 
     def __str__(self):
         header = "=== %s instance data ===" % self._enigma.model
