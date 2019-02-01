@@ -272,16 +272,17 @@ class _EnigmaView(QWidget):
         self.title_frame = QFrame(self)
         self.title_layout = QVBoxLayout(self.title_frame)
 
-        label = QLabel(model)
-        label.setStyleSheet('font: 30px')
+        #label = QLabel(model)
+        #label.setStyleSheet('font: 30px')
 
-        self.title_layout.addWidget(label, alignment=Qt.AlignCenter)
+        #self.title_layout.addWidget(label, alignment=Qt.AlignCenter)
         self.title_layout.addWidget(self.img)
 
         # MODEL WIKI ===========================================================
 
         self.wiki_text = QTextBrowser()
-        self.wiki_text.setPlainText(self.description)  # setHtml sets html
+        self.wiki_text.setHtml(self.description)  # setHtml sets html
+        self.wiki_text.setStyleSheet(stylesheet)
 
         # BUTTONS ==============================================================
 
