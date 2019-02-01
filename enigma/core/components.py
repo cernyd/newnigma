@@ -209,7 +209,10 @@ class Plugboard:
 class _Component:  # Base component
     def __init__(self, label, wiring):
         self._label = label
+
+        assert len(wiring) == 26, "Wiring must be of same length as the alphabet!"
         self._wiring = wiring
+
         # TODO: Monkeypatch forward and backward?
 
     def _forward(self, letter):
@@ -274,7 +277,8 @@ class Reflector(_Rotatable):
         :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
         :return:
         """
-        return "%02d" % (self.offset + 1) if numeric else alphabet[self.offset]
+        return "%02d" % (self._offset + 1) if numeric else alphabet[self._offset]
+
 
 
 class Rotor(_Rotatable):
@@ -289,15 +293,18 @@ class Rotor(_Rotatable):
         self._ring_offset = 0  # "Ringstellung"
         self._turnover = turnover
 
+    def _adjusted_offset(self):
+        return (self._offset - self._ring_offset) % 26
+
     def forward(self, letter):
         """
         Routes the letter from the front board to the back board
         :param letter: {char}
         :return: {char}
         """
-        relative_input = self.apply_offset(alphabet.index(letter))
-        relative_result = self.wiring[relative_input]
-        return alphabet[self.apply_offset(relative_result, True)]
+        rel_input = (alphabet.index(letter) + self._adjusted_offset()) % 26  # INT
+        rel_result = alphabet.index(self._wiring[rel_input])  # INT
+        return alphabet[(rel_result - self._adjusted_offset()) % 26]
 
     def backward(self, letter):
         """
@@ -305,20 +312,9 @@ class Rotor(_Rotatable):
         :param letter: {char}
         :return: {char}
         """
-        relative_input = self.apply_offset(alphabet.index(letter))
-        relative_result = super()._backward(elf.wiring.index(relative_input), True)
-        return alphabet[relative_result]
-
-    def apply_offset(self, i, negate=False):
-        """
-        Applies either positive or negative offset to a value
-        :param i: {int} incoming position
-        :param negate: {bool} subtract the offset rather than add
-        :return: {int} the offset value
-        """
-        offset = (self._offset - self._ring_offset) % 26
-        offset = -offset if negate else offset
-        return (i + offset) % 26  # The alphabet has 27 - 1 letters (and index is counted from 0)
+        rel_input = (alphabet.index(letter) + self._adjusted_offset()) % 26  # INT
+        rel_result = (self._wiring.index(alphabet[rel_input]) - self._adjusted_offset()) % 26  # INT
+        return alphabet[rel_result]
 
     def rotate(self, offset_by=1):
         """
@@ -327,17 +323,17 @@ class Rotor(_Rotatable):
         :param offset_by: {int} how many places the rotor should be offset
                           (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
         """
-        self._offset = (self._offset + offset_by) % 26
+        self.offset(self._offset + offset_by)
 
-    def set_ring(self, setting):
+    def ring_offset(self, offset=None):
         """
         Sets "Rinstellung" (ring settings) which can be misaligned with internal wiring
         :param setting: {int} new ring setting
         """
-        self._ring_offset = setting % 26
+        if offset is not None:
+            self._ring_offset = offset % 26
+        return self._ring_offset
 
-
-    @property
     def in_turnover(self):
         """
         Returns True if the rotor is in turnover position else False
