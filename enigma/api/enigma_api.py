@@ -222,6 +222,7 @@ class EnigmaAPI:
         self.positions(config['rotor_positions'])
         self.plug_pairs(config['plugs'])
         self.ring_settings(config['ring_settings'])
+        self._enigma.uhr_position(config['uhr_position'])
     
     def get_config(self):
         """
@@ -233,6 +234,8 @@ class EnigmaAPI:
         data['rotor_positions'] = self._enigma.positions
         data['ring_settings'] = self._enigma.ring_settings
         data['reflector'] = self._enigma._reflector.label
+        data['uhr_position'] = self._enigma.uhr_position()
+        data['uhr_connected'] = self._enigma.uhr_connected()
 
         plugs = []
         for plug in self._enigma.plug_pairs:

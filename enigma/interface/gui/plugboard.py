@@ -7,7 +7,7 @@ from enigma.interface.gui import *
 
 
 class Plugboard(QDialog):
-    def __init__(self, master, pairs_plug, enable_uhr_plug, disable_uhr_plug, uhr_position_plug):
+    def __init__(self, master, enigma_api):
         """
         Allows choosing and viewing current plugboard pairs
         :param master: Qt parent object
@@ -53,16 +53,15 @@ class Plugboard(QDialog):
         self.uhr.clicked.connect(self.uhrmenu.exec)
 
         self.enable_uhr = QCheckBox("Enable Uhr")  # In that case all plugs must be occupied! (and red/white)
+        self.enable_uhr.setChecked(enigma_api._enigma._uhr is not None)
         self.enable_uhr.stateChanged.connect(self.change_uhr_status)
 
         # CONNECTS SOCKETS =====================================================
         
-        self.pairs_plug = pairs_plug
-        for pair in self.pairs_plug():
+        self.enigma_api = enigma_api
+
+        for pair in self.enigma_api.plug_pairs():
             self.connect_sockets(*pair)
-        self.enable_uhr_plug = enable_uhr_plug
-        self.disable_uhr_plug = disable_uhr_plug
-        self.uhr_position_plug = uhr_position_plug
 
         # SHOW WIDGETS =========================================================
 
@@ -113,10 +112,10 @@ class Plugboard(QDialog):
         pairs = self._pairs()
 
         if self.enable_uhr.isChecked():
-            self.enable_uhr_plug()
-            self.uhr_position_plug(self.uhrmenu.position())
+            self.enigma_api._enigma.connect_uhr()
+            self.enigma_api._enigma.uhr_position(self.uhrmenu.position())
 
-        self.pairs_plug(pairs)
+        self.enigma_api.plug_pairs(pairs)
         self.close()
 
     def connect_sockets(self, socket, other_socket):

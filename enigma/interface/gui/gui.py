@@ -122,7 +122,7 @@ class Root(QWidget):
         self.show()
     
     def get_pairs(self):
-        plugboard = Plugboard(self, self._api.plug_pairs, self._api._enigma.connect_uhr, self._api._enigma.disconnect_uhr, self._api._enigma.uhr_position)  # TODO: Refactor
+        plugboard = Plugboard(self, self._api)  # TODO: Refactor
         plugboard.exec()
         del plugboard
     
