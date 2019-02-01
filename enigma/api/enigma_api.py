@@ -95,7 +95,7 @@ class EnigmaAPI:
         :param new_rotors: {str}
         """
         if new_rotors is not None:
-            self._enigma.rotors = self.generate_rotors(self.model(), new_rotors)
+            self._enigma.rotors(self.generate_rotors(self.model(), new_rotors))
         else:
             return self._enigma.rotors()
 
@@ -221,7 +221,7 @@ class EnigmaAPI:
         """
         data = {}
         data['model'] = self._enigma.model
-        data['rotors'] = [rotor.label for rotor in self._enigma.rotors]
+        data['rotors'] = self._enigma.rotors()
         data['rotor_positions'] = self._enigma.positions
         data['ring_settings'] = self._enigma.ring_settings
         data['reflector'] = self._enigma._reflector.label
@@ -236,8 +236,10 @@ class EnigmaAPI:
         return data
 
     def __str__(self):
-        header = "=== %s instance data ===" % self._enigma.model
+        header = "=== %s instance data ===" % self._enigma.model()
         footer = "="*len(header)
         message = "\nRotors:              %s\nRotor positions:     %s\nRotor ring settings: %s \nReflector: %s\n"  # \nPlugboard pairs: %s
-        rotors = ' '.join([rotor.label for rotor in self._enigma.rotors])
-        return header + message % (rotors, ' '.join(self._enigma.positions), ' '.join(map(str, self._enigma.ring_settings)), self._enigma._reflector.label) + footer
+        rotors = ' '.join(self._enigma.rotors())
+        return header + message % (rotors, ' '.join(self._enigma.positions()),
+                                   ' '.join(map(str, self._enigma.ring_settings())),
+                                   self._enigma.reflector()) + footer

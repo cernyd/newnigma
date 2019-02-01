@@ -221,6 +221,9 @@ class _Component:  # Base component
     def _backward(self, letter):
         return alphabet[self._wiring.index(letter)]
 
+    def label(self):
+        return self._label
+
 
 class Stator(_Component):
     def __init__(self, wiring):
@@ -417,6 +420,12 @@ class Enigma:
     def model(self):
         return self._model
 
+    def reflector(self, new_reflector=None):
+        if new_reflector is not None:
+            self._reflector = new_reflector
+        else:
+            return self._reflector.label()
+
     def rotate_rotor(self, index, by=1):
         self._rotors[index].rotate(by)
 
@@ -446,6 +455,13 @@ class Enigma:
                 rotor.ring_offset(setting-1)
         else:
             return [rotor.ring_offset()+1 for rotor in self._rotors]
+
+    def rotors(self, new_rotors=None):
+        if new_rotors is not None:
+            assert new_rotors == self._rotor_n, "This enigma has %d rotors!" % self._rotor_n
+            self._rotors = new_rotors
+        else:
+            return [rotor.label() for rotor in self._rotors]
 
     # PLUGBOARD AND UHR
 
