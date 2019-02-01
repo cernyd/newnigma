@@ -263,12 +263,24 @@ class _Rotatable(_Component):
         """
         return "%02d" % (self._offset + 1) if numeric else alphabet[self._offset]
 
+    def rotate(self, offset_by=1):
+        """
+        Calculates new rotor offset based on input offset. There are 26 letters in the
+        alphabet so 26 is the max index!
+        :param offset_by: {int} how many places the rotor should be offset
+                          (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
+        """
+        self.offset(self._offset + offset_by)
+
 
 class Reflector(_Rotatable):
     def __init__(self, label, wiring, rotatable=False):
         super().__init__(label, wiring)
 
-        self.__rotatable = False
+        self.__rotatable = rotatable
+
+    def rotatable(self):
+        return self.__rotatable
 
     def reflect(self, letter):
         """
@@ -283,10 +295,15 @@ class Reflector(_Rotatable):
 
         super().offset(offset)
 
+    def rotate(self, by=1):
+        assert self.__rotatable, "Non-rotatable reflectors can't be rotated!"
+
+        super().rotate(by)
+
     def position(self, numeric=False):
         assert self.__rotatable, "Non-rotatable reflectors don't have a position!"
 
-        super().position(numeric)
+        return super().position(numeric)
 
 
 class Rotor(_Rotatable):
@@ -324,14 +341,6 @@ class Rotor(_Rotatable):
         rel_result = (self._wiring.index(alphabet[rel_input]) - self._adjusted_offset()) % 26  # INT
         return alphabet[rel_result]
 
-    def rotate(self, offset_by=1):
-        """
-        Calculates new rotor offset based on input offset. There are 26 letters in the
-        alphabet so 26 is the max index!
-        :param offset_by: {int} how many places the rotor should be offset
-                          (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
-        """
-        self.offset(self._offset + offset_by)
 
     def ring_offset(self, offset=None):
         """
@@ -425,6 +434,18 @@ class Enigma:
             self._reflector = new_reflector
         else:
             return self._reflector.label()
+
+    def reflector_rotatable(self):
+        return self._reflector.rotatable()
+
+    def rotate_reflector(self, by=1):
+        self._reflector.rotate(by)
+
+    def reflector_position(self, new_position=None):
+        if new_position is not None:
+            self._reflector.offset(new_position)
+        else:
+            return self._reflector.position()
 
     def rotate_rotor(self, index, by=1):
         self._rotors[index].rotate(by)

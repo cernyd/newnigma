@@ -82,7 +82,10 @@ class Root(QWidget):
         # ROTORS INDICATOR =====================================================
 
         self._rotors = _RotorsHandler(self, self._api.positions, 
-                                      self._api.rotate_rotor, enigma_api, self.refresh_gui)
+                                      self._api.rotate_rotor,
+                                      self._api.rotate_reflector,
+                                      enigma_api, self.refresh_gui,
+                                      enigma_api.reflector_position)
 
         # LIGHTBOARD FRAME =====================================================
 
@@ -195,7 +198,7 @@ class Lightboard(QWidget):
 
 
 class _RotorsHandler(QFrame):
-    def __init__(self, master, position_plug, rotate_plug, enigma_api, label_plug):
+    def __init__(self, master, position_plug, rotate_plug, rotate_ref_plug, enigma_api, label_plug, reflector_pos_plug):
         """
         :param master: {Qt} Master qt object
         :param position_plug: {callable} Callable method for getting rotor positions
@@ -208,6 +211,7 @@ class _RotorsHandler(QFrame):
         self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._layout = QHBoxLayout(self)
         self._rotor_indicators = []
+        self._reflector_indicator = None
 
         # ATTRIBUTES ===========================================================
 
@@ -215,6 +219,8 @@ class _RotorsHandler(QFrame):
         self._rotate_plug = rotate_plug
         self._position_plug = position_plug
         self._label_plug = label_plug
+        self._rotate_ref_plug = rotate_ref_plug
+        self._reflector_pos_plug = reflector_pos_plug
 
         # SETTINGS ICON ========================================================
 
@@ -224,7 +230,16 @@ class _RotorsHandler(QFrame):
         self.settings_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.settings_button.clicked.connect(self.open_settings)
 
-        # GENERATE_ROTORS ======================================================
+        # GENERATE ROTORS AND REFLECTOR ========================================
+
+        indicator = _RotorHandler(self, self._rotate_ref_plug(1, True),
+                                  self._rotate_ref_plug(-1, True),
+                                  self.set_positions)
+        indicator.setStyleSheet("color: red;")
+        self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
+        self._reflector_indicator = indicator
+        self._layout.addWidget(self.settings_button)
+
 
         self.generate_rotors()
 
@@ -237,6 +252,8 @@ class _RotorsHandler(QFrame):
         """
         Regenerates rotor views
         """
+        # Delete
+
         self._layout.removeWidget(self.settings_button)
 
         for indicator in self._rotor_indicators:
@@ -244,8 +261,14 @@ class _RotorsHandler(QFrame):
 
         self._rotor_indicators = []
 
+        if self.enigma_api.reflector_rotatable():
+            self._reflector_indicator.show()
+        else:
+            self._reflector_indicator.hide()
+
+        # Create
         for i in range(len(self._position_plug())):  # Rotor controls
-            indicator = _RotorHandler(self, i, self._rotate_plug(i, 1, True), self._rotate_plug(i, -1, True), self.set_positions)
+            indicator = _RotorHandler(self, self._rotate_plug(i, 1, True), self._rotate_plug(i, -1, True), self.set_positions)
             self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
             self._rotor_indicators.append(indicator)
 
@@ -266,16 +289,18 @@ class _RotorsHandler(QFrame):
         """
         Refreshes position indicators to show new positions
         """
+        if self.enigma_api.reflector_rotatable():
+            self._reflector_indicator.set(self._reflector_pos_plug())
+
         for rotor, position in zip(self._rotor_indicators, self.position_plug()):
             rotor.set(position)
 
 
 class _RotorHandler(QFrame):
     """Holds component references for particular rotor"""
-    def __init__(self, master, i, plus_plug, minus_plug, set_pos_plug):
+    def __init__(self, master, plus_plug, minus_plug, set_pos_plug):
         """
         :param master: Qt parent object
-        :param i: {int} Rotor index that determines fast/medium/slow rotor
         :param plus_plug: {callable} Callable that rotates the corresponding
                                      rotor one position forward
         :param minus_plug: {callable} Callable that rotates the corresponding
@@ -291,7 +316,6 @@ class _RotorHandler(QFrame):
             
         # SAVE ATTRIBUTES ======================================================
 
-        self._id = i
         self.plus_plug = plus_plug
         self.minus_plug = minus_plug
         self.set_positions = set_pos_plug

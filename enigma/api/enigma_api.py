@@ -89,6 +89,9 @@ class EnigmaAPI:
         else:
             return self._enigma.reflector()
 
+    def reflector_rotatable(self):
+        return self._enigma.reflector_rotatable()
+
     def rotors(self, new_rotors=None):
         """
         Returns rotors or sets a new one if new_rotors is overriden
@@ -140,9 +143,18 @@ class EnigmaAPI:
         if callback is True:
             return lambda: self._enigma.rotate_rotor(rotor_id, by)
         else:
-            return self._enigma.rotate_rotor(rotor_id, by)
+            self._enigma.rotate_rotor(rotor_id, by)
 
-    # Generators
+    def rotate_reflector(self, by=1, callback=False):
+        if callback is True:
+            return lambda: self._enigma.rotate_reflector(by)
+        else:
+            self._enigma.rotate_reflector(by)
+
+    def reflector_position(self, new_position=None):
+        return self._enigma.reflector_position(new_position)
+
+    # GENERATORS
 
     @classmethod
     def generate_rotors(cls, model, rotor_labels):
@@ -196,12 +208,14 @@ class EnigmaAPI:
         elif comp_type == "Reflector":
             for reflector in data["reflectors"]:
                 if reflector['label'] == label or label == i:
-                    return Reflector(**reflector)
+                    return Reflector(**reflector, rotatable=data['rotatable_ref'])
                 i += 1
         elif comp_type == "Stator":
             return Stator(**data["stator"])
         else:
             raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
+
+    # CONFIG SAVE/LOAD
 
     def load_from_config(self, config):
         """
