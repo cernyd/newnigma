@@ -85,9 +85,9 @@ class EnigmaAPI:
         :param new_reflector: {str}
         """
         if new_reflector is not None:
-            self._enigma._reflector = self.generate_component(self.model(), 'Reflector', new_reflector)
+            self._enigma.reflector(self.generate_component(self.model(), 'Reflector', new_reflector))
         else:
-            return self._enigma._reflector
+            return self._enigma.reflector()
 
     def rotors(self, new_rotors=None):
         """
@@ -104,21 +104,21 @@ class EnigmaAPI:
         Returns positions or sets a new one if new_positions is overriden
         :param new_positions: {str}
         """
-        self._enigma.positions(new_positions)
+        return self._enigma.positions(new_positions)
     
     def ring_settings(self, new_ring_settings=None):
         """
         Returns ring_settings or sets a new one if new_ring_settings is overriden
         :param ring_settings: {str}
         """
-        self._enigma.ring_settings(new_ring_settings)
+        return self._enigma.ring_settings(new_ring_settings)
 
     def plug_pairs(self, new_plug_pairs=None):
         """
         Returns plug_pairs or sets a new one if new_plug_pairs is overriden
         :param new_plug_pairs: {str}
         """
-        self._enigma.plug_pairs(new_plug_pairs)
+        return self._enigma.plug_pairs(new_plug_pairs)
 
     def encrypt(self, letter):
         """

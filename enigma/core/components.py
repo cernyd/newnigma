@@ -467,10 +467,9 @@ class Enigma:
 
     def plug_pairs(self, new_plug_pairs=None):
         if self._uhr is not None:
-            if new_plug_pairs is not None:
-                self._uhr.pairs(new_plug_pairs)
+            return self._uhr.pairs(new_plug_pairs)
         else:
-            self._plugboard.pairs(new_plug_pairs)
+            return self._plugboard.pairs(new_plug_pairs)
 
     def connect_uhr(self):
         self._uhr = Uhr()

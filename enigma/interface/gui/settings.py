@@ -155,11 +155,11 @@ class Settings(QDialog):
         
         if from_api:
             # Get from api
-            reflector_i = reflectors.index(self.enigma_api.reflector().label)
+            reflector_i = reflectors.index(self.enigma_api.reflector())
             self.reflector_group.button(reflector_i).setChecked(True)
             
             for i, rotor in enumerate(self.enigma_api.rotors()):
-                rotor_i = rotors.index(rotor.label)
+                rotor_i = rotors.index(rotor)
                 self.radio_selectors[i].button(rotor_i).setChecked(True)
             
             for i, ring in enumerate(self.enigma_api.ring_settings()):
@@ -185,7 +185,7 @@ class Settings(QDialog):
 
         self.enigma_api.reflector(new_reflector)
 
-        if new_rotors != [rotor.label for rotor in self.enigma_api.rotors()]:
+        if new_rotors != self.enigma_api.rotors():
             self.enigma_api.rotors(new_rotors)
 
         self.enigma_api.ring_settings(ring_settings)
