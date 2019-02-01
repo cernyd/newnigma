@@ -22,7 +22,10 @@ def test_single_encrypt():
 def test_uhr():
     uhr = Uhr()
     uhr.pairs(['AB', 'CD', 'EF', 'GH', 'IJ', 'KL', 'MN', 'OP', 'QR', 'ST'])
-    print(uhr.route('A'))
+    
+    uhr.position(1)
+    output = uhr.route('B')
+
 
 def test_routing():
     """
@@ -37,9 +40,11 @@ def test_routing():
                 "Backwards routing doesn't return to the original location!"
             base.rotate(i)
 
+
 def test_implementation():
     """
-    Tests the implementation by encrypting each letter of the alphabet
+    Tests t
+he implementation by encrypting each letter of the alphabet
     4000 times and checking if the encrypted message does not contain the 
     letter (this must always be true because the Enigma worked this way)
 

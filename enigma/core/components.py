@@ -269,36 +269,52 @@ class Uhr:
 
         self._offset = 0  # Scrambler disc offset
     
-    def pairs(self, pairs):
+    def rotate(self, offset_by=1):
+        self._offset = (self._offset + offset_by) % 40
+    
+    def position(self, new_position=None):
+        if new_position is not None:
+            self._offset = new_position % 40
+        else:
+            return self._offset
+    
+    def pairs(self, pairs=None):
         """
         Sets pairs
         """
-        self._pairs = pairs
-
-        print(self._pairs)
+        if pairs is not None:
+            assert len(pairs) == 10, "Uhr allows only exactly 10 pairs to be plugged in at a time!"
+            self._pairs = pairs
+        else:
+            return self._pairs
 
     def route(self, letter):
         coords = []
         for i, pair in enumerate(self._pairs):
-            coords.append(('a', pair[0], self.a_pairs[i], self.a_pairs[i]+2))
-            coords.append(('b', pair[1], self.b_pairs[i], self.b_pairs[i]+2))
+            coords.append(('%da' % (i+1), pair[0], self.a_pairs[i], self.a_pairs[i]+2))
+            coords.append(('%db' % (i+1), pair[1], self.b_pairs[i], self.b_pairs[i]+2))
+
+        print(coords)
         
-        # THICC contact = send
-        # Thin contact = receive
+        board = None
         for plug in coords:
             if plug[1] == letter:
-                send_pin = plug[2]
-                board = 'a' if plug[0] == 'b' else 'b'
+                send_pin = (plug[2] + self._offset) % 40 
+                board = 'a' if 'b' in plug[0] else 'b'
                 break
         
-        send_pin = (send_pin + self._offset) % 40
         if board == 'a':
             receive_pin = self.contacts[send_pin]
-        else:
+        elif board == 'b':
             receive_pin = self.contacts.index(send_pin)
+        else:
+            return letter  # Unconnected pairs are not routed
+
+        receive_pin = (receive_pin - self._offset) % 40
         
         for plug in coords:
-            if plug[0] == board and plug[3] == receive_pin:
+            if board in plug[0] and plug[3] == receive_pin:
+                print("output" + plug[1])
                 return plug[1]
 
 
@@ -402,6 +418,21 @@ class Enigma:
         self.rotors = rotors
         self._stator = stator
         self._plugboard = Plugboard(plug_pairs)
+        self._uhr = None
+
+    def connect_uhr(self):
+        self._uhr = Uhr()
+    
+    def disconnect_uhr(self):
+        del self._uhr
+        self._uhr = None
+
+    def uhr_position(self, new_position=None):
+        assert self._uhr is not None, "Can't set uhr position - uhr not connected!"
+        if new_position is not None:
+            self._uhr.position(new_position)
+        else:
+            return self._uhr.position()
     
     def step_rotors(self):
         """Advance rotor positions, the fourth rotor is not included because
@@ -460,9 +491,14 @@ class Enigma:
         result)
         :param key: {char} letter to encrypt
         """
+        if self._uhr is not None:
+            router = self._uhr
+        else:
+            router = self._plugboard
+
         self.step_rotors()
 
-        output = self._plugboard.route(key)
+        output = router.route(key)  #self._plugboard.route(key)
         output = self._stator.forward(output)
 
         for rotor in reversed(self.rotors):
@@ -474,15 +510,21 @@ class Enigma:
             output = rotor.backward(output)
 
         output = self._stator.backward(output)
-        output = self._plugboard.route(output)
+        output = router.route(output)# self._plugboard.route(output)
 
         return output
 
     @property
     def plug_pairs(self):
-        return self._plugboard.pairs()
+        if self._uhr is not None:
+            return self._uhr.pairs()
+        else:
+            return self._plugboard.pairs()
 
     @plug_pairs.setter
     def plug_pairs(self, new_plug_pairs):
-        self._plugboard.pairs(new_plug_pairs)
+        if self._uhr is not None:
+            self._uhr.pairs(new_plug_pairs)
+        else:
+            self._plugboard.pairs(new_plug_pairs)
 

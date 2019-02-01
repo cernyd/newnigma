@@ -7,7 +7,7 @@ from enigma.interface.gui import *
 
 
 class Plugboard(QDialog):
-    def __init__(self, master, pairs_plug):
+    def __init__(self, master, pairs_plug, enable_uhr_plug, disable_uhr_plug, uhr_position_plug):
         """
         Allows choosing and viewing current plugboard pairs
         :param master: Qt parent object
@@ -60,6 +60,9 @@ class Plugboard(QDialog):
         self.pairs_plug = pairs_plug
         for pair in self.pairs_plug():
             self.connect_sockets(*pair)
+        self.enable_uhr_plug = enable_uhr_plug
+        self.disable_uhr_plug = disable_uhr_plug
+        self.uhr_position_plug = uhr_position_plug
 
         # SHOW WIDGETS =========================================================
 
@@ -76,11 +79,14 @@ class Plugboard(QDialog):
         met
         """
         if self.enable_uhr.isChecked():
-            self.apply_btn.setEnabled(False)
-            self.apply_btn.setToolTip("When using the Uhr, all plug pairs must be connected!")
-        else:
-            self.apply_btn.setEnabled(True)
-            self.apply_btn.setToolTip(None)
+            pair_n = len(self._pairs())
+            if pair_n != 10:
+                self.apply_btn.setEnabled(False)
+                self.apply_btn.setToolTip("When using the Uhr, exactly 10 plug pairs "
+                                          "must be connected!\n%d pairs left to connect..." % (10 - pair_n))
+            else:
+                self.apply_btn.setEnabled(True)
+                self.apply_btn.setToolTip(None)
 
     def change_uhr_status(self):
         """
@@ -93,14 +99,22 @@ class Plugboard(QDialog):
             self.uhr.setEnabled(False)
             self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
 
-    def collect(self):
-        """
-        Collects all unique letter pairs
-        """
+    def _pairs(self):
         pairs = []
         for pair in self.pairs.items():
             if pair[::-1] not in pairs and all(pair):
                 pairs.append(pair)
+        return pairs
+
+    def collect(self):
+        """
+        Collects all unique letter pairs
+        """
+        pairs = self._pairs()
+
+        if self.enable_uhr.isChecked():
+            self.enable_uhr_plug()
+            self.uhr_position_plug(self.uhrmenu.position())
 
         self.pairs_plug(pairs)
         self.close()
@@ -228,4 +242,7 @@ class Uhr(QDialog):
         Sets displayed indicator value to current dial value
         """
         self.indicator.setText("%02d" % self.dial.value())
+
+    def position(self):
+        return self.dial.value()
 
