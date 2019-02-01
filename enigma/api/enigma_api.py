@@ -77,7 +77,7 @@ class EnigmaAPI:
             del self._enigma
             self._enigma = self.generate_enigma(new_model, reflector, rotors)
         else:
-            return self._enigma.model
+            return self._enigma.model()
 
     def reflector(self, new_reflector=None):
         """
@@ -97,37 +97,28 @@ class EnigmaAPI:
         if new_rotors is not None:
             self._enigma.rotors = self.generate_rotors(self.model(), new_rotors)
         else:
-            return self._enigma.rotors
+            return self._enigma.rotors()
 
     def positions(self, new_positions=None):
         """
         Returns positions or sets a new one if new_positions is overriden
         :param new_positions: {str}
         """
-        if new_positions is not None:
-            self._enigma.positions = new_positions
-        else:
-            return self._enigma.positions
+        self._enigma.positions(new_positions)
     
     def ring_settings(self, new_ring_settings=None):
         """
         Returns ring_settings or sets a new one if new_ring_settings is overriden
         :param ring_settings: {str}
         """
-        if new_ring_settings is not None:
-            self._enigma.ring_settings = new_ring_settings
-        else:
-            return self._enigma.ring_settings
+        self._enigma.ring_settings(new_ring_settings)
 
     def plug_pairs(self, new_plug_pairs=None):
         """
         Returns plug_pairs or sets a new one if new_plug_pairs is overriden
         :param new_plug_pairs: {str}
         """
-        if new_plug_pairs is not None:
-            self._enigma.plug_pairs = new_plug_pairs
-        else:
-            return self._enigma.plug_pairs
+        self._enigma.plug_pairs(new_plug_pairs)
 
     def encrypt(self, letter):
         """
@@ -147,9 +138,9 @@ class EnigmaAPI:
                                 lambda evaluation problems in for loops
         """
         if callback is True:
-            return lambda: self._enigma.rotors[rotor_id].rotate(by)
+            return lambda: self._enigma.rotate_rotor(rotor_id, by)
         else:
-            return self._enigma.rotors[rotor_id].rotate(by)
+            return self._enigma.rotate_rotor(rotor_id, by)
 
     # Generators
 

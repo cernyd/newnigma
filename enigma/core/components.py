@@ -252,6 +252,14 @@ class _Rotatable(_Component):
         else:
             return self._offset
 
+    def position(self, numeric=False):
+        """
+        Returns current position (adjusted for ringstellung)
+        :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
+        :return:
+        """
+        return "%02d" % (self._offset + 1) if numeric else alphabet[self._offset]
+
 
 class Reflector(_Rotatable):
     def __init__(self, label, wiring, rotatable=False):
@@ -269,16 +277,13 @@ class Reflector(_Rotatable):
     
     def offset(self, offset=None):
         assert self.__rotatable, "Non-rotatable reflectors don't have offset!"
+
         super().offset(offset)
 
     def position(self, numeric=False):
-        """
-        Returns current position (adjusted for ringstellung)
-        :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
-        :return:
-        """
-        return "%02d" % (self._offset + 1) if numeric else alphabet[self._offset]
+        assert self.__rotatable, "Non-rotatable reflectors don't have a position!"
 
+        super().position(numeric)
 
 
 class Rotor(_Rotatable):
@@ -290,7 +295,7 @@ class Rotor(_Rotatable):
         super().__init__(label, wiring)
 
         self._turnover = turnover
-        self._ring_offset = 0  # "Ringstellung"
+        self._ring_offset = 0
         self._turnover = turnover
 
     def _adjusted_offset(self):
@@ -339,24 +344,117 @@ class Rotor(_Rotatable):
         Returns True if the rotor is in turnover position else False
         :return: {bool} True if the rotor is in turnover position else False
         """
-        return self.position() in self.turnover
+        return self.position() in self._turnover
 
 
 class Enigma:
     """Universal Enigma object that supports every model except Enigma M4"""
-    def __init__(self, model, reflector, rotors, stator, plug_pairs=None):
+    def __init__(self, model, reflector, rotors, stator, plugboard=True, plug_pairs=None, rotor_n=3, rotatable_ref=False):
         """
         :param reflector: {Reflector} Reflector object
         :param rotors: {[Rotor, Rotor, Rotor]} 3 or 4 rotors based on
                                                Enigma model
         :param stator: {Stator} Stator object
         """
-        self.model = model
+        self._model = model
+        self._rotor_n = rotor_n
+
+        # COMPONENTS
         self._reflector = reflector
-        self.rotors = rotors
+        self._rotors = rotors
         self._stator = stator
-        self._plugboard = Plugboard(plug_pairs)
+        
+        # PLUGBOARD AND UHR
+        self._plugboard = Plugboard(plug_pairs) if plugboard else None
         self._uhr = None
+
+    def _route(self, letter):
+        if self._uhr is not None:
+            return self._uhr.route(letter)
+        else:
+            return self._plugboard.route(letter)
+
+    def press_key(self, key):
+        """
+        Simulates effects of pressing an Enigma keys (returning the routed
+        result)
+        :param key: {char} letter to encrypt
+        """
+        self.step_rotors()
+
+        output = self._route(key)
+
+        output = self._stator.forward(output)
+
+        for rotor in reversed(self._rotors):
+            output = rotor.forward(output)
+        
+        output = self._reflector.reflect(output)
+
+        for rotor in self._rotors:
+            output = rotor.backward(output)
+
+        output = self._stator.backward(output)
+
+        output = self._route(output)
+
+        return output
+
+    def step_rotors(self):
+        """Advance rotor positions, the fourth rotor is not included because
+        it never rotates"""
+        if self._rotors[-1].in_turnover():
+            self._rotors[-2].rotate()
+
+        if self._rotors[-2].in_turnover():
+            self._rotors[-2].rotate()
+            self._rotors[-3].rotate()
+
+        self._rotors[-1].rotate()
+
+    # ROTOR/REFLECTOR/RING GETTERS/SETTERS
+
+    def model(self):
+        return self._model
+
+    def rotate_rotor(self, index, by=1):
+        self._rotors[index].rotate(by)
+
+    def positions(self, new_positions=None):
+        """
+        Sets positions of all rotors
+        :param new_positions: {[int, int, int]} or {[char, char, char]} new positions to be set on the Enigma
+        """
+        if new_positions is not None:
+            assert all([type(pos) == str for pos in new_positions]) or all([type(pos) == int for pos in new_positions])
+
+            for position, rotor in zip(new_positions, self._rotors):
+                if type(position) == str:
+                    position = alphabet.index(position)
+                rotor.offset(position)
+        else:
+            return [rotor.position() for rotor in self._rotors]
+
+    def ring_settings(self, new_ring_settings=None):
+        """
+        Returns rotor positions, internal ring settings are different than the
+        real ones! (01 in normal notation is 00 in internal notation)
+        :param new_ring_settings: {[int, int, int]} new ring settings
+        """
+        if new_ring_settings is not None:
+            for setting, rotor in zip(new_ring_settings, self._rotors):
+                rotor.ring_offset(setting-1)
+        else:
+            return [rotor.ring_offset()+1 for rotor in self._rotors]
+
+    # PLUGBOARD AND UHR
+
+    def plug_pairs(self, new_plug_pairs=None):
+        if self._uhr is not None:
+            if new_plug_pairs is not None:
+                self._uhr.pairs(new_plug_pairs)
+        else:
+            self._plugboard.pairs(new_plug_pairs)
 
     def connect_uhr(self):
         self._uhr = Uhr()
@@ -367,102 +465,9 @@ class Enigma:
 
     def uhr_position(self, new_position=None):
         assert self._uhr is not None, "Can't set uhr position - uhr not connected!"
+
         if new_position is not None:
             self._uhr.position(new_position)
         else:
             return self._uhr.position()
     
-    def step_rotors(self):
-        """Advance rotor positions, the fourth rotor is not included because
-        it never rotates"""
-        if self.rotors[-1].in_turnover:
-            self.rotors[-2].rotate()
-
-        if self.rotors[-2].in_turnover:
-            self.rotors[-2].rotate()
-            self.rotors[-3].rotate()
-
-        self.rotors[-1].rotate()
-
-    @property
-    def positions(self):
-        """
-        Returns rotor positions
-        :return: {[int, int, int]}
-        """
-        return [rotor.position() for rotor in self.rotors]
-
-    @positions.setter
-    def positions(self, new_positions):
-        """
-        Sets positions of all rotors
-        :param new_positions: {[int, int, int]} or {[char, char, char]} new positions to be set on the Enigma
-        """
-        assert all([type(pos) == str for pos in new_positions]) or all([type(pos) == int for pos in new_positions])
-
-        for position, rotor in zip(new_positions, self.rotors):
-            if type(position) == str:
-                position = alphabet.index(position)
-            rotor.set_offset(position)
-
-    @property
-    def ring_settings(self):
-        """
-        Returns rotor positions
-        :return: {[int, int, int]}
-        """
-        return [rotor.ring_offset+1 for rotor in self.rotors]
-
-    @ring_settings.setter
-    def ring_settings(self, new_ring_settings):
-        """
-        Returns rotor positions, internal ring settings are different than the
-        real ones! (01 in normal notation is 00 in internal notation)
-        :param new_ring_settings: {[int, int, int]} new ring settings
-        """
-        for setting, rotor in zip(new_ring_settings, self.rotors):
-            rotor.set_ring(setting-1)
-
-    def press_key(self, key):
-        """
-        Simulates effects of pressing an Enigma keys (returning the routed
-        result)
-        :param key: {char} letter to encrypt
-        """
-        if self._uhr is not None:
-            router = self._uhr
-        else:
-            router = self._plugboard
-
-        self.step_rotors()
-
-        output = router.route(key)  #self._plugboard.route(key)
-        output = self._stator.forward(output)
-
-        for rotor in reversed(self.rotors):
-            output = rotor.forward(output)
-        
-        output = self._reflector.reflect(output)
-
-        for rotor in self.rotors:
-            output = rotor.backward(output)
-
-        output = self._stator.backward(output)
-        output = router.route(output)# self._plugboard.route(output)
-
-        return output
-
-    @property
-    def plug_pairs(self):
-        if self._uhr is not None:
-            return self._uhr.pairs()
-        else:
-            return self._plugboard.pairs()
-
-    @plug_pairs.setter
-    def plug_pairs(self, new_plug_pairs):
-        if self._uhr is not None:
-            self._uhr.pairs(new_plug_pairs)
-        else:
-            self._plugboard.pairs(new_plug_pairs)
-
