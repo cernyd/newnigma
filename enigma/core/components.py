@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from string import ascii_uppercase as alphabet
+from enigma.core.extensions import Uhr#, UKWD
 
 
 # Stators
@@ -35,6 +36,7 @@ ENIGMA_D_K = {
     'reflectors': (
         {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
     ),
+    'rotatable_ref': True,
     'letter_group': 5,
     'plugboard': False
 }
@@ -105,7 +107,7 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
         ),
-        'rotatable_ref': False,
+        'rotatable_ref': True,
         'letter_group': 5,
         'plugboard': False
     },
@@ -122,7 +124,7 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
         ),
-        'rotatable_ref': False,
+        'rotatable_ref': True,
         'letter_group': 5,
         'plugboard': False
     },
@@ -137,7 +139,7 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "QYHOGNECVPUZTFDJAXWMKISRBL"},
         ),
-        'rotatable_ref': False,
+        'rotatable_ref': True,
         'letter_group': 5,
         'plugboard': False
     },
@@ -157,7 +159,7 @@ historical_data = {
         'reflectors': (
             {'label': 'UKW', 'wiring': "GEKPBTAUMOCNILJDXZYFHWVQSR"},
         ),
-        'rotatable_ref': False,
+        'rotatable_ref': True,
         'letter_group': 5,
         'plugboard': False
     }
@@ -204,25 +206,55 @@ class Plugboard:
         return self._pairs.get(letter, letter)
 
 
-class Stator:
+class _Component:  # Base component
+    def __init__(self, label, wiring):
+        self._label = label
+        self._wiring = wiring
+        # TODO: Monkeypatch forward and backward?
+
+    def _forward(self, letter):
+        return self._wiring[alphabet.index(letter)]
+    
+    def _backward(self, letter):
+        return alphabet[self._wiring.index(letter)]
+
+
+class Stator(_Component):
     def __init__(self, wiring):
         """
         :param wiring: {str} defines the way letters are routed trough the rotor
         """
-        # Pairs of letters FRONT <-> BACK
-        self.wiring = wiring
+        super().__init__('ETW', wiring)
 
     def forward(self, letter):
-        return self.wiring[alphabet.index(letter)]
+        return super()._forward(letter)
 
     def backward(self, letter):
-        return alphabet[self.wiring.index(letter)]
+        return super()._backward(letter)
 
 
-class Reflector:
+class _Rotatable(_Component):
     def __init__(self, label, wiring):
-        self.wiring = wiring
-        self.label = label
+        super().__init__(label, wiring)
+
+        self._offset = 0
+
+    def offset(self, offset=None):
+        """
+        Sets offset of the rotor
+        :param offset: {int} new rotor offset
+        """
+        if offset is not None:
+            self._offset = offset % 26
+        else:
+            return self._offset
+
+
+class Reflector(_Rotatable):
+    def __init__(self, label, wiring, rotatable=False):
+        super().__init__(label, wiring)
+
+        self.__rotatable = False
 
     def reflect(self, letter):
         """
@@ -230,106 +262,32 @@ class Reflector:
         :param letter: {char}
         :return: {char}
         """
-        return self.wiring[alphabet.index(letter)]
-
-
-class UKWD(Plugboard):
-    """UKW - D is a field-rewirable Enigma machine reflector"""
-
-    def __init__(self, pairs):
-        """
-        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
-                      where each letter can only be used once
-        """
-        super().__init__(pairs)
-        self.plugboard = Plugboard(pairs)
-
-    def reflect(self, letter):  # TODO: This might not be the best inheritance strategy
-        """
-        Reflects letter sending it backwards into the 3 rotors
-        :param letter: {char}
-        :return: {char}
-        """
-        return self.route(letter)
-
-
-class Uhr:
-    def __init__(self):
-        # Way contacts 00 ... 39 are steckered with the A board
-        self.contacts = [26, 11, 24, 21, 2, 31, 0, 25, 30, 39, 28, 13, 22, 35, 20,
-                    37, 6, 23, 4, 33, 34, 19, 32, 9, 18, 7, 16, 17, 10, 3, 8,
-                    1, 38, 27, 36, 29, 14, 15, 12, 5]
-
-        # The first contact of each plug hole (1a, 2a, 3a, ...)
-        self.a_pairs = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
-        # The first contact of each plug hole (1b, 2b, 3b, ...)
-        self.b_pairs = [4, 16, 28, 36, 24, 12, 0, 8, 20, 32]
-
-        self._pairs = []
-
-        self._offset = 0  # Scrambler disc offset
+        return super()._forward(letter)
     
-    def rotate(self, offset_by=1):
-        self._offset = (self._offset + offset_by) % 40
-    
-    def position(self, new_position=None):
-        if new_position is not None:
-            self._offset = new_position % 40
-        else:
-            return self._offset
-    
-    def pairs(self, pairs=None):
+    def offset(self, offset=None):
+        assert self.__rotatable, "Non-rotatable reflectors don't have offset!"
+        super().offset(offset)
+
+    def position(self, numeric=False):
         """
-        Sets pairs
+        Returns current position (adjusted for ringstellung)
+        :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
+        :return:
         """
-        if pairs is not None:
-            assert len(pairs) == 10, "Uhr allows only exactly 10 pairs to be plugged in at a time!"
-            self._pairs = pairs
-        else:
-            return self._pairs
-
-    def route(self, letter):
-        coords = []
-        for i, pair in enumerate(self._pairs):
-            coords.append(('%da' % (i+1), pair[0], self.a_pairs[i], self.a_pairs[i]+2))
-            coords.append(('%db' % (i+1), pair[1], self.b_pairs[i], self.b_pairs[i]+2))
-
-        print(coords)
-        
-        board = None
-        for plug in coords:
-            if plug[1] == letter:
-                send_pin = (plug[2] + self._offset) % 40 
-                board = 'a' if 'b' in plug[0] else 'b'
-                break
-        
-        if board == 'a':
-            receive_pin = self.contacts[send_pin]
-        elif board == 'b':
-            receive_pin = self.contacts.index(send_pin)
-        else:
-            return letter  # Unconnected pairs are not routed
-
-        receive_pin = (receive_pin - self._offset) % 40
-        
-        for plug in coords:
-            if board in plug[0] and plug[3] == receive_pin:
-                print("output" + plug[1])
-                return plug[1]
+        return "%02d" % (self.offset + 1) if numeric else alphabet[self.offset]
 
 
-class Rotor:
+class Rotor(_Rotatable):
     def __init__(self, label, wiring, turnover=None):
         """
         :param label: {str} rotor label (I, II, III, ...)
         :param wiring: {str} defines the way letters are routed trough the rotor
         """
-        self.wiring = [alphabet.index(letter) for letter in wiring]
+        super().__init__(label, wiring)
 
-        self.label = label
-        self.offset = 0  # "Stellung"
-        self.ring_offset = 0  # "Ringstellung"
-        self.turnover = turnover
+        self._turnover = turnover
+        self._ring_offset = 0  # "Ringstellung"
+        self._turnover = turnover
 
     def forward(self, letter):
         """
@@ -348,7 +306,7 @@ class Rotor:
         :return: {char}
         """
         relative_input = self.apply_offset(alphabet.index(letter))
-        relative_result = self.apply_offset(self.wiring.index(relative_input), True)
+        relative_result = super()._backward(elf.wiring.index(relative_input), True)
         return alphabet[relative_result]
 
     def apply_offset(self, i, negate=False):
@@ -358,7 +316,7 @@ class Rotor:
         :param negate: {bool} subtract the offset rather than add
         :return: {int} the offset value
         """
-        offset = (self.offset - self.ring_offset) % 26
+        offset = (self._offset - self._ring_offset) % 26
         offset = -offset if negate else offset
         return (i + offset) % 26  # The alphabet has 27 - 1 letters (and index is counted from 0)
 
@@ -369,31 +327,15 @@ class Rotor:
         :param offset_by: {int} how many places the rotor should be offset
                           (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
         """
-        self.offset = (self.offset + offset_by) % 26
-
-    def set_offset(self, offset):
-        """
-        Sets offset of the rotor
-        :param offset: {int} new rotor offset
-        """
-        self.offset = offset % 26
+        self._offset = (self._offset + offset_by) % 26
 
     def set_ring(self, setting):
         """
         Sets "Rinstellung" (ring settings) which can be misaligned with internal wiring
         :param setting: {int} new ring setting
         """
-        self.ring_offset = setting % 26
+        self._ring_offset = setting % 26
 
-    def position(self, numeric=False):
-        """
-        Returns current rotor position (adjusted for ringstellung)
-        :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
-        :return:
-        """
-        # Shown position does not need to equat the actual position because the labels can be
-        # rotated using "Ringstellung"
-        return "%02d" % (self.offset + 1) if numeric else alphabet[self.offset]
 
     @property
     def in_turnover(self):

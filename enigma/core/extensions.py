@@ -1,0 +1,85 @@
+
+#class UKWD(Plugboard):  TODO: Fix
+#    """UKW-D is a field-rewirable Enigma machine reflector"""
+#
+#    def __init__(self, pairs):
+#        """
+#        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+#                      where each letter can only be used once
+#        """
+#        super().__init__(pairs)
+#        self.plugboard = Plugboard(pairs)
+#
+#    def reflect(self, letter):  # TODO: This might not be the best inheritance strategy
+#        """
+#        Reflects letter sending it backwards into the 3 rotors
+#        :param letter: {char}
+#        :return: {char}
+#        """
+#        return self.route(letter)
+
+
+class Uhr:
+    def __init__(self):
+        # Way contacts 00 ... 39 are steckered with the A board
+        self.contacts = [26, 11, 24, 21, 2, 31, 0, 25, 30, 39, 28, 13, 22, 35, 20,
+                    37, 6, 23, 4, 33, 34, 19, 32, 9, 18, 7, 16, 17, 10, 3, 8,
+                    1, 38, 27, 36, 29, 14, 15, 12, 5]
+
+        # The first contact of each plug hole (1a, 2a, 3a, ...)
+        self.a_pairs = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
+        # The first contact of each plug hole (1b, 2b, 3b, ...)
+        self.b_pairs = [4, 16, 28, 36, 24, 12, 0, 8, 20, 32]
+
+        self._pairs = []
+
+        self._offset = 0  # Scrambler disc offset
+    
+    def rotate(self, offset_by=1):
+        self._offset = (self._offset + offset_by) % 40
+    
+    def position(self, new_position=None):
+        if new_position is not None:
+            self._offset = new_position % 40
+        else:
+            return self._offset
+    
+    def pairs(self, pairs=None):
+        """
+        Sets pairs
+        """
+        if pairs is not None:
+            assert len(pairs) == 10, "Uhr allows only exactly 10 pairs to be plugged in at a time!"
+            self._pairs = pairs
+        else:
+            return self._pairs
+
+    def route(self, letter):
+        coords = []
+        for i, pair in enumerate(self._pairs):
+            coords.append(('%da' % (i+1), pair[0], self.a_pairs[i], self.a_pairs[i]+2))
+            coords.append(('%db' % (i+1), pair[1], self.b_pairs[i], self.b_pairs[i]+2))
+
+        print(coords)
+        
+        board = None
+        for plug in coords:
+            if plug[1] == letter:
+                send_pin = (plug[2] + self._offset) % 40 
+                board = 'a' if 'b' in plug[0] else 'b'
+                break
+        
+        if board == 'a':
+            receive_pin = self.contacts[send_pin]
+        elif board == 'b':
+            receive_pin = self.contacts.index(send_pin)
+        else:
+            return letter  # Unconnected pairs are not routed
+
+        receive_pin = (receive_pin - self._offset) % 40
+        
+        for plug in coords:
+            if board in plug[0] and plug[3] == receive_pin:
+                print("output" + plug[1])
+                return plug[1]
+
