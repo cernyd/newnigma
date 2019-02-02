@@ -249,14 +249,22 @@ class _RotorsHandler(QFrame):
 
         # GENERATE ROTORS AND REFLECTOR ========================================
 
+
+        self.ukwd_indicator = QLabel("D")
+        self.ukwd_indicator.setStyleSheet("color: red;")
+        self.ukwd_indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self.ukwd_indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+        self.ukwd_indicator.setLineWidth(3)
+
         indicator = _RotorHandler(self, self._rotate_ref_plug(1, True),
                                   self._rotate_ref_plug(-1, True),
                                   self.set_positions)
         indicator.setStyleSheet("color: red;")
+
         self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
         self._reflector_indicator = indicator
         self._layout.addWidget(self.settings_button)
-
+        self._layout.addWidget(self.ukwd_indicator)
 
         self.generate_rotors()
 
@@ -282,6 +290,11 @@ class _RotorsHandler(QFrame):
             self._reflector_indicator.show()
         else:
             self._reflector_indicator.hide()
+
+        if self.enigma_api.reflector() == 'UKW-D':
+            self.ukwd_indicator.show()
+        else:
+            self.ukwd_indicator.hide()
 
         # Create
         for i in range(len(self._position_plug())):  # Rotor controls
@@ -339,9 +352,9 @@ class _RotorHandler(QFrame):
 
         # ROTATE FORWARD =======================================================
 
-        position_plus = QPushButton('+', self)
-        position_plus.clicked.connect(self.increment)
-        position_plus.setToolTip("Rotates rotor forwards by one place")
+        self.position_plus = QPushButton('+', self)
+        self.position_plus.clicked.connect(self.increment)
+        self.position_plus.setToolTip("Rotates rotor forwards by one place")
 
         # POSITION INDICATOR ===================================================
 
@@ -352,15 +365,15 @@ class _RotorHandler(QFrame):
 
         # ROTATE FORWARD =======================================================
 
-        position_minus = QPushButton('-', self)
-        position_minus.clicked.connect(self.decrement)
-        position_minus.setToolTip("Rotates rotors backwards by one place")
+        self.position_minus = QPushButton('-', self)
+        self.position_minus.clicked.connect(self.decrement)
+        self.position_minus.setToolTip("Rotates rotors backwards by one place")
 
         # SHOW WIDGETS =========================================================
 
-        self._layout.addWidget(position_plus, alignment=Qt.AlignTop)
+        self._layout.addWidget(self.position_plus, alignment=Qt.AlignTop)
         self._layout.addWidget(self._indicator)
-        self._layout.addWidget(position_minus, alignment=Qt.AlignBottom)
+        self._layout.addWidget(self.position_minus, alignment=Qt.AlignBottom)
 
     def set(self, position):
         """

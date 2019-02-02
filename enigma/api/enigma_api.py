@@ -88,6 +88,7 @@ class EnigmaAPI:
         :param new_reflector: {str}
         """
         if new_reflector is not None:
+            print("generate ukwd" + new_reflector)
             self._enigma.reflector(self.generate_component(self.model(), 'Reflector', new_reflector))
         else:
             return self._enigma.reflector()
@@ -132,7 +133,10 @@ class EnigmaAPI:
         serialized = ''
 
         for pos in position:
-            serialized += "%02d" % alphabet.index(pos)
+            if pos in alphabet:
+                serialized += "%02d" % alphabet.index(pos)
+            else:
+                serialized += pos
 
         self._buffer.append(int(serialized))
 
@@ -202,6 +206,9 @@ class EnigmaAPI:
     def reflector_position(self, new_position=None):
         return self._enigma.reflector_position(new_position)
 
+    def reflector_pairs(self, new_pairs=None):
+        return self._enigma.reflector_pairs(new_pairs)
+
     def uhr(self, x=None):
         return self._enigma.uhr(x)
 
@@ -232,8 +239,10 @@ class EnigmaAPI:
         rotor_n = historical_data[model]['rotor_n']
         plugboard = historical_data[model]['plugboard']
         rotatable_ref = historical_data[model]['rotatable_ref']
+        numeric = historical_data[model]['numeric']
             
-        return Enigma(model, reflector, rotors, stator, plugboard=plugboard, rotor_n=rotor_n, rotatable_ref=rotatable_ref)
+        return Enigma(model, reflector, rotors, stator, plugboard=plugboard, 
+                      rotor_n=rotor_n, rotatable_ref=rotatable_ref, numeric=numeric)
 
     @classmethod
     def generate_component(cls, model, comp_type, label=None):
@@ -255,21 +264,31 @@ class EnigmaAPI:
         assert model in historical_data, "The model argument must be in historical" \
                                          "Enigma models!"
      
+        component = None
         i = 0
         if comp_type == "Rotor":
             for rotor in data["rotors"]:
                 if rotor['label'] == label or label == i:
-                    return Rotor(**rotor)
+                    component = Rotor(**rotor)
+                    break
                 i += 1
+            assert component, "No component with label %s found!" % label
         elif comp_type == "Reflector":
+            if label == 'UKW-D':
+                return UKWD(UKW_D)
+
             for reflector in data["reflectors"]:
                 if reflector['label'] == label or label == i:
-                    return Reflector(**reflector, rotatable=data['rotatable_ref'])
+                    component = Reflector(**reflector, rotatable=data['rotatable_ref'])
+                    break
                 i += 1
+            assert component, "No component with label %s found!" % label
         elif comp_type == "Stator":
             return Stator(**data["stator"])
         else:
             raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
+
+        return component
 
     # CONFIG SAVE/LOAD
 

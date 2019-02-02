@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from enigma.core.components import Enigma, Plugboard, Uhr
+from enigma.core.components import Enigma, Plugboard, Uhr, UKWD
 from enigma.api.enigma_api import EnigmaAPI
 from string import ascii_uppercase as alphabet
 
@@ -18,6 +18,17 @@ def test_single_encrypt():
     # "Looping back" to position 0 should produce the same result as in default position
     enigma.rotate(24)
     assert enigma.forward('A') == 'E'
+
+
+def test_ukwd():
+    pairs = ['HK', 'GL', 'NQ', 'SV', 'UX', 'TZ',
+             'RW', 'AD', 'BF', 'CO', 'EP', 'IM']
+    ukwd = UKWD(pairs)
+
+    assert ukwd.reflect('T') == 'P'
+
+    for pair in ukwd.wiring():
+        assert pair in pairs or pair[::-1] in pairs
 
 
 def test_uhr_addon():

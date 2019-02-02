@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from string import ascii_uppercase as alphabet
-from enigma.core.extensions import Uhr#, UKWD
+from enigma.core.extensions import Uhr
 
 
 # Stators
@@ -23,6 +23,9 @@ VIII = {'label': 'VIII', 'wiring': 'FKQHTLXOCBJSPDZRAMEWNIUYGV', 'turnover': 'ZM
 UKW_B = {'label': 'UKW-B', 'wiring': "YRUHQSLDPXNGOKMIEBFZCWVJAT"}
 UKW_C = {'label': 'UKW-C', 'wiring': "FVPJIAOYEDRZXWGCTKUQSBNMHL"}
 
+# Special case, can be used with any Enigma
+UKW_D = ['AB', 'CD', 'EF', 'GH', 'IK', 'LM', 'NO', 'PQ', 'RS', 'TU', 'VW', 'XZ']
+
 
 # Enigma D and K
 ENIGMA_D_K = {
@@ -38,7 +41,8 @@ ENIGMA_D_K = {
     ),
     'rotatable_ref': True,
     'letter_group': 5,
-    'plugboard': False
+    'plugboard': False,
+    'numeric': False
 }
 
 
@@ -52,7 +56,8 @@ historical_data = {
         ),
         'rotatable_ref': False,
         'letter_group': 5,
-        'plugboard': True
+        'plugboard': True,
+        'numeric': True
     },
     'EnigmaM3': {
         'stator': ETW,
@@ -61,7 +66,8 @@ historical_data = {
         'reflectors': (UKW_B, UKW_C),
         'rotatable_ref': False,
         'letter_group': 5,
-        'plugboard': True
+        'plugboard': True,
+        'numeric': False
     },
     'EnigmaM4': {
         'stator': ETW,
@@ -77,7 +83,8 @@ historical_data = {
         ),
         'rotatable_ref': False,
         'letter_group': 4,
-        'plugboard': True
+        'plugboard': True,
+        'numeric': False
     },
     'Norenigma': {
         'stator': ETW,
@@ -94,7 +101,8 @@ historical_data = {
         ),
         'rotatable_ref': False,
         'letter_group': 5,
-        'plugboard': True
+        'plugboard': True,
+        'numeric': False
     },
     'EnigmaG': {
         'stator': ETW_QWERTZ,
@@ -109,7 +117,8 @@ historical_data = {
         ),
         'rotatable_ref': True,
         'letter_group': 5,
-        'plugboard': False
+        'plugboard': False,
+        'numeric': False
     },
     'EnigmaD': ENIGMA_D_K,
     'EnigmaK': ENIGMA_D_K,
@@ -126,7 +135,9 @@ historical_data = {
         ),
         'rotatable_ref': True,
         'letter_group': 5,
-        'plugboard': False
+        'plugboard': False,
+        'numeric': False
+        
     },
     'Railway': {
         'stator': ETW_QWERTZ,
@@ -141,7 +152,8 @@ historical_data = {
         ),
         'rotatable_ref': True,
         'letter_group': 5,
-        'plugboard': False
+        'plugboard': False,
+        'numeric': False
     },
     'Tirpitz': {
         'stator': {'wiring': "KZROUQHYAIGBLWVSTDXFPNMCJE"},
@@ -279,7 +291,8 @@ class Reflector(_Rotatable):
         """
         rel_input = (alphabet.index(letter) + self._offset) % 26  # INT
         rel_result = alphabet.index(self._wiring[rel_input])  # INT
-        return alphabet[(rel_result - self._offset) % 26]
+        abs_result = (rel_result - self._offset) % 26
+        return alphabet[abs_result]
     
     def offset(self, offset=None):
         assert self.__rotatable, "Non-rotatable reflectors don't have offset!"
@@ -295,6 +308,46 @@ class Reflector(_Rotatable):
         assert self.__rotatable, "Non-rotatable reflectors don't have a position!"
 
         return super().position(numeric)
+
+
+class UKWD(Reflector):
+    """UKW-D is a field-rewirable Enigma machine reflector"""
+
+    def __init__(self, pairs):
+        """
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+                      where each letter can only be used once
+        """
+        super().__init__('UKW-D', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+
+        self._marking =      " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
+        self.wiring(pairs)
+
+    def wiring(self, pairs=None):
+        if pairs is not None:
+            wiring = ['N'] + ['']*12 + ['A'] + ['']*12
+
+            for pair in pairs:
+                assert 'J' not in pair and 'Y' not in pair, 'J and Y are hardwired!'
+                a, b = pair
+                a_index = self._marking.index(a)
+                b_index = self._marking.index(b)
+
+                wiring[a_index] = alphabet[b_index]
+                wiring[b_index] = alphabet[a_index]
+
+            self._wiring = ''.join(wiring)
+        else:
+            pairs = []
+            for i, letter in enumerate(self._wiring):
+                if letter == 'A' or letter == 'N':
+                    continue
+
+                pair = self._marking[i] + self._marking[alphabet.index(letter)]
+                if pair[::-1] not in pairs:
+                    pairs.append(pair)
+
+            return pairs
 
 
 class Rotor(_Rotatable):
@@ -350,29 +403,10 @@ class Rotor(_Rotatable):
         return self.position() in self._turnover
 
 
-class UKWD(Plugboard):
-    """UKW-D is a field-rewirable Enigma machine reflector"""
-
-    def __init__(self, pairs):
-        """
-        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
-                      where each letter can only be used once
-        """
-        super().__init__(pairs)
-        self.plugboard = Plugboard(pairs)
-
-    def reflect(self, letter):  # TODO: This might not be the best inheritance strategy
-        """
-        Reflects letter sending it backwards into the 3 rotors
-        :param letter: {char}
-        :return: {char}
-        """
-        return self.route(letter)
-
-
 class Enigma:
     """Universal Enigma object that supports every model except Enigma M4"""
-    def __init__(self, model, reflector, rotors, stator, plugboard=True, plug_pairs=None, rotor_n=3, rotatable_ref=False):
+    def __init__(self, model, reflector, rotors, stator, plugboard=True,
+                 plug_pairs=None, rotor_n=3, rotatable_ref=False, numeric=False):
         """
         :param reflector: {Reflector} Reflector object
         :param rotors: {[Rotor, Rotor, Rotor]} 3 or 4 rotors based on
@@ -391,6 +425,7 @@ class Enigma:
         # PLUGBOARD AND UHR
         self._plugboard = Plugboard(plug_pairs) if plugboard else None
         self._uhr = None
+        self._numeric = numeric
 
     def _route(self, letter, backwards=False):
         if self._uhr is not None:
@@ -437,7 +472,7 @@ class Enigma:
 
         self._rotors[-1].rotate()
 
-    # ROTOR/REFLECTOR/RING GETTERS/SETTERS
+    # REFLECTOR
 
     def model(self):
         return self._model
@@ -447,6 +482,10 @@ class Enigma:
             self._reflector = new_reflector
         else:
             return self._reflector.label()
+
+    def reflector_pairs(self, new_pairs=None):
+        assert self._reflector.label == 'UKWD', "Only UKW-D reflector has wiring pairs!"
+        return self._reflector.wiring(new_pairs)
 
     def reflector_rotatable(self):
         return self._reflector.rotatable()
@@ -461,6 +500,8 @@ class Enigma:
             self._reflector.offset(new_position)
         else:
             return self._reflector.position()
+
+    # ROTOR
 
     def rotate_rotor(self, index, by=1):
         self._rotors[index].rotate(by)
@@ -478,7 +519,7 @@ class Enigma:
                     position = alphabet.index(position)
                 rotor.offset(position)
         else:
-            return tuple([rotor.position() for rotor in self._rotors])
+            return tuple([rotor.position(self._numeric) for rotor in self._rotors])
 
     def ring_settings(self, new_ring_settings=None):
         """

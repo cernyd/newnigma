@@ -182,6 +182,7 @@ class Socket(QFrame):
         Responds to a event when something changes in the plug entry
         """
         self.apply_plug()
+
         text = self.entry.text().upper()
         if self.entry.isModified():  # Prevents recursive event calls
             if text:

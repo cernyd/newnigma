@@ -6,6 +6,7 @@ from PySide2.QtCore import *
 from PySide2.QtMultimedia import *
 from PySide2.QtGui import *
 from enigma.interface.gui import *
+from enigma.interface.gui.plugboard import Socket
 
 
 class Settings(QDialog):
@@ -35,11 +36,14 @@ class Settings(QDialog):
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
         
+        self.ukwd_button = QPushButton("UKW-D Wiring")
+        self.ukwd_button.clicked.connect(self.open_ukwd_wiring)
         self.regen_model(self.enigma_api.model(), True)
 
         # TAB WIDGET ===========================================================
 
         tab_widget = QTabWidget()
+
         self.stacked_wikis = ViewSwitcher(self, self.enigma_api.model, self.regen_model)
         tab_widget.addTab(self.stacked_wikis, "Enigma Model")
         tab_widget.addTab(self.settings_frame, "Component settings")
@@ -58,6 +62,14 @@ class Settings(QDialog):
         main_layout.addWidget(apply_btn)
         main_layout.addWidget(storno)
 
+    def open_ukwd_wiring(self):
+        ukwd = UKWD_Settings(self)
+        ukwd.exec()
+        print(ukwd._pairs())
+
+    def refresh_ukwd(self):
+        print("refresh")
+
     def generate_components(self, reflectors, rotors, rotor_n):
         # REFLECTOR SETTINGS ===================================================
         
@@ -69,6 +81,8 @@ class Settings(QDialog):
             QLabel("REFLECTOR MODEL", reflector_frame), alignment=Qt.AlignTop
         )
 
+        reflectors.append("UKW-D")
+
         self.reflector_group = QButtonGroup(reflector_frame)
         for i, model in enumerate(reflectors):
             radio = QRadioButton(model, reflector_frame)
@@ -78,8 +92,10 @@ class Settings(QDialog):
             self.reflector_group.setId(radio, i)
             reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
 
-        self.reflector_group.button(0).setChecked(True)
 
+        reflector_layout.addWidget(self.ukwd_button)
+
+        self.reflector_group.button(0).setChecked(True)
         self.settings_layout.addWidget(reflector_frame)
 
         # ROTOR SETTINGS =======================================================
@@ -190,7 +206,6 @@ class Settings(QDialog):
         applies them to the enigma object
         """
         new_model = self.stacked_wikis.currently_selected
-        print("new model " + new_model)
         new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
         new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
         ring_settings = [ring.currentIndex()+1 for ring in self.ring_selectors]
@@ -286,11 +301,6 @@ class _EnigmaView(QWidget):
 
         self.title_frame = QFrame(self)
         self.title_layout = QVBoxLayout(self.title_frame)
-
-        #label = QLabel(model)
-        #label.setStyleSheet('font: 30px')
-
-        #self.title_layout.addWidget(label, alignment=Qt.AlignCenter)
         self.title_layout.addWidget(self.img)
 
         # MODEL WIKI ===========================================================
@@ -299,13 +309,82 @@ class _EnigmaView(QWidget):
         self.wiki_text.setHtml(self.description)  # setHtml sets html
         self.wiki_text.setStyleSheet(stylesheet)
 
-        # BUTTONS ==============================================================
-
-        #jself.select_button = QPushButton("Use this model")
-        #self.select_button.clicked.connect(lambda: select_plug(self.model))
-
         # SHOW WIDGETS =========================================================
 
         self.main_layout.addWidget(self.title_frame)
         self.main_layout.addWidget(self.wiki_text)
-        #self.main_layout.addWidget(self.select_button)
+
+
+class UKWD_Settings(QDialog):
+    def __init__(self, master):
+        super().__init__(master)
+
+        main_layout = QVBoxLayout()
+        self.setLayout(main_layout)
+        self.resize(100, 150)
+        self.setWindowTitle("UKW-D Wiring")
+
+        self.pairs = {}  # TODO: Duplicate
+        self.plugs = {}
+
+        plug_frame = QFrame(self)
+        plug_layout = QHBoxLayout(plug_frame)
+        for group in 'ABCDEF', 'GHIKLM', 'NOPQRS', 'TUVWXZ':
+            col_frame = QFrame(plug_frame)
+            col_layout = QVBoxLayout(col_frame)
+
+            for letter in group:
+                socket = Socket(self, letter, self.connect_sockets, lambda *args: None)
+                col_layout.addWidget(socket)
+                self.plugs[letter] = socket
+                self.pairs[letter] = None
+            
+            plug_layout.addWidget(col_frame)
+
+        apply_btn = QPushButton("Apply")
+        apply_btn.clicked.connect(self.close)
+        storno = QPushButton("Storno")
+        storno.clicked.connect(self.storno)
+
+        main_layout.addWidget(plug_frame)
+        main_layout.addWidget(apply_btn)
+        main_layout.addWidget(storno)
+    
+    def storno(self):
+        self.pairs = {}
+        self.close()
+
+    def _pairs(self):  # TODO: Duplicate
+        pairs = []
+        for pair in self.pairs.items():
+            if pair[::-1] not in pairs and all(pair):
+                pairs.append(pair)
+        return pairs
+
+    def connect_sockets(self, socket, other_socket):  # TODO: Duplicate
+        """
+        Connects two cosckets without unnecessary interaction of two sockets
+        to avoid recursive event calls)
+        """
+        if other_socket is None:
+            other = self.pairs[socket]
+
+            self.pairs[other] = None
+            self.pairs[socket] = None
+            self.plugs[socket].set_text('')
+            self.plugs[other].set_text('')
+        else:
+            if other_socket in 'JY':
+                self.plugs[socket].set_text('')
+                return
+
+            if self.pairs[other_socket] is not None:
+                self.plugs[socket].set_text('')
+            elif socket == other_socket:
+                self.plugs[socket].set_text('')
+            else:
+                self.pairs[socket] = other_socket
+                self.pairs[other_socket] = socket
+                self.plugs[socket].set_text(other_socket)
+                self.plugs[other_socket].set_text(socket)
+
