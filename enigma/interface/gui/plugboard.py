@@ -49,11 +49,11 @@ class Plugboard(QDialog):
         storno.clicked.connect(self.hide)
 
         self.uhr = QPushButton("Uhr")
-        self.uhrmenu = Uhr(self)
+        self.uhrmenu = Uhr(self, enigma_api._enigma.uhr_position, enigma_api._enigma.uhr)
         self.uhr.clicked.connect(self.uhrmenu.exec)
 
         self.enable_uhr = QCheckBox("Enable Uhr")  # In that case all plugs must be occupied! (and red/white)
-        self.enable_uhr.setChecked(enigma_api._enigma._uhr is not None)
+        self.enable_uhr.setChecked(enigma_api.uhr())
         self.enable_uhr.stateChanged.connect(self.change_uhr_status)
 
         # CONNECTS SOCKETS =====================================================
@@ -112,7 +112,7 @@ class Plugboard(QDialog):
         pairs = self._pairs()
 
         if self.enable_uhr.isChecked():
-            self.enigma_api._enigma.uhr(True)
+            self.enigma_api.uhr(True)
             self.enigma_api._enigma.uhr_position(self.uhrmenu.position())
 
         self.enigma_api.plug_pairs(pairs)
@@ -202,7 +202,7 @@ class Socket(QFrame):
 
 
 class Uhr(QDialog):
-    def __init__(self, master):
+    def __init__(self, master, uhr_position, uhr_connected):
         """
         Uhr plugboard device
         :param master: Qt parent widget
@@ -217,11 +217,21 @@ class Uhr(QDialog):
 
         # UHR POSITION DIAL ====================================================
 
-        self.indicator = QLabel("00")
+        self._uhr_position = uhr_position
+        self._uhr_connected = uhr_connected
+
+        if self._uhr_connected():
+            self.indicator = QLabel(str(uhr_position()))
+        else:
+            self.indicator = QLabel("00")
 
         self.dial = QDial()
         self.dial.setWrapping(True)
         self.dial.setRange(0, 39)
+
+        if self._uhr_connected():
+            self.dial.setValue(uhr_position())
+
         self.dial.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.dial.valueChanged.connect(self.refresh_indicator)
 

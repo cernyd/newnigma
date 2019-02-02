@@ -154,6 +154,9 @@ class EnigmaAPI:
     def reflector_position(self, new_position=None):
         return self._enigma.reflector_position(new_position)
 
+    def uhr(self, x=None):
+        return self._enigma.uhr(x)
+
     # GENERATORS
 
     @classmethod
@@ -235,10 +238,10 @@ class EnigmaAPI:
         if pos:
             self._enigma.reflector_position(pos)
 
-        self.plug_pairs(config['plugs'])
-        if config.get('uhr_position', None):
+        if config.get('uhr_position', None) is not None:
             self._enigma.uhr(True)  # Connect uhr
             self._enigma.uhr_position(config['uhr_position'])
+        self.plug_pairs(config['plugs'])
     
     def get_config(self):
         """
