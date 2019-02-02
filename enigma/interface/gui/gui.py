@@ -98,7 +98,7 @@ class Root(QWidget):
                                   self.o_textbox.insert,
                                   self.o_textbox.sync_length,
                                   self._rotors.set_positions,
-                                  enigma_api.letter_group)
+                                  enigma_api.letter_group, enigma_api.revert_by)
 
         # PLUGBOARD BUTTONS ====================================================
 
@@ -149,6 +149,7 @@ class Root(QWidget):
         old_data = self.cfg_load_plug()
         old_data['saved'] = data
         self.cfg_save_plug(old_data)
+
 
 class Lightboard(QWidget):
     def __init__(self, master):
@@ -368,7 +369,7 @@ class _RotorHandler(QFrame):
 
 
 class _InputTextBox(QTextEdit):
-    def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug, letter_group_plug):
+    def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug, letter_group_plug, revert_pos):
         """
         Input textbox where text is entered, the last input letter is then encrypted and sent to
         the output widget
@@ -398,10 +399,12 @@ class _InputTextBox(QTextEdit):
         self.sync_plug = sync_plug
         self.refresh_plug = refresh_plug
         self.letter_group_plug = letter_group_plug
+        self._revert_pos = revert_pos
 
         # ATTRIBUTES ===========================================================
 
         self.last_len = 0
+        self._revert_pos = revert_pos
         
     def input_detected(self):
         """
@@ -416,17 +419,18 @@ class _InputTextBox(QTextEdit):
         self.moveCursor(QTextCursor.End)
         self.blockSignals(False)
         
+        new_len = len(text)
 
-        if len(text) > self.last_len:  # If text longer than before
+        if new_len > self.last_len:  # If text longer than before
             last_input = text[-1].upper()
             encrypted = self.encrypt_plug(last_input)
 
             self.output_plug(encrypted)
         else:
-            self.sync_plug(len(text))
+            self.sync_plug(new_len)
+            self._revert_pos(self.last_len - new_len)
 
-        self.last_len = len(text)
-
+        self.last_len = new_len
         self.refresh_plug()
 
 

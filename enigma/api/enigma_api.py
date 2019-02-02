@@ -9,13 +9,15 @@ class EnigmaAPI:
     Interface object between client and Enigma instance
     """
 
-    def __init__(self, model, reflector, rotors):
+    def __init__(self, model, reflector, rotors, position_buffer=1000):
         """
         :param model: {str} Enigma machine model label
         :param reflector: {str} Reflector label like "UKW-B"
         :param rotors: {[str, str, str]} Rotor labels
         """
         self._enigma = self.generate_enigma(model, reflector, rotors)
+        self._buffer = []
+        self._buffer_size = position_buffer
 
     def total_permutations(self, with_reflectors=False):
         """
@@ -60,6 +62,7 @@ class EnigmaAPI:
 
         refs = [reflector['label'] for reflector in historical_data[model]['reflectors']]
         rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
+        self._buffer = []  # Buffer flush
 
         return {'reflectors': refs, 'rotors': rotors}
 
@@ -122,13 +125,58 @@ class EnigmaAPI:
         :param new_plug_pairs: {str}
         """
         return self._enigma.plug_pairs(new_plug_pairs)
+    
+    # BUFFER TOOLS
+
+    def _save_position(self, position):
+        serialized = ''
+
+        for pos in position:
+            serialized += "%02d" % alphabet.index(pos)
+
+        self._buffer.append(int(serialized))
+
+    def _load_position(self, position):
+        formula = "%0" + str(self.rotor_n()*2) + "d"
+
+        positions = []
+        pair = ''
+        for letter in formula % position:
+            pair += letter
+            if len(pair) == 2:
+                positions.append(int(pair))
+                pair = ''
+
+        return positions
+
+    def revert_to(self, position):
+        self._buffer = self._buffer[:position+1]
+
+        if not self._buffer:
+            self._enigma.positions(self._load_position(0))
+        else:
+            self._enigma.positions(self._load_position(self._buffer[-1]))
+
+    def revert_by(self, by=1):
+        assert by >= 0, "Enigma can only be reverted by 1 or more positions"
+        self._buffer = self._buffer[:-by]
+        
+        if not self._buffer:
+            self._enigma.positions(self._load_position(0))
+        else:
+            self._enigma.positions(self._load_position(self._buffer[-1]))
+
+    # ENCRYPTION
 
     def encrypt(self, letter):
         """
         Encrypts letter using the current Enigma object
         :param letter: {char} Letter to encrypt
         """
-        return self._enigma.press_key(letter)
+        output = self._enigma.press_key(letter)
+        self._save_position(self._enigma.positions())
+
+        return output
 
     def rotate_rotor(self, rotor_id, by=1, callback=False):
         """

@@ -394,8 +394,9 @@ class Enigma:
     def _route(self, letter, backwards=False):
         if self._uhr is not None:
             return self._uhr.route(letter, backwards)
-        else:
+        elif self._plugboard is not None:
             return self._plugboard.route(letter)
+        return letter
 
     def press_key(self, key):
         """
@@ -476,7 +477,7 @@ class Enigma:
                     position = alphabet.index(position)
                 rotor.offset(position)
         else:
-            return [rotor.position() for rotor in self._rotors]
+            return tuple([rotor.position() for rotor in self._rotors])
 
     def ring_settings(self, new_ring_settings=None):
         """

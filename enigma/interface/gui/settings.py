@@ -170,8 +170,9 @@ class Settings(QDialog):
             self.reflector_group.button(reflector_i).setChecked(True)
             
             for i, rotor in enumerate(self.enigma_api.rotors()):
-                if i == 0:
-                    rotor_i = ['Beta', 'Gamma'].index(rotor)
+                if 'Beta' in rotors:
+                    if i == 0:
+                        rotor_i = ['Beta', 'Gamma'].index(rotor)
                 else:
                     rotor_i = rotors.index(rotor)
 
