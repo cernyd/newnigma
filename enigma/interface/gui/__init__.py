@@ -166,7 +166,7 @@ Rewired version of the Enigma K used by the Japanese army
 """
 
 
-stylesheet = 'font-family: "Times New Roman", Times, serif;'
+stylesheet = 'font-family: "Courier New", Courier, monospace'
 
 
 view_data = {

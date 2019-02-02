@@ -156,7 +156,7 @@ class Root(QWidget):
         dialog = QFileDialog(self)
         filename = dialog.getSaveFileName(self, "Save enigma message")[0]
 
-        if ".txt" not in filename:  # TODO: Make less rudimentary
+        if ".txt" not in filename and filename:  # TODO: Make less rudimentary
             QMessageBox.warning(self, "Overwrite warning", "Overwriting files that are not .txt textfiles is not permitted!")
         elif filename:
             with open(filename, 'w') as f:
@@ -428,22 +428,24 @@ class _InputTextBox(QTextEdit):
         """
         text = self.toPlainText().upper()
         text = sub('[^A-Z]+', '', text)
-
-        self.blockSignals(True)  # Blocks programatical edits to the widget
-        self.setPlainText(letter_groups(text, self.letter_group_plug()))
-        self.moveCursor(QTextCursor.End)
-        self.blockSignals(False)
         
         new_len = len(text)
+        diff = self.last_len - len(text)
 
-        if new_len > self.last_len:  # If text longer than before
-            last_input = text[-1].upper()
-            encrypted = self.encrypt_plug(last_input)
+        if diff < 0:  # If text longer than before
+            encrypted = ''
+            for letter in text[diff:]:
+                encrypted += self.encrypt_plug(letter)
 
             self.output_plug(encrypted)
         else:
             self.sync_plug(new_len)
             self._revert_pos(self.last_len - new_len)
+
+        self.blockSignals(True)  # Blocks programatical edits to the widget
+        self.setPlainText(letter_groups(text, self.letter_group_plug()))
+        self.moveCursor(QTextCursor.End)
+        self.blockSignals(False)
 
         self.last_len = new_len
         self.refresh_plug()
