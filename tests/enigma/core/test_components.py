@@ -20,20 +20,49 @@ def test_single_encrypt():
     assert enigma.forward('A') == 'E'
 
 
-def test_uhr():
+def test_uhr_addon():
     enigma = EnigmaAPI.generate_enigma('EnigmaM4', "UKW-b", ["Beta", "I", "II", "III"])
     enigma.uhr(True)
     enigma.uhr_position(3)
     enigma.plug_pairs(['AB', 'CD', 'EF', 'GH', 'IJ', 'KL', 'MN', 'OP', 'QR', 'ST'])
-    enigma.press_key('A')
-    """
+    
+    enigma.positions([2, 0, 0, 0,])
+
+    original = 'TESTINGHOWUHRENCRYPTSTHISMESSAGE'
+
+    output = ''
+    for letter in original:
+        output += enigma.press_key(letter)
+
+    enigma.positions([2, 0, 0, 0,])
+
+    result = ''
+    for letter in output:
+        result += enigma.press_key(letter)
+
+    assert result == original
+
+    enigma.positions([2, 0, 0, 0,])
+    enigma.uhr_position(35)
+
+    result = ''
+    for letter in output:
+        result += enigma.press_key(letter)
+
+    assert result != original
+
+
+def test_uhr_reciprocity():
     uhr = Uhr()
     uhr.pairs(['AB', 'CD', 'EF', 'GH', 'IJ', 'KL', 'MN', 'OP', 'QR', 'ST'])
-    uhr.position(3)
-    """
-    #print(uhr.route('A'))
-    #print(uhr.route('E'))
-    
+
+    # Reciprocal position testing
+    for position in 0, 4, 8, 12, 16, 20, 24, 28, 32, 36:
+        uhr.position(position)
+
+        for ltr in alphabet:
+            assert uhr.route(ltr, True) == uhr.route(ltr)
+
 
 def test_routing():
     """
@@ -110,12 +139,12 @@ def test_enigma():
 
 
 @pytest.mark.parametrize('model, n_rotors, should_fail', (
-    #("EnigmaM4", 4, False),
-    #("EnigmaM3", 3, False),
-    #("EnigmaM3", 7, True),
-    #("EnigmaMX", 3, True),
-    #("EnigmaM3", 3, False),
-    #(33213, 3, True)  TODO: Fix needed
+    ("EnigmaM4", 4, False),
+    ("EnigmaM3", 3, False),
+    ("EnigmaM3", 7, True),
+    ("EnigmaMX", 3, True),
+    ("EnigmaM3", 3, False),
+    (33213, 3, True)
 ))
 def test_enigma_models(model, n_rotors, should_fail):
     rotors = range(n_rotors)
@@ -123,24 +152,6 @@ def test_enigma_models(model, n_rotors, should_fail):
 
     if should_fail:
         with pytest.raises(AssertionError):
-            Enigma(model, "UKW-B", rotors, None)
-    else:
-        Enigma(model, "UKW-B", rotors, None)
-
-
-@pytest.mark.parametrize('model, n_rotors, should_fail', (
-    ("EnigmaMF", 4, True),
-    ("EnigmaM", 4, True),
-    ("Enigma", 4, True),
-    ("EnigmaM4", 4, False),
-    ("EnigmaK", 3, False),
-))
-def test_generate_enigma(model, n_rotors, should_fail):
-    rotors = range(n_rotors)
-    # Fake values instead of rotors because they are not needed in this test
-
-    if should_fail:
-        with pytest.raises(KeyError):
             EnigmaAPI.generate_enigma(model, "UKW-B", rotors)
     else:
         EnigmaAPI.generate_enigma(model, "UKW-B", rotors)

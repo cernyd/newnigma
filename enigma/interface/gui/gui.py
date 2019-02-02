@@ -383,7 +383,7 @@ class _RotorHandler(QFrame):
         self.set_positions()
 
 
-class _InputTextBox(QTextEdit):
+class _InputTextBox(QPlainTextEdit):
     def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug, letter_group_plug, revert_pos):
         """
         Input textbox where text is entered, the last input letter is then encrypted and sent to
@@ -451,7 +451,7 @@ class _InputTextBox(QTextEdit):
         self.refresh_plug()
 
 
-class _OutputTextBox(QTextEdit):
+class _OutputTextBox(QPlainTextEdit):
     def __init__(self, master, light_up_plug, letter_group_plug):
         """
         Shows text inserted trough the .insert() plug

@@ -1,7 +1,7 @@
 gui:
 	./enigma.py
 test:
-	python3 -m pytest
+	python3 -m pytest -s
 install:
 	sudo apt update
 	sudo apt install -y python3-pip pytest

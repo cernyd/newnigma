@@ -384,7 +384,8 @@ class Enigma:
 
         # COMPONENTS
         self._reflector = reflector
-        self._rotors = rotors
+        self._rotors = []
+        self.rotors(rotors)
         self._stator = stator
         
         # PLUGBOARD AND UHR

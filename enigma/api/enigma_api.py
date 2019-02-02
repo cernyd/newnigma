@@ -244,6 +244,8 @@ class EnigmaAPI:
         :param label: {str} or {int} Component label like "I", "II", "UKW-B" or numerical index
                       of their position in historical data (0 = "I", 2 = "II", ...)
         """
+        assert model in historical_data, "Invalid enigma model %s!" % model
+
         data = historical_data[model]
      
         if label is None and comp_type != "Stator":
