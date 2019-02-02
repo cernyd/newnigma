@@ -19,13 +19,21 @@ def test_single_encrypt():
     enigma.rotate(24)
     assert enigma.forward('A') == 'E'
 
+
 def test_uhr():
+    enigma = EnigmaAPI.generate_enigma('EnigmaM4', "UKW-b", ["Beta", "I", "II", "III"])
+    enigma.uhr(True)
+    enigma.uhr_position(3)
+    enigma.plug_pairs(['AB', 'CD', 'EF', 'GH', 'IJ', 'KL', 'MN', 'OP', 'QR', 'ST'])
+    enigma.press_key('A')
+    """
     uhr = Uhr()
     uhr.pairs(['AB', 'CD', 'EF', 'GH', 'IJ', 'KL', 'MN', 'OP', 'QR', 'ST'])
+    uhr.position(3)
+    """
+    #print(uhr.route('A'))
+    #print(uhr.route('E'))
     
-    uhr.position(1)
-    output = uhr.route('B')
-
 
 def test_routing():
     """

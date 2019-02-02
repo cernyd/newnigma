@@ -87,7 +87,7 @@ class Settings(QDialog):
         self.radio_selectors = []
         self.ring_selectors = []
 
-        for rotor in range(rotor_n):  # TODO: Generate correct rotor count
+        for rotor in range(rotor_n):
             rotor_frame = QFrame(self.settings_frame)
             rotor_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
             rotor_layout = QVBoxLayout(rotor_frame)
@@ -98,7 +98,17 @@ class Settings(QDialog):
             rotor_layout.addWidget(QLabel("ROTOR MODEL", rotor_frame))
 
             button_group = QButtonGroup(rotor_frame)
-            for i, model in enumerate(rotors):
+            
+            final_rotors = rotors
+
+            if 'Beta' in rotors:
+                if rotor == 0:
+                    final_rotors = ['Beta', 'Gamma']
+                else:
+                    final_rotors.remove('Beta')
+                    final_rotors.remove('Gamma')
+
+            for i, model in enumerate(final_rotors):
                 radios = QRadioButton(model, rotor_frame)
                 button_group.addButton(radios)
                 button_group.setId(radios, i)
@@ -147,9 +157,10 @@ class Settings(QDialog):
         rotors = self.enigma_api.model_labels(new_model)['rotors']
         rotor_n = self.enigma_api.rotor_n(new_model)
 
+        print(rotors)
         self.generate_components(
             reflectors,
-            rotors,
+            rotors[::],
             rotor_n
         )
         
@@ -159,7 +170,11 @@ class Settings(QDialog):
             self.reflector_group.button(reflector_i).setChecked(True)
             
             for i, rotor in enumerate(self.enigma_api.rotors()):
-                rotor_i = rotors.index(rotor)
+                if i == 0:
+                    rotor_i = ['Beta', 'Gamma'].index(rotor)
+                else:
+                    rotor_i = rotors.index(rotor)
+
                 self.radio_selectors[i].button(rotor_i).setChecked(True)
             
             for i, ring in enumerate(self.enigma_api.ring_settings()):
@@ -174,12 +189,11 @@ class Settings(QDialog):
         applies them to the enigma object
         """
         new_model = self.stacked_wikis.currently_selected
+        print("new model " + new_model)
         new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
         new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
         ring_settings = [ring.currentIndex()+1 for ring in self.ring_selectors]
         
-        print(new_model)
-        print(self.enigma_api.model())
         if new_model != self.enigma_api.model():
             self.enigma_api.model(new_model)
 

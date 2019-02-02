@@ -1,22 +1,4 @@
 
-#class UKWD(Plugboard):  TODO: Fix
-#    """UKW-D is a field-rewirable Enigma machine reflector"""
-#
-#    def __init__(self, pairs):
-#        """
-#        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
-#                      where each letter can only be used once
-#        """
-#        super().__init__(pairs)
-#        self.plugboard = Plugboard(pairs)
-#
-#    def reflect(self, letter):  # TODO: This might not be the best inheritance strategy
-#        """
-#        Reflects letter sending it backwards into the 3 rotors
-#        :param letter: {char}
-#        :return: {char}
-#        """
-#        return self.route(letter)
 
 
 class Uhr:
@@ -54,19 +36,20 @@ class Uhr:
         else:
             return self._pairs
 
-    def route(self, letter):
+    def route(self, letter, backwards=False):
         coords = []
         for i, pair in enumerate(self._pairs):
             coords.append(('%da' % (i+1), pair[0], self.a_pairs[i], self.a_pairs[i]+2))
             coords.append(('%db' % (i+1), pair[1], self.b_pairs[i], self.b_pairs[i]+2))
-
-        print(coords)
         
         board = None
         for plug in coords:
             if plug[1] == letter:
-                send_pin = (plug[2] + self._offset) % 40 
                 board = 'a' if 'b' in plug[0] else 'b'
+                if backwards:
+                    send_pin = (plug[3] + self._offset) % 40 
+                else:
+                    send_pin = (plug[2] + self._offset) % 40
                 break
         
         if board == 'a':
@@ -79,7 +62,11 @@ class Uhr:
         receive_pin = (receive_pin - self._offset) % 40
         
         for plug in coords:
-            if board in plug[0] and plug[3] == receive_pin:
-                print("output" + plug[1])
-                return plug[1]
+            if board in plug[0]:
+                if backwards:
+                    if plug[2] == receive_pin:
+                        return plug[1]
+                else:
+                    if plug[3]  == receive_pin:
+                        return plug[1]
 

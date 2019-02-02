@@ -168,7 +168,7 @@ historical_data = {
 
 class Plugboard:
     def __init__(self, pairs=None):
-        self._pairs = {}
+        self._pairs = []
         self.pairs(pairs)
 
     def pairs(self, pairs=None):
@@ -179,23 +179,9 @@ class Plugboard:
         :return: {dict} dictionary with pairs usable by the plugboard
         """
         if pairs is not None:
-            result_pairs = {}
-
-            if pairs is None:
-                return {}
-
-            for pair in pairs:
-                a, b = pair
-                result_pairs[a] = b
-                result_pairs[b] = a
-
-            self._pairs = result_pairs
+            self._pairs = pairs
         else:
-            pairs = []
-            for pair in self._pairs.items():
-                if pair[::-1] not in pairs and all(pair):
-                    pairs.append(pair)
-            return pairs
+            return self._pairs
 
     def route(self, letter):
         """
@@ -203,7 +189,10 @@ class Plugboard:
         :param letter: {char} input letter
         :return: {char} output routed letter
         """
-        return self._pairs.get(letter, letter)
+        for pair in self._pairs:
+            if letter in pair:
+                return pair[0] if pair[0] != letter else pair[1]
+        return letter
 
 
 class _Component:  # Base component
@@ -288,7 +277,9 @@ class Reflector(_Rotatable):
         :param letter: {char}
         :return: {char}
         """
-        return super()._forward(letter)
+        rel_input = (alphabet.index(letter) + self._offset) % 26  # INT
+        rel_result = alphabet.index(self._wiring[rel_input])  # INT
+        return alphabet[(rel_result - self._offset) % 26]
     
     def offset(self, offset=None):
         assert self.__rotatable, "Non-rotatable reflectors don't have offset!"
@@ -359,6 +350,26 @@ class Rotor(_Rotatable):
         return self.position() in self._turnover
 
 
+class UKWD(Plugboard):
+    """UKW-D is a field-rewirable Enigma machine reflector"""
+
+    def __init__(self, pairs):
+        """
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+                      where each letter can only be used once
+        """
+        super().__init__(pairs)
+        self.plugboard = Plugboard(pairs)
+
+    def reflect(self, letter):  # TODO: This might not be the best inheritance strategy
+        """
+        Reflects letter sending it backwards into the 3 rotors
+        :param letter: {char}
+        :return: {char}
+        """
+        return self.route(letter)
+
+
 class Enigma:
     """Universal Enigma object that supports every model except Enigma M4"""
     def __init__(self, model, reflector, rotors, stator, plugboard=True, plug_pairs=None, rotor_n=3, rotatable_ref=False):
@@ -380,9 +391,9 @@ class Enigma:
         self._plugboard = Plugboard(plug_pairs) if plugboard else None
         self._uhr = None
 
-    def _route(self, letter):
+    def _route(self, letter, backwards=False):
         if self._uhr is not None:
-            return self._uhr.route(letter)
+            return self._uhr.route(letter, backwards)
         else:
             return self._plugboard.route(letter)
 
@@ -408,7 +419,7 @@ class Enigma:
 
         output = self._stator.backward(output)
 
-        output = self._route(output)
+        output = self._route(output, True)
 
         return output
 
@@ -443,6 +454,8 @@ class Enigma:
 
     def reflector_position(self, new_position=None):
         if new_position is not None:
+            if type(new_position) == str:
+                new_position = alphabet.index(new_position)
             self._reflector.offset(new_position)
         else:
             return self._reflector.position()
@@ -479,7 +492,7 @@ class Enigma:
 
     def rotors(self, new_rotors=None):
         if new_rotors is not None:
-            assert new_rotors == self._rotor_n, "This enigma has %d rotors!" % self._rotor_n
+            assert len(new_rotors) == self._rotor_n, "This enigma has %d rotors!" % self._rotor_n
             self._rotors = new_rotors
         else:
             return [rotor.label() for rotor in self._rotors]
@@ -492,12 +505,15 @@ class Enigma:
         else:
             return self._plugboard.pairs(new_plug_pairs)
 
-    def connect_uhr(self):
-        self._uhr = Uhr()
-    
-    def disconnect_uhr(self):
-        del self._uhr
-        self._uhr = None
+    def uhr(self, connect=None):
+        if connect is None:
+            return self._uhr is not None
+        else:
+            if connect:
+                self._uhr = Uhr()
+            else:
+                del self._uhr
+                self._uhr = None
 
     def uhr_position(self, new_position=None):
         assert self._uhr is not None, "Can't set uhr position - uhr not connected!"

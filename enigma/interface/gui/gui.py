@@ -141,7 +141,8 @@ class Root(QWidget):
         data = self.cfg_load_plug()
         self._api.load_from_config(data['saved'])
         self.refresh_gui()
-        self._rotors.set_positions()
+        self._rotors.generate_rotors()
+        self._rotors.set_positions()  # TODO: Maybe redundant?
 
     def save_config(self):
         data = self._api.get_config()

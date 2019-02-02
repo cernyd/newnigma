@@ -112,7 +112,7 @@ class Plugboard(QDialog):
         pairs = self._pairs()
 
         if self.enable_uhr.isChecked():
-            self.enigma_api._enigma.connect_uhr()
+            self.enigma_api._enigma.uhr(True)
             self.enigma_api._enigma.uhr_position(self.uhrmenu.position())
 
         self.enigma_api.plug_pairs(pairs)

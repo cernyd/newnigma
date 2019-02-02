@@ -178,8 +178,11 @@ class EnigmaAPI:
         rotors = cls.generate_rotors(model, rotor_labels)
         reflector = cls.generate_component(model, "Reflector", reflector_label)
         stator = cls.generate_component(model, "Stator")
+        rotor_n = historical_data[model]['rotor_n']
+        plugboard = historical_data[model]['plugboard']
+        rotatable_ref = historical_data[model]['rotatable_ref']
             
-        return Enigma(model, reflector, rotors, stator)
+        return Enigma(model, reflector, rotors, stator, plugboard=plugboard, rotor_n=rotor_n, rotatable_ref=rotatable_ref)
 
     @classmethod
     def generate_component(cls, model, comp_type, label=None):
@@ -222,28 +225,41 @@ class EnigmaAPI:
         Loads data from dict
         """
         self.model(config['model'])
-        self.reflector(config['reflector'])
+
         self.rotors(config['rotors'])
         self.positions(config['rotor_positions'])
-        self.plug_pairs(config['plugs'])
         self.ring_settings(config['ring_settings'])
-        self._enigma.uhr_position(config['uhr_position'])
+
+        self.reflector(config['reflector'])
+        pos = config.get('reflector_position', None)
+        if pos:
+            self._enigma.reflector_position(pos)
+
+        self.plug_pairs(config['plugs'])
+        if config.get('uhr_position', None):
+            self._enigma.uhr(True)  # Connect uhr
+            self._enigma.uhr_position(config['uhr_position'])
     
     def get_config(self):
         """
         Converts enigma settings to a json serializable dict.
         """
         data = {}
-        data['model'] = self._enigma.model
+        data['model'] = self._enigma.model()
+
         data['rotors'] = self._enigma.rotors()
-        data['rotor_positions'] = self._enigma.positions
-        data['ring_settings'] = self._enigma.ring_settings
-        data['reflector'] = self._enigma._reflector.label
-        data['uhr_position'] = self._enigma.uhr_position()
-        data['uhr_connected'] = self._enigma.uhr_connected()
+        data['rotor_positions'] = self._enigma.positions()
+        data['ring_settings'] = self._enigma.ring_settings()
+
+        data['reflector'] = self._enigma.reflector()
+        if self._enigma.reflector_rotatable():
+            data['reflector_position'] = self._enigma.reflector_position()
+
+        if self._enigma.uhr():
+            data['uhr_position'] = self._enigma.uhr_position()
 
         plugs = []
-        for plug in self._enigma.plug_pairs:
+        for plug in self._enigma.plug_pairs():
             plugs.append(''.join(plug))
         data['plugs'] = plugs
 
