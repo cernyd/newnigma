@@ -12,6 +12,7 @@ import copy
 import sys
 from string import ascii_uppercase as alphabet
 from re import sub
+from textwrap import wrap
 
 
 def letter_groups(text, group_size=5):
@@ -74,8 +75,9 @@ class Root(QWidget):
         # MENU BAR =============================================================
 
         menu = QMenuBar(self)
-        menu.addAction("Load", self.load_config)
-        menu.addAction("Save", self.save_config)
+        menu.addAction("Load Settings", self.load_config)
+        menu.addAction("Save Settings", self.save_config)
+        menu.addAction("Export message", self.export_message)
         url = QUrl("https://www.cryptomuseum.com/index.htm")
         menu.addAction("About", lambda: QDesktopServices.openUrl(url))
 
@@ -149,6 +151,19 @@ class Root(QWidget):
         old_data = self.cfg_load_plug()
         old_data['saved'] = data
         self.cfg_save_plug(old_data)
+
+    def export_message(self):
+        dialog = QFileDialog(self)
+        filename = dialog.getSaveFileName(self, "Save enigma message")[0]
+
+        if ".txt" not in filename:  # TODO: Make less rudimentary
+            QMessageBox.warning(self, "Overwrite warning", "Overwriting files that are not .txt textfiles is not permitted!")
+        elif filename:
+            with open(filename, 'w') as f:
+                settings = str(self._api)
+                template = """%s\n%s\n==============================\nCreated with Enigma simulator by David Cerny\n"""
+                message = '\n'.join(wrap(self.o_textbox.text(), 29))
+                f.write(template % (settings, message))
 
 
 class Lightboard(QWidget):
@@ -472,4 +487,7 @@ class _OutputTextBox(QTextEdit):
         self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)
         self.light_up_plug(letter)
+
+    def text(self):
+        return self.toPlainText()
 
