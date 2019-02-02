@@ -9,6 +9,10 @@ from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import Socket
 
 
+selector_labels = ("THIN", "SLOW", "MEDIUM", "FAST")
+selector_tooltips = ("Does not rotate", None, None, "Rotates on every keypress")
+
+
 class Settings(QDialog):
     def __init__(self, master, enigma_api):
         """
@@ -62,13 +66,20 @@ class Settings(QDialog):
         main_layout.addWidget(apply_btn)
         main_layout.addWidget(storno)
 
+        self.refresh_ukwd()
+
     def open_ukwd_wiring(self):
         ukwd = UKWD_Settings(self)
         ukwd.exec()
         print(ukwd._pairs())
 
     def refresh_ukwd(self):
-        print("refresh")
+        if self.reflector_group.checkedButton().text() == 'UKW-D':
+            self.ukwd_button.setDisabled(False)
+            self.ukwd_button.setToolTip("Select the UKW-D rotor to edit settings")
+        else:
+            self.ukwd_button.setDisabled(True)
+            self.ukwd_button.setToolTip(None)
 
     def generate_components(self, reflectors, rotors, rotor_n):
         # REFLECTOR SETTINGS ===================================================
@@ -78,7 +89,7 @@ class Settings(QDialog):
 
         reflector_layout = QVBoxLayout(reflector_frame)
         reflector_layout.addWidget(
-            QLabel("REFLECTOR MODEL", reflector_frame), alignment=Qt.AlignTop
+            QLabel("REFLECTOR", reflector_frame), alignment=Qt.AlignTop
         )
 
         reflectors.append("UKW-D")
@@ -92,10 +103,10 @@ class Settings(QDialog):
             self.reflector_group.setId(radio, i)
             reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
 
-
         reflector_layout.addWidget(self.ukwd_button)
 
         self.reflector_group.button(0).setChecked(True)
+        self.reflector_group.buttonClicked.connect(self.refresh_ukwd)
         self.settings_layout.addWidget(reflector_frame)
 
         # ROTOR SETTINGS =======================================================
@@ -111,7 +122,10 @@ class Settings(QDialog):
             
             # ROTOR RADIOS =====================================================
 
-            rotor_layout.addWidget(QLabel("ROTOR MODEL", rotor_frame))
+            label = QLabel(selector_labels[-rotor_n:][rotor], rotor_frame)
+            label.setToolTip(selector_tooltips[-rotor_n:][rotor])
+
+            rotor_layout.addWidget(label)
 
             button_group = QButtonGroup(rotor_frame)
             
@@ -173,7 +187,6 @@ class Settings(QDialog):
         rotors = self.enigma_api.model_labels(new_model)['rotors']
         rotor_n = self.enigma_api.rotor_n(new_model)
 
-        print(rotors)
         self.generate_components(
             reflectors,
             rotors[::],
