@@ -57,11 +57,12 @@ class EnigmaAPI:
         if new_model is not None:
             labels = self.model_labels(new_model)
 
-            rotors = labels['rotors'][:historical_data[new_model]['rotor_n']]
+            rotors = labels['rotors'][:self.rotor_n(new_model)]
             reflector = labels['reflectors'][0]
 
             del self._enigma
             self._enigma = self.generate_enigma(new_model, reflector, rotors)
+            self.set_checkpoint()
         else:
             return self._enigma.model()
 
@@ -187,7 +188,7 @@ class EnigmaAPI:
         else:
             position = self.__buffer[-1]
 
-        self.positions(self.__load_position(positions))
+        self.positions(self.__load_position(position))
 
     # ENCRYPTION
 
