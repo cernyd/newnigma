@@ -1,7 +1,6 @@
 #! /usr/env python3
 
 from enigma.core.components import *
-from math import factorial
 
 
 class EnigmaAPI:
@@ -16,9 +15,10 @@ class EnigmaAPI:
         :param rotors: {[str, str, str]} Rotor labels
         """
         self._enigma = self.generate_enigma(model, reflector, rotors)
-        self._buffer = []
-        self._buffer_size = position_buffer
-        self._checkpoint = 0
+
+        self.__buffer = []
+        self.__buffer_size = position_buffer
+        self.__checkpoint = 0
 
     @property
     def _data(self):
@@ -32,8 +32,8 @@ class EnigmaAPI:
         else:
             return historical_data[model]['rotor_n']
 
-    def letter_group(self):
-        return self._data['letter_group']
+    def letter_group(self):  # TODO: Used by io textboxes
+        return historical_data[self.model()]['letter_group']
 
     def model_labels(self, model=None):
         """
@@ -46,7 +46,6 @@ class EnigmaAPI:
 
         refs = [reflector['label'] for reflector in historical_data[model]['reflectors']]
         rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
-        self.clear_buffer()
 
         return {'reflectors': refs, 'rotors': rotors}
 
@@ -125,7 +124,7 @@ class EnigmaAPI:
 
     def rotate_rotor(self, rotor_id, by=1):
         print("ROTATE BY %s" % by)
-        self.clear_buffer()
+        self.__clear_buffer()
         self._enigma.rotate_rotor(rotor_id, by)
         self.set_checkpoint()
 
@@ -146,13 +145,7 @@ class EnigmaAPI:
 
     # BUFFER TOOLS
 
-    def set_checkpoint(self):
-        self._checkpoint = self._serialized_position()
-
-    def clear_buffer(self):
-        self._buffer = []
-
-    def _serialized_position(self):
+    def __serialized_position(self):
         serialized = ''
 
         for pos in self._enigma.positions():
@@ -163,30 +156,39 @@ class EnigmaAPI:
 
         return int(serialized)
 
-    def _save_position(self):
-        self._buffer.append(self._serialized_position())
+    def set_checkpoint(self):
+        self.__checkpoint = self.__serialized_position()
 
-    def _load_position(self, position):
+    def __clear_buffer(self):
+        self.__buffer = []
+
+    def __save_position(self):
+        if len(self.__buffer) == self.__buffer_size:
+            print("TODO: BUFFER OVERFLOWING")
+            self.__buffer.pop(0)
+        self.__buffer.append(self.__serialized_position())
+
+
+    def revert_by(self, by=1):
+        assert by >= 0, "Enigma can only be reverted by 1 or more positions"
+        self.__buffer = self.__buffer[:-by]
+        
+        if not self.__buffer:
+            position = self.__checkpoint
+        else:
+            position = self.__buffer[-1]
+
         formula = "%0" + str(self.rotor_n()*2) + "d"
-
+        print(position)
         positions = []
         pair = ''
-        for letter in formula % position:
+        for letter in formula % position:  # Weird bug that returns instance of EnigmaAPI
             pair += letter
             if len(pair) == 2:
                 positions.append(int(pair))
                 pair = ''
 
-        return positions
-
-    def revert_by(self, by=1):
-        assert by >= 0, "Enigma can only be reverted by 1 or more positions"
-        self._buffer = self._buffer[:-by]
-        
-        if not self._buffer:
-            self._enigma.positions(self._load_position(self._checkpoint))
-        else:
-            self._enigma.positions(self._load_position(self._buffer[-1]))
+        self.positions(positions)
 
     # ENCRYPTION
 
@@ -196,7 +198,7 @@ class EnigmaAPI:
         :param letter: {char} Letter to encrypt
         """
         output = self._enigma.press_key(letter)
-        self._save_position()
+        self.__save_position()
         return output
 
     # GENERATORS
