@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from os import path
 import json
 
 
@@ -9,7 +8,7 @@ class Config:
         """
         :param path: {str} path to .json config file
         """
-        self.path = path
+        self.__path = path
 
     def mk_cache(self):
         """
@@ -23,7 +22,7 @@ class Config:
         :returns: {dict} deserialized config data
         """
         try:
-            with open(self.path, 'r') as config:
+            with open(self.__path, 'r') as config:
                 return json.loads(config.read())
         except FileNotFoundError:
             print("Config file not found!")
@@ -33,5 +32,5 @@ class Config:
         Writes serialized json data to config path
         :param data: {dict} data to write to config
         """
-        with open(self.path, 'w') as config:
+        with open(self.__path, 'w') as config:
             json.dump(data, config, indent=4)

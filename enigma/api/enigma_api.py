@@ -166,6 +166,17 @@ class EnigmaAPI:
             self.__buffer.pop(0)
         self.__buffer.append(self.__serialized_position())
 
+    def __load_position(self, position):
+        formula = "%0" + str(self.rotor_n()*2) + "d"
+        positions = []
+        pair = ''
+        for letter in formula % position:  # Weird bug that returns instance of EnigmaAPI
+            pair += letter
+            if len(pair) == 2:
+                positions.append(int(pair))
+                pair = ''
+
+        return positions
 
     def revert_by(self, by=1):
         assert by >= 0, "Enigma can only be reverted by 1 or more positions"
@@ -176,17 +187,7 @@ class EnigmaAPI:
         else:
             position = self.__buffer[-1]
 
-        formula = "%0" + str(self.rotor_n()*2) + "d"
-        print(position)
-        positions = []
-        pair = ''
-        for letter in formula % position:  # Weird bug that returns instance of EnigmaAPI
-            pair += letter
-            if len(pair) == 2:
-                positions.append(int(pair))
-                pair = ''
-
-        self.positions(positions)
+        self.positions(self.__load_position(positions))
 
     # ENCRYPTION
 
@@ -336,7 +337,7 @@ class EnigmaAPI:
 
         position = []
         numeric = self._enigma._numeric  # TODO: Refactor
-        for pos in self._load_position(self._checkpoint):
+        for pos in self.__load_position(self.__checkpoint):
             position.append("%02d" % (pos + 1) if numeric else alphabet[pos])
         positions = "\nRotor positions: %s" % ' '.join(position)
 
