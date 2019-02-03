@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 
-import PySide2 as qt
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtMultimedia import *
-from PySide2.QtGui import *
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import Socket
-
 
 selector_labels = ("THIN", "SLOW", "MEDIUM", "FAST")
 selector_tooltips = ("Does not rotate", None, None, "Rotates on every keypress")

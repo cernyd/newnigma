@@ -286,79 +286,81 @@ class EnigmaAPI:
         Loads data from dict
         """
         self.model(config['model'])
-
         self.reflector(config['reflector'])
-        pos = config.get('reflector_position', None)
-        if pos:
-            self._enigma.reflector_position(pos)
-        elif self.reflector() == 'UKW-D':
-            self.reflector_pairs(config['reflector_wiring'])
-
         self.rotors(config['rotors'])
         self.positions(config['rotor_positions'])
         self.ring_settings(config['ring_settings'])
 
-        if config.get('uhr_position', None) is not None:
-            self._enigma.uhr(True)  # Connect uhr
+        try:
+            self._enigma.reflector_position(config.get('reflector_position', None))
+        except (AssertionError, KeyError):
+            pass
+
+        try:
+            self.reflector_pairs(config['reflector_wiring'])
+        except (AssertionError, KeyError):
+            pass
+
+        if 'uhr_position' in config:
+            self._enigma.uhr(True)
             self._enigma.uhr_position(config['uhr_position'])
 
-        self.plug_pairs(config['plugs'])
-    
+        self.plug_pairs(config['plug_pairs'])
+
     def get_config(self):
         """
         Converts enigma settings to a json serializable dict.
         """
         data = {}
         data['model'] = self._enigma.model()
-
         data['reflector'] = self._enigma.reflector()
-        if self._enigma.reflector_rotatable():
-            data['reflector_position'] = self._enigma.reflector_position()
-        elif self.reflector() == 'UKW-D':
-            data['reflector_wiring'] = self.reflector_pairs()
-
         data['rotors'] = self._enigma.rotors()
         data['rotor_positions'] = self._enigma.positions()
         data['ring_settings'] = self._enigma.ring_settings()
-
-        if self._enigma.uhr():
-            data['uhr_position'] = self._enigma.uhr_position()
-
-        plugs = []
+        data['plug_pairs'] = []
         for plug in self._enigma.plug_pairs():
-            plugs.append(''.join(plug))
-        data['plugs'] = plugs
+            data['plug_pairs'].append(''.join(plug))
+
+        try:
+            data['reflector_position'] = self._enigma.reflector_position()
+        except AssertionError:
+            pass
+        try:
+            data['reflector_wiring'] = self.reflector_pairs()
+        except AssertionError:
+            pass
+        try:
+            data['uhr_position'] = self._enigma.uhr_position()
+        except AssertionError:
+            pass
 
         return data
 
     def __str__(self):
-        header = "=== %s instance data ===" % self._enigma.model()
-
-        rotors = "\nRotors: %s" % ' '.join(self._enigma.rotors())
-
-        position = []
-        numeric = self._enigma._numeric  # TODO: Refactor
-        for pos in self.__load_position(self.__checkpoint):
-            position.append("%02d" % (pos + 1) if numeric else alphabet[pos])
-        positions = "\nRotor positions: %s" % ' '.join(position)
-
-        rings = "\nRing settings: %s" % ' '.join(map(str, self._enigma.ring_settings()))
-
-
-        reflector = "\nReflector: %s" % self._enigma.reflector()
+        data = self.get_config()
+        header = "Enigma model: %s" % data['model']
+        rotors = "\nRotors: %s" % ' '.join(data['rotors'])
+        positions = "\nRotor positions: %s" % ' '.join(data['rotor_positions'])
+        rings = "\nRing settings: %s" % ' '.join(map(str, data['ring_settings']))
+        reflector = "\nReflector: %s" % data['reflector']
         msg = header + rotors + positions + rings + reflector
 
-        if self.reflector_rotatable():
-            msg += "\nReflector position: %s" % self.reflector_position()
-        elif self.reflector() == 'UKW-D':
-            msg += "\nReflector wiring: %s" % ' '.join(self.reflector_pairs())
+        try:
+            msg += "\nReflector position: %s" % data['reflector_position']
+        except KeyError:
+            pass
 
-        plug_pairs = "\nPlugboard pairs: %s" % ' '.join([''.join(pair) for pair in self._enigma.plug_pairs()])
+        try:
+            msg += "\nReflector wiring: %s" % ' '.join(data['reflector_wiring'])
+        except KeyError:
+            pass
+
+        plug_pairs = "\nPlugboard pairs: %s" % ' '.join(data['plug_pairs'])
         msg += plug_pairs
 
         if self.uhr():
-            msg += "\nUhr position: %02d" % self._enigma.uhr_position()
+            msg += "\nUhr position: %02d" % data['uhr_position']
 
-        msg += "\n" + "="*len(header)
+        msg += "\n" + "="*40
 
         return msg

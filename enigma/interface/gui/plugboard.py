@@ -1,8 +1,3 @@
-import PySide2 as qt
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtMultimedia import *
-from PySide2.QtGui import *
 from enigma.interface.gui import *
 
 
@@ -114,6 +109,8 @@ class Plugboard(QDialog):
         if self.enable_uhr.isChecked():
             self.enigma_api.uhr(True)
             self.enigma_api._enigma.uhr_position(self.uhrmenu.position())
+        else:
+            self.enigma_api.uhr(False)
 
         self.enigma_api.plug_pairs(pairs)
         self.close()

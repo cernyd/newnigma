@@ -1,3 +1,6 @@
+from PySide2.QtWidgets import *
+from PySide2.QtCore import QUrl, QSize, Qt
+from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor
 from string import ascii_uppercase as alphabet
 
 labels = ['A-01', 'B-02', 'C-03', 'D-04', 'E-05', 'F-06', 'G-07', 'H-08', 'I-09', 'J-10', 'K-11', 'L-12', 'M-13',

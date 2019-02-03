@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 
-import PySide2 as qt
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtMultimedia import *
-from PySide2.QtGui import *
 from time import sleep
+from enigma.interface.gui import *
 from enigma.interface.gui.settings import *
 from enigma.interface.gui.plugboard import *
-import copy
-import sys
 from string import ascii_uppercase as alphabet
-from re import sub
 from textwrap import wrap
+from re import sub
 
 
 def letter_groups(text, group_size=5):
@@ -35,6 +29,7 @@ class Runtime:
         :param cfg_load_plug: {callable} Returns loaded config
         :param cfg_save_plug: {callable} Allows to save data to config file
         """
+        import sys
         self.app = QApplication(sys.argv)  # Needed for process name
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
@@ -162,10 +157,8 @@ class Root(QWidget):
             QMessageBox.warning(self, "Overwrite warning", "Overwriting files that are not .txt textfiles is not permitted!")
         elif filename:
             with open(filename, 'w') as f:
-                settings = str(self._api)
-                template = """%s\n%s\n==============================\nCreated with Enigma simulator by David Cerny\n"""
                 message = '\n'.join(wrap(self.o_textbox.text(), 29))
-                f.write(template % (settings, message))
+                f.write("%s\n%s\n" % (str(self._api), message))
 
 
 class Lightboard(QWidget):
@@ -217,7 +210,8 @@ class Lightboard(QWidget):
 
 
 class _RotorsHandler(QFrame):
-    def __init__(self, master, position_plug, rotate_plug, rotate_ref_plug, enigma_api, label_plug, reflector_pos_plug):
+    def __init__(self, master, position_plug, rotate_plug, rotate_ref_plug,
+                 enigma_api, label_plug, reflector_pos_plug):
         """
         :param master: {Qt} Master qt object
         :param position_plug: {callable} Callable method for getting rotor positions
@@ -398,7 +392,8 @@ class _RotorHandler(QFrame):
 
 
 class _InputTextBox(QPlainTextEdit):
-    def __init__(self, master, encrypt_plug, output_plug, sync_plug, refresh_plug, letter_group_plug, revert_pos):
+    def __init__(self, master, encrypt_plug, output_plug, sync_plug, 
+                 refresh_plug, letter_group_plug, revert_pos):
         """
         Input textbox where text is entered, the last input letter is then encrypted and sent to
         the output widget
