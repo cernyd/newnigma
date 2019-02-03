@@ -1,5 +1,5 @@
 gui:
-	./enigma.py
+	python3 enigma.py
 test:
 	python3 -m pytest -s
 install:
