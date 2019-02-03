@@ -142,7 +142,10 @@ class Root(QWidget):
     def load_config(self):
         data = self.cfg_load_plug()
         self._api.load_from_config(data['saved'])
+        self.i_textbox.blockSignals(True)
         self.refresh_gui()
+        self._api.set_checkpoint()
+        self.i_textbox.blockSignals(False)
         self._rotors.generate_rotors()
         self._rotors.set_positions()  # Refreshes positons... TODO: Maybe redundant?
 

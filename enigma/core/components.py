@@ -24,7 +24,7 @@ UKW_B = {'label': 'UKW-B', 'wiring': "YRUHQSLDPXNGOKMIEBFZCWVJAT"}
 UKW_C = {'label': 'UKW-C', 'wiring': "FVPJIAOYEDRZXWGCTKUQSBNMHL"}
 
 # Special case, can be used with any Enigma
-UKW_D = ['AB', 'CD', 'EF', 'GH', 'IK', 'LM', 'NO', 'PQ', 'RS', 'TU', 'VW', 'XZ']
+UKW_D = {'label': 'UKW-D', 'wiring': ['AB', 'CD', 'EF', 'GH', 'IK', 'LM', 'NO', 'PQ', 'RS', 'TU', 'VW', 'XZ']}
 
 
 # Enigma D and K
@@ -37,7 +37,7 @@ ENIGMA_D_K = {
     ),
     'rotor_n': 3,
     'reflectors': (
-        {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+        {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"}, UKW_D
     ),
     'rotatable_ref': True,
     'letter_group': 5,
@@ -52,7 +52,7 @@ historical_data = {
         'rotors': (I, II, III, IV, V),
         'rotor_n': 3,
         'reflectors': (
-            {'label': 'UKW-A', 'wiring': "EJMZALYXVBWFCRQUONTSPIKHGD"}, UKW_B, UKW_C
+            {'label': 'UKW-A', 'wiring': "EJMZALYXVBWFCRQUONTSPIKHGD"}, UKW_B, UKW_C, UKW_D
         ),
         'rotatable_ref': False,
         'letter_group': 5,
@@ -63,7 +63,7 @@ historical_data = {
         'stator': ETW,
         'rotors': (I, II, III, IV, V, VI, VII, VIII),
         'rotor_n': 3,
-        'reflectors': (UKW_B, UKW_C),
+        'reflectors': (UKW_B, UKW_C, UKW_D),
         'rotatable_ref': False,
         'letter_group': 5,
         'plugboard': True,
@@ -79,7 +79,8 @@ historical_data = {
         'rotor_n': 4,
         'reflectors': (
             {'label': 'UKW-b', 'wiring': "ENKQAUYWJICOPBLMDXZVFTHRGS"},
-            {'label': 'UKW-c', 'wiring': "RDOBJNTKVEHMLFCWZAXGYIPSUQ"}
+            {'label': 'UKW-c', 'wiring': "RDOBJNTKVEHMLFCWZAXGYIPSUQ"},
+            UKW_D
         ),
         'rotatable_ref': False,
         'letter_group': 4,
@@ -98,6 +99,7 @@ historical_data = {
         'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "MOWJYPUXNDSRAIBFVLKZGQCHET"},
+            UKW_D
         ),
         'rotatable_ref': False,
         'letter_group': 5,
@@ -114,6 +116,7 @@ historical_data = {
         'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+            UKW_D
         ),
         'rotatable_ref': True,
         'letter_group': 5,
@@ -132,6 +135,7 @@ historical_data = {
         'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+            UKW_D
         ),
         'rotatable_ref': True,
         'letter_group': 5,
@@ -149,6 +153,7 @@ historical_data = {
         'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "QYHOGNECVPUZTFDJAXWMKISRBL"},
+            UKW_D
         ),
         'rotatable_ref': True,
         'letter_group': 5,
@@ -170,6 +175,7 @@ historical_data = {
         'rotor_n': 3,
         'reflectors': (
             {'label': 'UKW', 'wiring': "GEKPBTAUMOCNILJDXZYFHWVQSR"},
+            UKW_D
         ),
         'rotatable_ref': True,
         'letter_group': 5,
@@ -348,6 +354,7 @@ class UKWD(Reflector):
                 if pair[::-1] not in pairs:
                     pairs.append(pair)
 
+            print("pairs" + str(pairs))
             return pairs
 
 
@@ -525,7 +532,10 @@ class Enigma:
 
             for position, rotor in zip(new_positions, self._rotors):
                 if type(position) == str:
-                    position = alphabet.index(position)
+                    if position in alphabet:
+                        position = alphabet.index(position)
+                    else:
+                        position = int(position) - 1
                 rotor.offset(position)
         else:
             return tuple([rotor.position(self._numeric) for rotor in self._rotors])
@@ -544,7 +554,7 @@ class Enigma:
 
     def rotors(self, new_rotors=None):
         if new_rotors is not None:
-            assert len(new_rotors) == self._rotor_n, "This enigma has %d rotors!" % self._rotor_n
+            assert len(new_rotors) == self.rotor_n(), "This enigma has %d rotors!" % self.rotor_n()
             self._rotors = new_rotors
         else:
             return [rotor.label() for rotor in self._rotors]

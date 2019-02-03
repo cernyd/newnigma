@@ -18,6 +18,7 @@ class EnigmaAPI:
         self._enigma = self.generate_enigma(model, reflector, rotors)
         self._buffer = []
         self._buffer_size = position_buffer
+        self._checkpoint = 0
 
     @property
     def _data(self):
@@ -45,7 +46,7 @@ class EnigmaAPI:
 
         refs = [reflector['label'] for reflector in historical_data[model]['reflectors']]
         rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
-        self._buffer = []  # Buffer flush
+        self.clear_buffer()
 
         return {'reflectors': refs, 'rotors': rotors}
 
@@ -93,7 +94,8 @@ class EnigmaAPI:
         Returns positions or sets a new one if new_positions is overriden
         :param new_positions: {str}
         """
-        return self._enigma.positions(new_positions)
+        positions = self._enigma.positions(new_positions)
+        return positions
     
     def ring_settings(self, new_ring_settings=None):
         """
@@ -122,10 +124,10 @@ class EnigmaAPI:
         return lambda: self.rotate_rotor(rotor_id, by)
 
     def rotate_rotor(self, rotor_id, by=1):
-        self._buffer = []
-        self._save_position()
-
+        print("ROTATE BY %s" % by)
+        self.clear_buffer()
         self._enigma.rotate_rotor(rotor_id, by)
+        self.set_checkpoint()
 
     def rotate_reflector(self, by=1, callback=False):
         if callback is True:
@@ -144,7 +146,13 @@ class EnigmaAPI:
 
     # BUFFER TOOLS
 
-    def _save_position(self):
+    def set_checkpoint(self):
+        self._checkpoint = self._serialized_position()
+
+    def clear_buffer(self):
+        self._buffer = []
+
+    def _serialized_position(self):
         serialized = ''
 
         for pos in self._enigma.positions():
@@ -153,7 +161,10 @@ class EnigmaAPI:
             else:
                 serialized += "%02d" % (int(pos) - 1)
 
-        self._buffer.append(int(serialized))
+        return int(serialized)
+
+    def _save_position(self):
+        self._buffer.append(self._serialized_position())
 
     def _load_position(self, position):
         formula = "%0" + str(self.rotor_n()*2) + "d"
@@ -173,7 +184,7 @@ class EnigmaAPI:
         self._buffer = self._buffer[:-by]
         
         if not self._buffer:
-            self._enigma.positions(self._load_position(0))
+            self._enigma.positions(self._load_position(self._checkpoint))
         else:
             self._enigma.positions(self._load_position(self._buffer[-1]))
 
@@ -186,7 +197,6 @@ class EnigmaAPI:
         """
         output = self._enigma.press_key(letter)
         self._save_position()
-        print(self._buffer)
         return output
 
     # GENERATORS
@@ -252,7 +262,7 @@ class EnigmaAPI:
             assert component, "No component with label %s found!" % label
         elif comp_type == "Reflector":
             if label == 'UKW-D':
-                return UKWD(UKW_D)
+                return UKWD(UKW_D['wiring'])
 
             for reflector in data["reflectors"]:
                 if reflector['label'] == label or label == i:
@@ -275,14 +285,14 @@ class EnigmaAPI:
         """
         self.model(config['model'])
 
-        self.rotors(config['rotors'])
-        self.positions(config['rotor_positions'])
-        self.ring_settings(config['ring_settings'])
-
         self.reflector(config['reflector'])
         pos = config.get('reflector_position', None)
         if pos:
             self._enigma.reflector_position(pos)
+
+        self.rotors(config['rotors'])
+        self.positions(config['rotor_positions'])
+        self.ring_settings(config['ring_settings'])
 
         if config.get('uhr_position', None) is not None:
             self._enigma.uhr(True)  # Connect uhr
@@ -297,13 +307,13 @@ class EnigmaAPI:
         data = {}
         data['model'] = self._enigma.model()
 
-        data['rotors'] = self._enigma.rotors()
-        data['rotor_positions'] = self._enigma.positions()
-        data['ring_settings'] = self._enigma.ring_settings()
-
         data['reflector'] = self._enigma.reflector()
         if self._enigma.reflector_rotatable():
             data['reflector_position'] = self._enigma.reflector_position()
+
+        data['rotors'] = self._enigma.rotors()
+        data['rotor_positions'] = self._enigma.positions()
+        data['ring_settings'] = self._enigma.ring_settings()
 
         if self._enigma.uhr():
             data['uhr_position'] = self._enigma.uhr_position()
@@ -319,7 +329,13 @@ class EnigmaAPI:
         header = "=== %s instance data ===" % self._enigma.model()
 
         rotors = "\nRotors: %s" % ' '.join(self._enigma.rotors())
-        positions = "\nRotor positions: %s" % ' '.join(self._enigma.positions())
+
+        position = []
+        numeric = self._enigma._numeric  # TODO: Refactor
+        for pos in self._load_position(self._checkpoint):
+            position.append("%02d" % (pos + 1) if numeric else alphabet[pos])
+        positions = "\nRotor positions: %s" % ' '.join(position)
+
         rings = "\nRing settings: %s" % ' '.join(map(str, self._enigma.ring_settings()))
 
 
@@ -328,9 +344,14 @@ class EnigmaAPI:
 
         if self.reflector_rotatable():
             msg += "\nReflector position: %s" % self.reflector_position()
+        elif self.reflector() == 'UKW-D':
+            msg += "\nReflector wiring: %s" % ' '.join(self.reflector_pairs())
 
-        plug_pairs = "\nPlugboard pairs: %s" % ' '.join(self._enigma.plug_pairs())
+        plug_pairs = "\nPlugboard pairs: %s" % ' '.join([''.join(pair) for pair in self._enigma.plug_pairs()])
         msg += plug_pairs
+
+        if self.uhr():
+            msg += "\nUhr position: %02d" % self._enigma.uhr_position()
 
         msg += "\n" + "="*len(header)
 
