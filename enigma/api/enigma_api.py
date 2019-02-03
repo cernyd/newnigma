@@ -93,8 +93,7 @@ class EnigmaAPI:
         Returns positions or sets a new one if new_positions is overriden
         :param new_positions: {str}
         """
-        positions = self._enigma.positions(new_positions)
-        return positions
+        return self._enigma.positions(new_positions)
     
     def ring_settings(self, new_ring_settings=None):
         """
@@ -120,13 +119,12 @@ class EnigmaAPI:
                                 only executes, needed to bypass python 
                                 lambda evaluation problems in for loops
         """
-        return lambda: self.rotate_rotor(rotor_id, by)
+        def rotate_rotor(rotor_id, by=1):
+            self.__clear_buffer()
+            self._enigma.rotate_rotor(rotor_id, by)
+            self.set_checkpoint()
 
-    def rotate_rotor(self, rotor_id, by=1):
-        print("ROTATE BY %s" % by)
-        self.__clear_buffer()
-        self._enigma.rotate_rotor(rotor_id, by)
-        self.set_checkpoint()
+        return lambda: rotate_rotor(rotor_id, by)
 
     def rotate_reflector(self, by=1, callback=False):
         if callback is True:
