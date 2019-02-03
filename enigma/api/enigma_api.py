@@ -289,6 +289,8 @@ class EnigmaAPI:
         pos = config.get('reflector_position', None)
         if pos:
             self._enigma.reflector_position(pos)
+        elif self.reflector() == 'UKW-D':
+            self.reflector_pairs(config['reflector_wiring'])
 
         self.rotors(config['rotors'])
         self.positions(config['rotor_positions'])
@@ -310,6 +312,8 @@ class EnigmaAPI:
         data['reflector'] = self._enigma.reflector()
         if self._enigma.reflector_rotatable():
             data['reflector_position'] = self._enigma.reflector_position()
+        elif self.reflector() == 'UKW-D':
+            data['reflector_wiring'] = self.reflector_pairs()
 
         data['rotors'] = self._enigma.rotors()
         data['rotor_positions'] = self._enigma.positions()
