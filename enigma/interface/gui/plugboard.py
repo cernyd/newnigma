@@ -29,7 +29,8 @@ class Plugboard(QDialog):
 
             for letter in row:
                 letter = alphabet[letter]
-                socket = Socket(row_frame, letter, self.connect_sockets, self.refresh_apply)
+                socket = Socket(row_frame, letter, self.connect_sockets,
+                                self.refresh_apply)
                 self.plugs[letter] = socket
                 self.pairs[letter] = None
                 row_layout.addWidget(socket)
@@ -69,8 +70,8 @@ class Plugboard(QDialog):
 
     def refresh_apply(self):
         """
-        Refreshes the Apply button to see if conditions for it being enabled are
-        met
+        Enables "Apply" button either if Uhr is disabled or Uhr is enabled and
+        10 pairs are set
         """
         if self.enable_uhr.isChecked():
             pair_n = len(self._pairs())
@@ -94,6 +95,9 @@ class Plugboard(QDialog):
             self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
 
     def _pairs(self):
+        """
+        Returns all selected wiring pairs
+        """
         pairs = []
         for pair in self.pairs.items():
             if pair[::-1] not in pairs and all(pair):
@@ -102,7 +106,8 @@ class Plugboard(QDialog):
 
     def collect(self):
         """
-        Collects all unique letter pairs
+        Collects all unique letter pairs, enables and sets up Uhr if it's also
+        checked
         """
         pairs = self._pairs()
 
@@ -117,7 +122,7 @@ class Plugboard(QDialog):
 
     def connect_sockets(self, socket, other_socket):
         """
-        Connects two cosckets without unnecessary interaction of two sockets
+        Connects two sockets without unnecessary interaction of two sockets
         to avoid recursive event calls)
         """
         if other_socket is None:
@@ -145,7 +150,9 @@ class Socket(QFrame):
         One sockets with label and text entry
         :param master: Qt parent object
         :param letter: Letter to serve as the label
-        :param connect_plug: 
+        :param connect_plug: calls parent to connect with the letter typed in
+                             the entry box
+        :param apply_plug: Refreshes the "Apply" button
         """
         super().__init__(master)
 
@@ -191,6 +198,7 @@ class Socket(QFrame):
         """
         Sets text to the plug entrybox and sets white (vacant) or black
         (occupied) background color
+        :param letter: Sets text to the newly selected letter
         """
         if letter:
             self.entry.setStyleSheet("background-color: black; color: white")
@@ -204,6 +212,8 @@ class Uhr(QDialog):
         """
         Uhr plugboard device
         :param master: Qt parent widget
+        :param uhr_position: {callable} Sets the indicator to the current
+                                        uhr position (if any)
         """
         super().__init__(master)
 
@@ -252,5 +262,8 @@ class Uhr(QDialog):
         self.indicator.setText("%02d" % self.dial.value())
 
     def position(self):
+        """
+        Returns current Uhr dial setting
+        """
         return self.dial.value()
 

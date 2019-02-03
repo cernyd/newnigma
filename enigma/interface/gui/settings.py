@@ -29,7 +29,7 @@ class Settings(QDialog):
         # SAVE ATTRIBUTES ======================================================
 
         self.enigma_api = enigma_api
-        self.radio_selectors = []
+        self.rotor_selectors = []
         self.ring_selectors = []
         self.ukwd = UKWD_Settings(self, enigma_api)
 
@@ -64,11 +64,18 @@ class Settings(QDialog):
         self.refresh_ukwd()
 
     def open_ukwd_wiring(self):
+        """
+        Opens UKWD wiring menu
+        """
         self.ukwd.refresh_pairs()
         self.ukwd.exec_()
         self.refresh_ukwd()
 
     def refresh_ukwd(self):
+        """
+        Refreshes Apply button according to criteria (UKW-D rotor must be
+        selected to edit its settings)
+        """
         if self.reflector_group.checkedButton().text() == 'UKW-D':
             if len(self.ukwd._pairs()) != 12:
                 self.apply_btn.setDisabled(True)
@@ -91,6 +98,12 @@ class Settings(QDialog):
                 self.rotor_frames[0].setDisabled(False)
 
     def generate_components(self, reflectors, rotors, rotor_n):
+        """
+        Generates currently displayed components based on Enigma model
+        :param reflectors: {str} Reflector labels
+        :param rotors: {[str, str, str]} Rotor labels
+        :param rotor_n: {int} Number of rotors the Enigma model has
+        """
         # REFLECTOR SETTINGS ===================================================
         
         reflector_frame = QFrame(self.settings_frame)
@@ -119,7 +132,7 @@ class Settings(QDialog):
 
         # ROTOR SETTINGS =======================================================
 
-        self.radio_selectors = []
+        self.rotor_selectors = []
         self.ring_selectors = []
         self.rotor_frames = []
 
@@ -166,7 +179,7 @@ class Settings(QDialog):
             hr.setFrameShadow(QFrame.Sunken)
 
             self.ring_selectors.append(combobox)
-            self.radio_selectors.append(button_group)
+            self.rotor_selectors.append(button_group)
 
             rotor_layout.addWidget(hr)
             rotor_layout.addWidget(QLabel("RING SETTING", rotor_frame))
@@ -176,6 +189,9 @@ class Settings(QDialog):
             self.rotor_frames.append(rotor_frame)
 
     def clear_components(self):
+        """
+        Deletes all components settings widgets
+        """
         while True:
             child = self.settings_layout.takeAt(0)
             if child:
@@ -214,29 +230,29 @@ class Settings(QDialog):
                 else:
                     rotor_i = rotors.index(rotor)
 
-                self.radio_selectors[i].button(rotor_i).setChecked(True)
+                self.rotor_selectors[i].button(rotor_i).setChecked(True)
             
             for i, ring in enumerate(self.enigma_api.ring_settings()):
                 self.ring_selectors[i].setCurrentIndex(ring-1)
         else:
             for i in range(rotor_n):
-                self.radio_selectors[i].button(i).setChecked(True)
+                self.rotor_selectors[i].button(i).setChecked(True)
 
         self.refresh_ukwd()
 
     def collect(self):
         """
         Collects all selected settings for rotors and other components,
-        applies them to the enigma object
+        applies them to the EnigmaAPI as new settings
         """
         new_model = self.stacked_wikis.currently_selected
         new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
         reflector_pairs = self.ukwd._pairs()
 
         if new_reflector == 'UKW-D' and new_model == 'EnigmaM4':
-            new_rotors = [group.checkedButton().text() for group in self.radio_selectors[1:]]
+            new_rotors = [group.checkedButton().text() for group in self.rotor_selectors[1:]]
         else:
-            new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
+            new_rotors = [group.checkedButton().text() for group in self.rotor_selectors]
             
         ring_settings = [ring.currentIndex()+1 for ring in self.ring_selectors]
         
@@ -260,7 +276,7 @@ class ViewSwitcher(QWidget):
     def __init__(self, master, model_plug, regen_plug):
         """
         :param master: Qt parent object
-        :param model_plug: {callable} Returns current enigma model
+        :param model_plug: {callable} Returns current Enigma model
         :param regen_plug: {callable} Regenerates settings view
         """
         super().__init__(master)
@@ -296,7 +312,7 @@ class ViewSwitcher(QWidget):
     def select_model(self, i):
         """
         Called when the "Use this model" button is pressed
-        :param model: {str} Newly selected models
+        :param model: {str} Newly selected model
         """
         model = list(view_data.keys())[i]
         self.regen_plug(model)
@@ -309,8 +325,7 @@ class _EnigmaView(QWidget):
         """
         :param master: Qt parent object
         :param model: {str} Enigma model
-        :param select_plug: {callable} Callback that accepts the newly selected 
-                                       model
+        :param select_plug: {callable} Triggers regeneration of settings view
         """
         super().__init__(master)
 
@@ -349,6 +364,11 @@ class _EnigmaView(QWidget):
 
 class UKWD_Settings(QDialog):
     def __init__(self, master, enigma_api):
+        """
+        Settings menu for settings UKW-D wiring pairs
+        :param master: Qt parent object
+        :param enigma_api: {EnigmaAPI}
+        """
         super().__init__(master)
 
         main_layout = QVBoxLayout()
@@ -388,6 +408,9 @@ class UKWD_Settings(QDialog):
         self.refresh_apply()
 
     def refresh_pairs(self):
+        """
+        Tries to load reflector pairs (UKW-D pairs) from EnigmaAPI
+        """
         try:
             for pair in self.enigma_api.reflector_pairs():
                 self.connect_sockets(*pair)
@@ -395,10 +418,16 @@ class UKWD_Settings(QDialog):
             print(e)
 
     def storno(self):
+        """
+        Clears all selected pairs and closes the window
+        """
         self.pairs = {}
         self.close()
 
     def refresh_apply(self):
+        """
+        Enables the "Apply" button only if all 12 pairs are connected
+        """
         if len(self._pairs()) != 12:
             self.apply_btn.setDisabled(True)
             self.apply_btn.setToolTip("All 12 pairs must be connected!")
@@ -408,6 +437,9 @@ class UKWD_Settings(QDialog):
             
 
     def _pairs(self):  # TODO: Duplicate
+        """
+        Returns all selected wiring pairs
+        """
         pairs = []
         for pair in self.pairs.items():
             if pair[::-1] not in pairs and all(pair):
@@ -417,8 +449,7 @@ class UKWD_Settings(QDialog):
 
     def connect_sockets(self, socket, other_socket):  # TODO: Duplicate
         """
-        Connects two cosckets without unnecessary interaction of two sockets
-        to avoid recursive event calls)
+        Pairs two sockets both visually and in the plug list
         """
         if other_socket is None:
             other = self.pairs[socket]

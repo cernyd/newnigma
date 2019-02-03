@@ -9,16 +9,6 @@ from textwrap import wrap
 from re import sub
 
 
-def letter_groups(text, group_size=5):
-    output = ''
-    i = 0
-    for letter in text:
-        if i == group_size:
-            i = 0
-            output += ' '
-        output += letter
-        i += 1
-    return output
 
 
 class Runtime:
@@ -48,7 +38,8 @@ class Root(QWidget):
         """
         Initializes Root QT window widgets
         :param enigma_api: {EnigmaAPI} Initialized EnigmaAPI object
-        :param cfg_load_plug: {callable} callable that returns loaded config
+        :param cfg_load_plug: {callable} Returns loaded config
+        :param cfg_save_plug: {callable} Allows to save data to config file
         """
         super().__init__()
 
@@ -65,7 +56,7 @@ class Root(QWidget):
         
         # SAVE ATTRIBUTES ======================================================
 
-        self._api = enigma_api
+        self.enigma_api = enigma_api
 
         # MENU BAR =============================================================
 
@@ -78,9 +69,9 @@ class Root(QWidget):
 
         # ROTORS INDICATOR =====================================================
 
-        self._rotors = _RotorsHandler(self, self._api.positions, 
-                                      self._api.generate_rotate_callback,
-                                      self._api.rotate_reflector,
+        self._rotors = _RotorsHandler(self, self.enigma_api.positions, 
+                                      self.enigma_api.generate_rotate_callback,
+                                      self.enigma_api.rotate_reflector,
                                       enigma_api, self.refresh_gui,
                                       enigma_api.reflector_position)
 
@@ -122,21 +113,21 @@ class Root(QWidget):
         self.show()
     
     def get_pairs(self):
-        plugboard = Plugboard(self, self._api)  # TODO: Refactor
+        plugboard = Plugboard(self, self.enigma_api)  # TODO: Refactor
         plugboard.exec()
         del plugboard
     
     def refresh_gui(self):
-        self.setWindowTitle(self._api.model())
+        self.setWindowTitle(self.enigma_api.model())
         self.i_textbox.clear()
-        if self._api._data['plugboard']:
+        if self.enigma_api.data()['plugboard']:
             self.plug_button.show()
         else:
             self.plug_button.hide()
 
     def load_config(self):
         data = self.cfg_load_plug()
-        self._api.load_from_config(data['saved'])
+        self.enigma_api.load_from_config(data['saved'])
         self.i_textbox.blockSignals(True)
         self.refresh_gui()
         self.i_textbox.blockSignals(False)
@@ -144,7 +135,7 @@ class Root(QWidget):
         self._rotors.set_positions()  # Refreshes positons... TODO: Maybe redundant?
 
     def save_config(self):
-        data = self._api.get_config()
+        data = self.enigma_api.get_config()
         old_data = self.cfg_load_plug()
         old_data['saved'] = data
         self.cfg_save_plug(old_data)
@@ -158,7 +149,7 @@ class Root(QWidget):
         elif filename:
             with open(filename, 'w') as f:
                 message = '\n'.join(wrap(self.o_textbox.text(), 29))
-                f.write("%s\n%s\n" % (str(self._api), message))
+                f.write("%s\n%s\n" % (str(self.enigma_api), message))
 
 
 class Lightboard(QWidget):
@@ -391,18 +382,36 @@ class _RotorHandler(QFrame):
         self.set_positions()
 
 
+def letter_groups(text, group_size=5):
+    output = ''
+    i = 0
+    for letter in text:
+        if i == group_size:
+            i = 0
+            output += ' '
+        output += letter
+        i += 1
+    return output
+
+
 class _InputTextBox(QPlainTextEdit):
     def __init__(self, master, encrypt_plug, output_plug, sync_plug, 
                  refresh_plug, letter_group_plug, revert_pos):
         """
-        Input textbox where text is entered, the last input letter is then encrypted and sent to
-        the output widget
+        Handles user input and sends it to the output textbox
         :param master: {QWidget} Parent Qt object
         :param encrypt_plug: {callable} A callable that accepts one letter
-                                        and returns one letter, should provide encryption
-        :param output_plug: {callable} A callable that accepts one letter, should output it somewhere
-        :param sync_plug: {callable} Sets output text widget to the desired length
-        :param refresh_plug: {callable} A callable that should refresh a rotor positions
+                                        and returns one letter, should provide
+                                        encryption
+        :param output_plug: {callable} Accepts text that is to be displayed
+        :param sync_plug: {callable} Synchronizes length of this
+                                     widget with output widget
+        :param refresh_plug: {callable} Refreshes displayed rotor positions
+                                        a rotor positions
+        :param letter_group_plug: {callable} Formats input text into blocks of
+                                             n letters
+        :param revert_pos: {callable} Reverts Enigma rotor position when the text
+                                      gets shorter
         """
         super().__init__(master)
 
@@ -432,8 +441,7 @@ class _InputTextBox(QPlainTextEdit):
         
     def input_detected(self):
         """
-        Responds to the text input event by encrypting the newly typed letter
-        and sending it to the output text box.
+        Encrypts newly typed/inserted text and outputs it to the output textbox
         """
         text = self.toPlainText().upper()
         text = sub('[^A-Z]+', '', text)
@@ -467,6 +475,8 @@ class _OutputTextBox(QPlainTextEdit):
         :param master: Qt parent object
         :param light_up_plug: {callable} Callable that accepts a single letter
                                          that should light up on the lightboard
+        :param letter_group_plug: {callable} Formats input text into blocks of
+                                             n letters
         """
         super().__init__(master)
 
@@ -483,22 +493,26 @@ class _OutputTextBox(QPlainTextEdit):
     def sync_length(self, length):
         """
         Sets widget length to the desired length
+        :param length: {int} new length of the displayed text
         """
         self.light_up_plug('')
         text = letter_groups(self.toPlainText().replace(' ', '')[:length], self.letter_group_plug())
         self.setPlainText(text)
         self.moveCursor(QTextCursor.End)
 
-    def insert(self, letter):
+    def insert(self, text):
         """
         Appends text into the textbox
         :param letter: {char} Letter to be appended
         """
-        text = (self.toPlainText().replace(' ', '') + letter)
+        text = (self.toPlainText().replace(' ', '') + text)
         self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)
-        self.light_up_plug(letter)
+        self.light_up_plug(text[-1])
 
     def text(self):
+        """
+        Returns currently displayed text
+        """
         return self.toPlainText()
 

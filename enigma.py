@@ -44,8 +44,7 @@ if __name__ == '__main__':
     for arg in cli_data:
         cli_args.add_argument(arg[0], **arg[1])
 
-    # ====================================================
-    # ARG PARSE
+    # ARG PARSE ====================================================
     args = parser.parse_args()
 
     if args.verbose:
@@ -54,16 +53,14 @@ if __name__ == '__main__':
         logging.info('Running pre-launch tests...')
         pytest.main(['tests'])
 
-    # ====================================================
-    # CONFIG LOAD
+    # CONFIG LOAD ====================================================
 
     logging.info("Loading config...")
     cfg = Config("config.json")
     cfg.mk_cache()
     data = cfg.cache['default']
 
-    # ====================================================
-    # APPLICATION INIT
+    # APPLICATION INIT ====================================================
     # LOADS EITHER CLI OR GUI BASED ON COMMAND LINE ARG
     logging.info('Starting newnigma...')
 
@@ -79,5 +76,4 @@ if __name__ == '__main__':
         logging.info('Launching newnigma Qt Application...')
         runtime = Runtime(enigma_api, cfg.load, cfg.save)
         runtime.run()
-    # ====================================================
 

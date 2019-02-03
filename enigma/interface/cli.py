@@ -4,6 +4,11 @@ import logging
 
 
 def cli(enigma_api, args):
+    """
+    Starts command line interface that encrypts a message based on args
+    :param enigma_api: {EnigmaAPI}
+    :param args: Object containing parsed command line arguments
+    """
     logging.info('Launching newnigma in the command line...')
     components = (args.model[0], args.reflector[0], args.rotors)
 
@@ -32,10 +37,7 @@ def cli(enigma_api, args):
         enigma_api._enigma.uhr_position(int(args.uhr[0]))
 
     print(enigma_api)
-    print("Encrypted message:")
-
+    print("Encrypted message: ", '')
     for letter in args.message[0].upper():
         print(enigma_api.encrypt(letter), end='')
-
-    print()
 
