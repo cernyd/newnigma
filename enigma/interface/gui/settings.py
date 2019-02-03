@@ -37,6 +37,7 @@ class Settings(QDialog):
         self.enigma_api = enigma_api
         self.radio_selectors = []
         self.ring_selectors = []
+        self.ukwd = UKWD_Settings(self)
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
         
@@ -69,17 +70,19 @@ class Settings(QDialog):
         self.refresh_ukwd()
 
     def open_ukwd_wiring(self):
-        ukwd = UKWD_Settings(self)
-        ukwd.exec()
-        print(ukwd._pairs())
+        self.ukwd.exec()
 
     def refresh_ukwd(self):
         if self.reflector_group.checkedButton().text() == 'UKW-D':
             self.ukwd_button.setDisabled(False)
             self.ukwd_button.setToolTip("Select the UKW-D rotor to edit settings")
+            if len(self.rotor_frames) == 4:  # IF THIN ROTORS
+                self.rotor_frames[0].setDisabled(True)
         else:
             self.ukwd_button.setDisabled(True)
             self.ukwd_button.setToolTip(None)
+            if len(self.rotor_frames) == 4:  # IF THIN ROTORS
+                self.rotor_frames[0].setDisabled(False)
 
     def generate_components(self, reflectors, rotors, rotor_n):
         # REFLECTOR SETTINGS ===================================================
@@ -113,6 +116,7 @@ class Settings(QDialog):
 
         self.radio_selectors = []
         self.ring_selectors = []
+        self.rotor_frames = []
 
         for rotor in range(rotor_n):
             rotor_frame = QFrame(self.settings_frame)
@@ -164,6 +168,7 @@ class Settings(QDialog):
             rotor_layout.addWidget(combobox, alignment=Qt.AlignBottom)
 
             self.settings_layout.addWidget(rotor_frame)
+            self.rotor_frames.append(rotor_frame)
 
     def clear_components(self):
         while True:
@@ -194,7 +199,6 @@ class Settings(QDialog):
         )
         
         if from_api:
-            # Get from api
             reflector_i = reflectors.index(self.enigma_api.reflector())
             self.reflector_group.button(reflector_i).setChecked(True)
             
@@ -220,6 +224,7 @@ class Settings(QDialog):
         """
         new_model = self.stacked_wikis.currently_selected
         new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
+        reflector_pairs = self.ukwd._pairs()
         new_rotors = [group.checkedButton().text() for group in self.radio_selectors]
         ring_settings = [ring.currentIndex()+1 for ring in self.ring_selectors]
         
@@ -227,12 +232,13 @@ class Settings(QDialog):
             self.enigma_api.model(new_model)
 
         self.enigma_api.reflector(new_reflector)
+        if new_reflector == 'UKW-D':
+            self.enigma_api._enigma.reflector_pairs(reflector_pairs)
 
         if new_rotors != self.enigma_api.rotors():
             self.enigma_api.rotors(new_rotors)
 
         self.enigma_api.ring_settings(ring_settings)
-        print(self.enigma_api)
 
         self.close()
 
@@ -347,25 +353,37 @@ class UKWD_Settings(QDialog):
             col_layout = QVBoxLayout(col_frame)
 
             for letter in group:
-                socket = Socket(self, letter, self.connect_sockets, lambda *args: None)
+                socket = Socket(self, letter, self.connect_sockets, self.refresh_apply)
                 col_layout.addWidget(socket)
                 self.plugs[letter] = socket
                 self.pairs[letter] = None
             
             plug_layout.addWidget(col_frame)
 
-        apply_btn = QPushButton("Apply")
-        apply_btn.clicked.connect(self.close)
+        self.apply_btn = QPushButton("Apply")
+        self.apply_btn.clicked.connect(self.close)
+
         storno = QPushButton("Storno")
         storno.clicked.connect(self.storno)
 
         main_layout.addWidget(plug_frame)
-        main_layout.addWidget(apply_btn)
+        main_layout.addWidget(self.apply_btn)
         main_layout.addWidget(storno)
+
+        self.refresh_apply()
     
     def storno(self):
         self.pairs = {}
         self.close()
+
+    def refresh_apply(self):
+        if len(self._pairs()) != 12:
+            self.apply_btn.setDisabled(True)
+            self.apply_btn.setToolTip("All 12 pairs must be connected!")
+        else:
+            self.apply_btn.setDisabled(False)
+            self.apply_btn.setToolTip(None)
+            
 
     def _pairs(self):  # TODO: Duplicate
         pairs = []

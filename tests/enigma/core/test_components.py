@@ -150,7 +150,7 @@ def test_enigma():
 
 
 @pytest.mark.parametrize('model, n_rotors, should_fail', (
-    ("EnigmaM4", 4, False),
+    ("EnigmaM4", 4, True),
     ("EnigmaM3", 3, False),
     ("EnigmaM3", 7, True),
     ("EnigmaMX", 3, True),

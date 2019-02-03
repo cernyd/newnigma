@@ -84,7 +84,7 @@ class Root(QWidget):
         # ROTORS INDICATOR =====================================================
 
         self._rotors = _RotorsHandler(self, self._api.positions, 
-                                      self._api.rotate_rotor,
+                                      self._api.generate_rotate_callback,
                                       self._api.rotate_reflector,
                                       enigma_api, self.refresh_gui,
                                       enigma_api.reflector_position)
@@ -144,7 +144,7 @@ class Root(QWidget):
         self._api.load_from_config(data['saved'])
         self.refresh_gui()
         self._rotors.generate_rotors()
-        self._rotors.set_positions()  # TODO: Maybe redundant?
+        self._rotors.set_positions()  # Refreshes positons... TODO: Maybe redundant?
 
     def save_config(self):
         data = self._api.get_config()
@@ -270,7 +270,6 @@ class _RotorsHandler(QFrame):
 
         # PLUGS ================================================================
 
-        self.position_plug = position_plug
         self.set_positions()
 
     def generate_rotors(self):
@@ -298,7 +297,7 @@ class _RotorsHandler(QFrame):
 
         # Create
         for i in range(len(self._position_plug())):  # Rotor controls
-            indicator = _RotorHandler(self, self._rotate_plug(i, 1, True), self._rotate_plug(i, -1, True), self.set_positions)
+            indicator = _RotorHandler(self, self._rotate_plug(i, 1), self._rotate_plug(i, -1), self.set_positions)
             self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
             self._rotor_indicators.append(indicator)
 
@@ -322,7 +321,7 @@ class _RotorsHandler(QFrame):
         if self.enigma_api.reflector_rotatable():
             self._reflector_indicator.set(self._reflector_pos_plug())
 
-        for rotor, position in zip(self._rotor_indicators, self.position_plug()):
+        for rotor, position in zip(self._rotor_indicators, self._position_plug()):
             rotor.set(position)
 
 

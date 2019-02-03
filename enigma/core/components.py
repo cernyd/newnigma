@@ -318,13 +318,14 @@ class UKWD(Reflector):
         :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
                       where each letter can only be used once
         """
-        super().__init__('UKW-D', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+        super().__init__('UKW-D', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', False)
 
         self._marking =      " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
         self.wiring(pairs)
 
     def wiring(self, pairs=None):
         if pairs is not None:
+            assert len(pairs) == 12, "There must be exactly 12 pairs for correct wiring!"
             wiring = ['N'] + ['']*12 + ['A'] + ['']*12
 
             for pair in pairs:
@@ -421,11 +422,18 @@ class Enigma:
         self._rotors = []
         self.rotors(rotors)
         self._stator = stator
+        self._rotatable_ref = rotatable_ref
         
         # PLUGBOARD AND UHR
         self._plugboard = Plugboard(plug_pairs) if plugboard else None
         self._uhr = None
         self._numeric = numeric
+
+    def rotor_n(self):
+        if self._reflector.label() == 'UKW-D':
+            return 3
+        else:
+            return self._rotor_n
 
     def _route(self, letter, backwards=False):
         if self._uhr is not None:
@@ -484,10 +492,11 @@ class Enigma:
             return self._reflector.label()
 
     def reflector_pairs(self, new_pairs=None):
-        assert self._reflector.label == 'UKWD', "Only UKW-D reflector has wiring pairs!"
+        assert self._reflector.label() == 'UKW-D', "Only UKW-D reflector has wiring pairs!"
         return self._reflector.wiring(new_pairs)
 
     def reflector_rotatable(self):
+        return self._rotatable_ref
         return self._reflector.rotatable()
 
     def rotate_reflector(self, by=1):
@@ -546,7 +555,10 @@ class Enigma:
         if self._uhr is not None:
             return self._uhr.pairs(new_plug_pairs)
         else:
-            return self._plugboard.pairs(new_plug_pairs)
+            if self._plugboard is not None:
+                return self._plugboard.pairs(new_plug_pairs)
+            else:
+                return ''
 
     def uhr(self, connect=None):
         if connect is None:

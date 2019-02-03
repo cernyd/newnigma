@@ -19,23 +19,6 @@ class EnigmaAPI:
         self._buffer = []
         self._buffer_size = position_buffer
 
-    def total_permutations(self, with_reflectors=False):
-        """
-        Returns total possible permutations for all rotors
-        """
-        total_rotors = len(self._data['rotors'])
-        rotor_combinations = int(factorial(total_rotors)/factorial(total_rotors-self.rotor_n()))
-        total_reflectors = len(self._data['reflectors'])
-        reflector_combinations = int(factorial(total_reflectors)/factorial(total_reflectors-1))
-        rotor_settings = 26**self.rotor_n()
-        total_plugboard = int(factorial(26)/(factorial(26-20)*(2**10)*factorial(10)))  # CORRECT
-        
-        result = rotor_combinations*rotor_settings*total_plugboard
-        if with_reflectors:
-            return result*reflector_combinations
-        else:
-            return result
-
     @property
     def _data(self):
         return historical_data[self.model()]
@@ -44,7 +27,7 @@ class EnigmaAPI:
 
     def rotor_n(self, model=None):
         if model is None:
-            return self._data['rotor_n']
+            return self._enigma.rotor_n()
         else:
             return historical_data[model]['rotor_n']
 
@@ -88,7 +71,6 @@ class EnigmaAPI:
         :param new_reflector: {str}
         """
         if new_reflector is not None:
-            print("generate ukwd" + new_reflector)
             self._enigma.reflector(self.generate_component(self.model(), 'Reflector', new_reflector))
         else:
             return self._enigma.reflector()
@@ -127,16 +109,49 @@ class EnigmaAPI:
         """
         return self._enigma.plug_pairs(new_plug_pairs)
     
+    def generate_rotate_callback(self, rotor_id, by=1):
+        """
+        :param rotor_id: {int} Integer position of the rotor
+                               (0 = first rotor, ...)
+        :param by: {int} Positive or negative integer 
+                         describing the number of spaces
+        :param callback: {bool} Returns callable wrapped method if True, else 
+                                only executes, needed to bypass python 
+                                lambda evaluation problems in for loops
+        """
+        return lambda: self.rotate_rotor(rotor_id, by)
+
+    def rotate_rotor(self, rotor_id, by=1):
+        self._buffer = []
+        self._save_position()
+
+        self._enigma.rotate_rotor(rotor_id, by)
+
+    def rotate_reflector(self, by=1, callback=False):
+        if callback is True:
+            return lambda: self._enigma.rotate_reflector(by)
+        else:
+            self._enigma.rotate_reflector(by)
+
+    def reflector_position(self, new_position=None):
+        return self._enigma.reflector_position(new_position)
+
+    def reflector_pairs(self, new_pairs=None):
+        return self._enigma.reflector_pairs(new_pairs)
+
+    def uhr(self, x=None):
+        return self._enigma.uhr(x)
+
     # BUFFER TOOLS
 
-    def _save_position(self, position):
+    def _save_position(self):
         serialized = ''
 
-        for pos in position:
+        for pos in self._enigma.positions():
             if pos in alphabet:
                 serialized += "%02d" % alphabet.index(pos)
             else:
-                serialized += pos
+                serialized += "%02d" % (int(pos) - 1)
 
         self._buffer.append(int(serialized))
 
@@ -152,14 +167,6 @@ class EnigmaAPI:
                 pair = ''
 
         return positions
-
-    def revert_to(self, position):
-        self._buffer = self._buffer[:position+1]
-
-        if not self._buffer:
-            self._enigma.positions(self._load_position(0))
-        else:
-            self._enigma.positions(self._load_position(self._buffer[-1]))
 
     def revert_by(self, by=1):
         assert by >= 0, "Enigma can only be reverted by 1 or more positions"
@@ -178,39 +185,9 @@ class EnigmaAPI:
         :param letter: {char} Letter to encrypt
         """
         output = self._enigma.press_key(letter)
-        self._save_position(self._enigma.positions())
-
+        self._save_position()
+        print(self._buffer)
         return output
-
-    def rotate_rotor(self, rotor_id, by=1, callback=False):
-        """
-        :param rotor_id: {int} Integer position of the rotor
-                               (0 = first rotor, ...)
-        :param by: {int} Positive or negative integer 
-                         describing the number of spaces
-        :param callback: {bool} Returns callable wrapped method if True, else 
-                                only executes, needed to bypass python 
-                                lambda evaluation problems in for loops
-        """
-        if callback is True:
-            return lambda: self._enigma.rotate_rotor(rotor_id, by)
-        else:
-            self._enigma.rotate_rotor(rotor_id, by)
-
-    def rotate_reflector(self, by=1, callback=False):
-        if callback is True:
-            return lambda: self._enigma.rotate_reflector(by)
-        else:
-            self._enigma.rotate_reflector(by)
-
-    def reflector_position(self, new_position=None):
-        return self._enigma.reflector_position(new_position)
-
-    def reflector_pairs(self, new_pairs=None):
-        return self._enigma.reflector_pairs(new_pairs)
-
-    def uhr(self, x=None):
-        return self._enigma.uhr(x)
 
     # GENERATORS
 
@@ -310,6 +287,7 @@ class EnigmaAPI:
         if config.get('uhr_position', None) is not None:
             self._enigma.uhr(True)  # Connect uhr
             self._enigma.uhr_position(config['uhr_position'])
+
         self.plug_pairs(config['plugs'])
     
     def get_config(self):
@@ -339,9 +317,21 @@ class EnigmaAPI:
 
     def __str__(self):
         header = "=== %s instance data ===" % self._enigma.model()
-        footer = "="*len(header)
-        message = "\nRotors:              %s\nRotor positions:     %s\nRotor ring settings: %s \nReflector: %s\n"  # \nPlugboard pairs: %s
-        rotors = ' '.join(self._enigma.rotors())
-        return header + message % (rotors, ' '.join(self._enigma.positions()),
-                                   ' '.join(map(str, self._enigma.ring_settings())),
-                                   self._enigma.reflector()) + footer
+
+        rotors = "\nRotors: %s" % ' '.join(self._enigma.rotors())
+        positions = "\nRotor positions: %s" % ' '.join(self._enigma.positions())
+        rings = "\nRing settings: %s" % ' '.join(map(str, self._enigma.ring_settings()))
+
+
+        reflector = "\nReflector: %s" % self._enigma.reflector()
+        msg = header + rotors + positions + rings + reflector
+
+        if self.reflector_rotatable():
+            msg += "\nReflector position: %s" % self.reflector_position()
+
+        plug_pairs = "\nPlugboard pairs: %s" % ' '.join(self._enigma.plug_pairs())
+        msg += plug_pairs
+
+        msg += "\n" + "="*len(header)
+
+        return msg
