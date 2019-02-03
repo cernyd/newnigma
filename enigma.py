@@ -30,11 +30,14 @@ if __name__ == '__main__':
     cli_data = (
         ('--model', dict(help="available Enigma models: Enigma1, EnigmaM3, EnigmaM4, " \
               "Norenigma, EnigmaG, EnigmaD, EnigmaK, SwissK, Railway, Tirpitz", nargs=1, dest='model')),
-        ('--rotors', dict(help="rotors that will be used", nargs=3, metavar='rotor')),
-        ('--positions', dict(help='starting rotor positions', nargs=3, default=None, metavar='position')),
-        ('--ring_settings', dict(help='rotor ring settings', nargs=3, default=None, metavar='ring_setting')),
+        ('--rotors', dict(help="rotors that will be used", nargs='+', metavar='rotor')),
+        ('--positions', dict(help="starting rotor positions", nargs='+', default=None, metavar='position')),
+        ('--ring_settings', dict(help="rotor ring settings", nargs='+', default=None, metavar='ring_setting')),
         ('--reflector', dict(help="reflector that will be used", nargs=1)),
+        ('--reflector_position', dict(help="reflector position (only available in EnigmaD, EnigmaK, SwissK, EnigmaG, Railway, Tirpitz)", nargs=1, default=None, metavar='position')),
+        ('--reflector_pairs', dict(help="reflector wiring pairs for UKW-D (pairs do not correspond with real wiring!)", nargs='*', default=None, metavar='pair')),
         ('--plug_pairs', dict(help="letter pairs to connect in the plugboard", nargs='*', default=None, metavar='pair')),
+        ('--uhr', dict(help="connects uhr to plugboard and sets position", nargs=1, default=None, metavar='position')),
         ('--message', dict(help="message to be encrypted", nargs=1, dest='message'))
     )
 
@@ -68,6 +71,10 @@ if __name__ == '__main__':
 
     if args.cli:
         cli(enigma_api, args)
+    elif args.preview:
+        print("Copy the command below:\n\n./enigma.py --cli --model Enigma1 --rotors II I III " \
+              "--reflector UKW-A --message THISISANENIGMASAMPLEMESSAGE")
+        exit()
     else:
         logging.info('Launching newnigma Qt Application...')
         runtime = Runtime(enigma_api, cfg.load, cfg.save)

@@ -504,7 +504,6 @@ class Enigma:
 
     def reflector_rotatable(self):
         return self._rotatable_ref
-        return self._reflector.rotatable()
 
     def rotate_reflector(self, by=1):
         self._reflector.rotate(by)
