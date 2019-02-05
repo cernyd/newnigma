@@ -159,5 +159,4 @@ if __name__ == "__main__":
         exit()
     else:
         logging.info("Launching newnigma Qt Application...")
-        runtime = Runtime(enigma_api, cfg.load, cfg.save)
-        runtime.run()
+        Runtime(enigma_api, cfg.load, cfg.save)

@@ -306,15 +306,16 @@ class Socket(QFrame):
         # ENTRY ================================================================
 
         label = QLabel(letter)
-
+        label.setStyleSheet("font-size: 30px;")
         self.entry = QLineEdit()
         self.entry.setMaxLength(1)
         self.entry.textChanged.connect(self.entry_event)
+        self.entry.setFixedSize(20, 20)
 
         # SHOW WIDGETS
 
         layout.addWidget(label, alignment=Qt.AlignCenter)
-        layout.addWidget(self.entry)
+        layout.addWidget(self.entry, alignment=Qt.AlignCenter)
 
     def entry_event(self):
         """
@@ -336,7 +337,7 @@ class Socket(QFrame):
         :param letter: Sets text to the newly selected letter
         """
         if letter:
-            self.entry.setStyleSheet("background-color: black; color: white")
+            self.entry.setStyleSheet("background-color: black; color: white; border-radius: 10px;")
         else:
             self.entry.setStyleSheet("background-color: white; color: black")
         self.entry.setText(letter)
