@@ -40,4 +40,5 @@ def cli(enigma_api, args):
     print("Encrypted message: ", '')
     for letter in args.message[0].upper():
         print(enigma_api.encrypt(letter), end='')
+    print()
 
