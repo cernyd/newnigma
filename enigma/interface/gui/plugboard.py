@@ -143,7 +143,8 @@ class Uhr(QDialog):
             self.indicator = QLabel("00")
 
         self.indicator.setStyleSheet(
-            "font-size: 20px; text-align: center; background-color: white")
+            "font-size: 20px; text-align: center; background-color: white"
+        )
 
         self.dial = QDial()
         self.dial.setWrapping(True)

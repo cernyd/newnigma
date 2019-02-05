@@ -118,7 +118,8 @@ class Settings(QDialog):
         reflector_layout = QVBoxLayout(reflector_frame)
         reflector_layout.setSpacing(spacing)
         reflector_layout.addWidget(
-            QLabel("REFLECTOR", reflector_frame, styleSheet=style), alignment=Qt.AlignTop
+            QLabel("REFLECTOR", reflector_frame, styleSheet=style),
+            alignment=Qt.AlignTop,
         )
 
         self.reflector_group = QButtonGroup(reflector_frame)
@@ -157,7 +158,9 @@ class Settings(QDialog):
 
             # ROTOR RADIOS =====================================================
 
-            label = QLabel(selector_labels[-rotor_n:][rotor], rotor_frame, styleSheet=style)
+            label = QLabel(
+                selector_labels[-rotor_n:][rotor], rotor_frame, styleSheet=style
+            )
             label.setToolTip(selector_tooltips[-rotor_n:][rotor])
 
             rotor_layout.addWidget(label, alignment=Qt.AlignTop)
@@ -196,7 +199,9 @@ class Settings(QDialog):
 
             rotor_layout.addStretch()
             rotor_layout.addWidget(hr)
-            rotor_layout.addWidget(QLabel("RING SETTING", rotor_frame, styleSheet=style))
+            rotor_layout.addWidget(
+                QLabel("RING SETTING", rotor_frame, styleSheet=style)
+            )
             rotor_layout.addWidget(combobox)
 
             self.settings_layout.addWidget(rotor_frame)
@@ -245,8 +250,8 @@ class Settings(QDialog):
             for i, ring in enumerate(self.enigma_api.ring_settings()):
                 self.ring_selectors[i].setCurrentIndex(ring - 1)
         else:
-            for i in range(rotor_n):
-                self.rotor_selectors[i].button(i).setChecked(True)
+            for selected, i in zip([0, 0, 1, 2][-rotor_n:], range(rotor_n)):
+                self.rotor_selectors[i].button(selected).setChecked(True)
 
         self.refresh_ukwd()
 
@@ -275,7 +280,6 @@ class Settings(QDialog):
 
         self.enigma_api.reflector(new_reflector)
         if new_reflector == "UKW-D":
-            print("set pairs")
             self.enigma_api._enigma.reflector_pairs(reflector_pairs)
 
         if new_rotors != self.enigma_api.rotors():
@@ -310,7 +314,10 @@ class ViewSwitcher(QWidget):
         self.stacked_wikis = QStackedWidget()
         for i, model in enumerate(view_data.keys()):
             self.model_list.insertItem(i, model)
-            self.stacked_wikis.addWidget(_EnigmaView(self, model, self.select_model))
+            description = view_data[model]["description"]
+            self.stacked_wikis.addWidget(
+                _EnigmaView(self, model, description, self.select_model)
+            )
 
         self.layout.addWidget(self.model_list)
         self.layout.addWidget(self.stacked_wikis)
@@ -335,7 +342,7 @@ class ViewSwitcher(QWidget):
 
 
 class _EnigmaView(QWidget):
-    def __init__(self, master, model, select_plug):
+    def __init__(self, master, model, description, select_plug):
         """
         :param master: Qt parent object
         :param model: {str} Enigma model
@@ -351,7 +358,7 @@ class _EnigmaView(QWidget):
 
         # MODEL IMAGE ==========================================================
 
-        self.description = view_data[model]["description"]  # TODO: Decouple
+        self.description = description
         self.img = QLabel("")
         pixmap = QPixmap(view_data[model]["img"]).scaled(300, 400)
         self.img.setPixmap(pixmap)

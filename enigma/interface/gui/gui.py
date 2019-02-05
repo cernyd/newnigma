@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from re import sub
+from re import sub, findall
 from string import ascii_uppercase as alphabet
 from textwrap import wrap
 
@@ -107,9 +107,15 @@ class Root(QWidget):
         main_layout.addWidget(menu, alignment=Qt.AlignTop)
         main_layout.addWidget(self._rotors, alignment=Qt.AlignBottom)
         main_layout.addWidget(lightboard)
-        main_layout.addWidget(QLabel("INPUT", self, styleSheet="font-size: 20px"), alignment=Qt.AlignCenter)
+        main_layout.addWidget(
+            QLabel("INPUT", self, styleSheet="font-size: 20px"),
+            alignment=Qt.AlignCenter,
+        )
         main_layout.addWidget(self.i_textbox)
-        main_layout.addWidget(QLabel("OUTPUT", self, styleSheet="font-size: 20px"), alignment=Qt.AlignCenter)
+        main_layout.addWidget(
+            QLabel("OUTPUT", self, styleSheet="font-size: 20px"),
+            alignment=Qt.AlignCenter,
+        )
         main_layout.addWidget(self.o_textbox)
         main_layout.addWidget(self.plug_button)
 
@@ -121,7 +127,7 @@ class Root(QWidget):
         """
         Opens the plugboard menu
         """
-        plugboard = Plugboard(self, self.enigma_api)  # TODO: Refactor
+        plugboard = Plugboard(self, self.enigma_api)
         plugboard.exec()
         del plugboard
 
@@ -167,12 +173,11 @@ class Root(QWidget):
         dialog = QFileDialog(self)
         filename = dialog.getSaveFileName(self, "Save enigma message")[0]
 
-        if ".txt" not in filename and filename:  # TODO: Make less rudimentary
+        if not findall("\.txt$", filename) and filename:
             QMessageBox.warning(
                 self,
                 "Overwrite warning",
-                "Overwriting files that are not "
-                ".txt textfiles is not permitted!",
+                "Overwriting files that are not " ".txt textfiles is not permitted!",
             )
         elif filename:
             with open(filename, "w") as f:
@@ -281,16 +286,10 @@ class _RotorsHandler(QFrame):
 
         # SETTINGS ICON =======================================================
 
-        self.settings_button = QPushButton(
-            QIcon(base_dir + "settings.png"), "", self
-        )
+        self.settings_button = QPushButton(QIcon(base_dir + "settings.png"), "", self)
         self.settings_button.setIconSize(QSize(50, 50))
-        self.settings_button.setToolTip(
-            "Edit Enigma rotor and reflector settings"
-        )
-        self.settings_button.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Expanding
-        )
+        self.settings_button.setToolTip("Edit Enigma rotor and reflector settings")
+        self.settings_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.settings_button.clicked.connect(self.open_settings)
 
         # GENERATE ROTORS AND REFLECTOR =======================================
@@ -311,12 +310,15 @@ class _RotorsHandler(QFrame):
         self._reflector_indicator.setStyleSheet("color: red;")
         self._reflector_indicator.hide()
 
-        self._left_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._right_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._left_spacer = QSpacerItem(
+            0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding
+        )
+        self._right_spacer = QSpacerItem(
+            0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding
+        )
 
         self.generate_rotors()
         self.set_positions()
-
 
     def generate_rotors(self):
         """
@@ -374,12 +376,13 @@ class _RotorsHandler(QFrame):
         """
         Refreshes position indicators to show new positions from EnigmaAPI
         """
-        if self.enigma_api.reflector_rotatable():
+        if (
+            self.enigma_api.reflector_rotatable()
+            and self.enigma_api.reflector() != "UKW-D"
+        ):
             self._reflector_indicator.set(self._reflector_pos_plug())
 
-        for rotor, position in zip(
-            self._rotor_indicators, self._position_plug()
-        ):
+        for rotor, position in zip(self._rotor_indicators, self._position_plug()):
             rotor.set(position)
 
 
@@ -419,9 +422,10 @@ class _RotorHandler(QFrame):
 
         self._indicator = QLabel("A", self)
         self._indicator.setStyleSheet(
-            "QLabel{font-size: 20px; text-align: center; background-color: white}")
+            "QLabel{font-size: 20px; text-align: center; background-color: white}"
+        )
         self._indicator.setFixedSize(40, 40)
-        #self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        # self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self._indicator.setLineWidth(3)
 
@@ -477,7 +481,7 @@ def letter_groups(text, group_size=5):
 
 
 class _InputTextBox(QPlainTextEdit):
-    def __init__( 
+    def __init__(
         self,
         master,
         encrypt_plug,
@@ -509,7 +513,7 @@ class _InputTextBox(QPlainTextEdit):
 
         self.setPlaceholderText("Type your message here")
         self.textChanged.connect(self.input_detected)
-        self.setStyleSheet("background-color: white; border-radius: 10px;")
+        self.setStyleSheet("background-color: white;")
 
         # FONT ================================================================
 
@@ -570,7 +574,7 @@ class _OutputTextBox(QPlainTextEdit):
         self.setReadOnly(True)
         self.light_up_plug = light_up_plug
         self.letter_group_plug = letter_group_plug
-        self.setStyleSheet("background-color: white; border-radius: 10px;")
+        self.setStyleSheet("background-color: white;")
 
         # FONT ================================================================
 
@@ -584,8 +588,7 @@ class _OutputTextBox(QPlainTextEdit):
         """
         self.light_up_plug("")
         text = letter_groups(
-            self.toPlainText().replace(" ", "")[:length],
-            self.letter_group_plug(),
+            self.toPlainText().replace(" ", "")[:length], self.letter_group_plug()
         )
 
         self.setPlainText(text)

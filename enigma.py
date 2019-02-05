@@ -28,18 +28,13 @@ if __name__ == "__main__":
         ),
         (
             "--cli",
-            dict(
-                help="launches the simulator in the command line mode",
-                dest="cli",
-            ),
+            dict(help="launches the simulator in the command line mode", dest="cli"),
         ),
         ("--preview", dict(help="Runs a sample cli command")),
         ("--verbose", dict(help="Turns on verbose logging messages")),
     )
     for arg in argument_data:
-        parser.add_argument(
-            arg[0], **arg[1], action="store_true", default=False
-        )
+        parser.add_argument(arg[0], **arg[1], action="store_true", default=False)
 
     # ====================================================
     # CLI GROUP
@@ -56,10 +51,7 @@ if __name__ == "__main__":
                 dest="model",
             ),
         ),
-        (
-            "--rotors",
-            dict(help="rotors that will be used", nargs="+", metavar="rotor"),
-        ),
+        ("--rotors", dict(help="rotors that will be used", nargs="+", metavar="rotor")),
         (
             "--positions",
             dict(
@@ -117,10 +109,7 @@ if __name__ == "__main__":
                 metavar="position",
             ),
         ),
-        (
-            "--message",
-            dict(help="message to be encrypted", nargs=1, dest="message"),
-        ),
+        ("--message", dict(help="message to be encrypted", nargs=1, dest="message")),
     )
 
     for arg in cli_data:

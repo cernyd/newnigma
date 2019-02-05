@@ -352,8 +352,6 @@ class _Component:  # Base component
         ), "Wiring must be of same length as the alphabet!"
         self._wiring = wiring
 
-        # TODO: Monkeypatch forward and backward?
-
     def _forward(self, letter):
         return self._wiring[alphabet.index(letter)]
 

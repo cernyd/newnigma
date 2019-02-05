@@ -9,6 +9,7 @@ from enigma.core.components import (
     Stator,
     alphabet,
     historical_data,
+    format_position,
 )
 
 
@@ -63,8 +64,7 @@ class EnigmaAPI:
             model = self.model()
 
         refs = [
-            reflector["label"]
-            for reflector in historical_data[model]["reflectors"]
+            reflector["label"] for reflector in historical_data[model]["reflectors"]
         ]
         rotors = [rotor["label"] for rotor in historical_data[model]["rotors"]]
 
@@ -242,7 +242,6 @@ class EnigmaAPI:
         Saves current Enigma rotor position to the position buffer
         """
         if len(self.__buffer) == self.__buffer_size:
-            print("TODO: BUFFER OVERFLOWING")
             self.__buffer.pop(0)
         self.__buffer.append(self.__serialized_position())
 
@@ -369,18 +368,14 @@ class EnigmaAPI:
 
             for reflector in data["reflectors"]:
                 if reflector["label"] == label or label == i:
-                    component = Reflector(
-                        **reflector, rotatable=data["rotatable_ref"]
-                    )
+                    component = Reflector(**reflector, rotatable=data["rotatable_ref"])
                     break
                 i += 1
             assert component, "No component with label %s found!" % label
         elif comp_type == "Stator":
             return Stator(**data["stator"])
         else:
-            raise TypeError(
-                "The comp_type must be " '"Reflector", "Stator" or "Rotor"'
-            )
+            raise TypeError("The comp_type must be " '"Reflector", "Stator" or "Rotor"')
 
         return component
 
@@ -398,9 +393,7 @@ class EnigmaAPI:
         self.ring_settings(config["ring_settings"])
 
         try:
-            self._enigma.reflector_position(
-                config.get("reflector_position", None)
-            )
+            self._enigma.reflector_position(config.get("reflector_position", None))
         except (AssertionError, KeyError):
             pass
 
@@ -451,10 +444,12 @@ class EnigmaAPI:
         data = self.get_config()
         header = "Enigma model: %s" % data["model"]
         rotors = "\nRotors: %s" % " ".join(data["rotors"])
-        positions = "\nRotor positions: %s" % " ".join()
-        rings = "\nRing settings: %s" % " ".join(
-            map(str, data["ring_settings"])
-        )
+        pos = []
+        for i in self.checkpoint():
+            pos.append(format_position(i, self._enigma._numeric))
+
+        positions = "\nRotor positions: %s" % " ".join(pos)
+        rings = "\nRing settings: %s" % " ".join(map(str, data["ring_settings"]))
         reflector = "\nReflector: %s" % data["reflector"]
         msg = header + rotors + positions + rings + reflector
 
