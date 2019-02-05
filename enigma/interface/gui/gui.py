@@ -9,8 +9,6 @@ from textwrap import wrap
 from re import sub
 
 
-
-
 class Runtime:
     def __init__(self, api, cfg_load_plug, cfg_save_plug):
         """
@@ -443,28 +441,23 @@ class _InputTextBox(QPlainTextEdit):
         """
         Encrypts newly typed/inserted text and outputs it to the output textbox
         """
-        text = self.toPlainText().upper()
-        text = sub('[^A-Z]+', '', text)
+        text = sub('[^A-Z]+', '', self.toPlainText().upper())
         
         new_len = len(text)
-        diff = self.last_len - len(text)
+        diff = self.last_len - new_len
+        self.last_len = new_len
 
         if diff < 0:  # If text longer than before
-            encrypted = ''
-            for letter in text[diff:]:
-                encrypted += self.encrypt_plug(letter)
-
-            self.output_plug(encrypted)
+            self.output_plug(''.join(map(self.encrypt_plug, text[diff:])))
         else:
             self.sync_plug(new_len)
-            self._revert_pos(self.last_len - new_len)
+            self._revert_pos(diff)
 
         self.blockSignals(True)  # Blocks programatical edits to the widget
         self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)
         self.blockSignals(False)
 
-        self.last_len = new_len
         self.refresh_plug()
 
 

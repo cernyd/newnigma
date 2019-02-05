@@ -1,6 +1,7 @@
 #! /usr/env python3
 
-from enigma.core.components import *
+from enigma.core.components import (historical_data, Enigma, Rotor, Reflector,
+                                    Stator, alphabet, UKWD, UKW_D)
 
 
 class EnigmaAPI:
@@ -53,7 +54,8 @@ class EnigmaAPI:
         if model is None:
             model = self.model()
 
-        refs = [reflector['label'] for reflector in historical_data[model]['reflectors']]
+        refs = [reflector['label'] for reflector in
+                historical_data[model]['reflectors']]
         rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
 
         return {'reflectors': refs, 'rotors': rotors}
@@ -90,7 +92,9 @@ class EnigmaAPI:
         :param new_reflector: {str}
         """
         if new_reflector is not None:
-            self._enigma.reflector(self.generate_component(self.model(), 'Reflector', new_reflector))
+            new_reflector = self.generate_component(self.model(), 'Reflector',
+                                                    new_reflector)
+            self._enigma.reflector(new_reflector)
         else:
             return self._enigma.reflector()
 
@@ -110,10 +114,11 @@ class EnigmaAPI:
         :param new_positions: {str}
         """
         return self._enigma.positions(new_positions)
-    
+
     def ring_settings(self, new_ring_settings=None):
         """
-        Returns ring_settings or sets a new one if new_ring_settings is overriden
+        Returns ring_settings or sets a new one if new_ring_settings
+        is overriden
         :param ring_settings: {str}
         """
         return self._enigma.ring_settings(new_ring_settings)
@@ -146,14 +151,14 @@ class EnigmaAPI:
                        connection status if None
         """
         return self._enigma.uhr(action)
-    
+
     def generate_rotate_callback(self, rotor_id, by=1):
         """
         Generates a function that will rotate a select rotor by one position
         in the select direction (used by gui)
         :param rotor_id: {int} Integer position of the rotor
                                (0 = first rotor, ...)
-        :param by: {int} Positive or negative integer 
+        :param by: {int} Positive or negative integer
                          describing the number of spaces
         """
         def rotate_rotor(rotor_id, by=1):
@@ -167,8 +172,8 @@ class EnigmaAPI:
         """
         Rotates reflector by select number of positions, generates a callback
         if specified
-        :param by: {int} n positions to rotate (negative number for the opposite
-                         direction)
+        :param by: {int} n positions to rotate (negative number for
+                         the opposite direction)
         :param callback: {bool} Will return a lambda that will call
                                 this function
         """
@@ -182,9 +187,7 @@ class EnigmaAPI:
     def __serialized_position(self):
         """
         Serializes current rotor positions to a single integer
-        
-        02, 13, 5, 22 -> 2130522 
-
+        For example: [02, 13, 5, 22] -> 2130522
         This method saves space in memory
         """
         serialized = ''
@@ -243,7 +246,7 @@ class EnigmaAPI:
         """
         assert by >= 0, "Enigma can only be reverted by 1 or more positions"
         self.__buffer = self.__buffer[:-by]
-        
+
         if not self.__buffer:
             position = self.__checkpoint
         else:
@@ -282,7 +285,8 @@ class EnigmaAPI:
         Initializes a complete Enigma instance based on input parameters
         :param model: {str} Enigma model
         :param reflector_label: {str} Reflector label like "UKW-B"
-        :param rotor_labels: {[str, str, str]} List of rotor labels like "I", "II", "III"
+        :param rotor_labels: {[str, str, str]} List of rotor labels
+                                               like "I", "II", "III"
         """
         rotors = cls.generate_rotors(model, rotor_labels)
         reflector = cls.generate_component(model, "Reflector", reflector_label)
@@ -291,9 +295,10 @@ class EnigmaAPI:
         plugboard = historical_data[model]['plugboard']
         rotatable_ref = historical_data[model]['rotatable_ref']
         numeric = historical_data[model]['numeric']
-            
-        return Enigma(model, reflector, rotors, stator, plugboard=plugboard, 
-                      rotor_n=rotor_n, rotatable_ref=rotatable_ref, numeric=numeric)
+
+        return Enigma(model, reflector, rotors, stator, plugboard=plugboard,
+                      rotor_n=rotor_n, rotatable_ref=rotatable_ref,
+                      numeric=numeric)
 
     @classmethod
     def generate_component(cls, model, comp_type, label=None):
@@ -301,20 +306,21 @@ class EnigmaAPI:
         Initializes a Stator, Rotor or Reflector.
         :param model: {str} Enigma machine model
         :param comp_type: {str} "Stator", "Rotor" or "Reflector"
-        :param label: {str} or {int} Component label like "I", "II", "UKW-B" or numerical index
-                      of their position in historical data (0 = "I", 2 = "II", ...)
+        :param label: {str} or {int} Component label like "I", "II", "UKW-B" or
+                                     numerical index of their position in
+                                     historical data (0 = "I", 2 = "II", ...)
         """
         assert model in historical_data, "Invalid enigma model %s!" % model
 
         data = historical_data[model]
-     
+
         if label is None and comp_type != "Stator":
-            raise TypeError("A label has to be supplied for Rotor and Reflector" \
-                            "object!")
-     
-        assert model in historical_data, "The model argument must be in historical" \
-                                         "Enigma models!"
-     
+            raise TypeError("A label has to be supplied for "
+                            "Rotor and Reflector object!")
+
+        assert model in historical_data, "The model argument must be a " \
+                                         "historical Enigma model!"
+
         component = None
         i = 0
         if comp_type == "Rotor":
@@ -330,14 +336,18 @@ class EnigmaAPI:
 
             for reflector in data["reflectors"]:
                 if reflector['label'] == label or label == i:
-                    component = Reflector(**reflector, rotatable=data['rotatable_ref'])
+                    component = Reflector(
+                        **reflector,
+                        rotatable=data['rotatable_ref']
+                    )
                     break
                 i += 1
             assert component, "No component with label %s found!" % label
         elif comp_type == "Stator":
             return Stator(**data["stator"])
         else:
-            raise TypeError('The comp_type must be "Reflector", "Stator" or "Rotor"')
+            raise TypeError('The comp_type must be '
+                            '"Reflector", "Stator" or "Rotor"')
 
         return component
 
@@ -355,7 +365,9 @@ class EnigmaAPI:
         self.ring_settings(config['ring_settings'])
 
         try:
-            self._enigma.reflector_position(config.get('reflector_position', None))
+            self._enigma.reflector_position(
+                config.get('reflector_position', None)
+            )
         except (AssertionError, KeyError):
             pass
 
@@ -407,7 +419,9 @@ class EnigmaAPI:
         header = "Enigma model: %s" % data['model']
         rotors = "\nRotors: %s" % ' '.join(data['rotors'])
         positions = "\nRotor positions: %s" % ' '.join(data['rotor_positions'])
-        rings = "\nRing settings: %s" % ' '.join(map(str, data['ring_settings']))
+        rings = "\nRing settings: %s" % ' '.join(
+            map(str, data['ring_settings'])
+        )
         reflector = "\nReflector: %s" % data['reflector']
         msg = header + rotors + positions + rings + reflector
 
@@ -417,7 +431,9 @@ class EnigmaAPI:
             pass
 
         try:
-            msg += "\nReflector wiring: %s" % ' '.join(data['reflector_wiring'])
+            msg += "\nReflector wiring: %s" % ' '.join(
+                data['reflector_wiring']
+            )
         except KeyError:
             pass
 
