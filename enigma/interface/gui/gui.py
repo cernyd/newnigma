@@ -307,7 +307,7 @@ class _RotorsHandler(QFrame):
             self._rotate_ref_plug(-1, True),
             self.set_positions,
         )
-        self._reflector_indicator.setStyleSheet("color: red;")
+        self._reflector_indicator.setToolTip("Reflector position indicator")
         self._reflector_indicator.hide()
 
         self._left_spacer = QSpacerItem(
