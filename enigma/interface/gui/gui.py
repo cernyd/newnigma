@@ -44,6 +44,8 @@ class Root(QWidget):
         self.setWindowIcon(QIcon(base_dir + "enigma_200px.png"))
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
+        self.setMaximumSize(800, 800)
+        self.setFixedSize(500, 800)
 
         # SAVE ATTRIBUTES =====================================================
 
@@ -145,7 +147,8 @@ class Root(QWidget):
         self.i_textbox.blockSignals(True)
         self.refresh_gui()
         self.i_textbox.blockSignals(False)
-        # self._rotors.set_positions()  # Refreshes positons... TODO: Maybe redundant?  # noqa
+        self._rotors.set_positions()
+        self.enigma_api.set_checkpoint()
 
     def save_config(self):
         """
@@ -203,6 +206,7 @@ class Lightboard(QWidget):
         for row in layout:
             row_frame = QFrame(frame)
             row_layout = QHBoxLayout(row_frame)
+            row_layout.setAlignment(Qt.AlignCenter)
             row_layout.setSpacing(10)
 
             for letter in row:
@@ -214,9 +218,7 @@ class Lightboard(QWidget):
                 self._lightbulbs[ltr] = label
                 row_layout.addWidget(label, Qt.AlignCenter)
 
-            row_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            #row_frame.setStyleSheet("background-color: red;")
-            lb_layout.addWidget(row_frame, Qt.AlignRight)
+            lb_layout.addWidget(row_frame)
 
         self.power_off()
 
@@ -263,6 +265,8 @@ class _RotorsHandler(QFrame):
 
         self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._layout = QHBoxLayout(self)
+        self._layout.setAlignment(Qt.AlignCenter)
+        self._rotor_layout = QHBoxLayout()
         self._rotor_indicators = []
         self._reflector_indicator = None
 
@@ -285,7 +289,7 @@ class _RotorsHandler(QFrame):
             "Edit Enigma rotor and reflector settings"
         )
         self.settings_button.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
+            QSizePolicy.Fixed, QSizePolicy.Expanding
         )
         self.settings_button.clicked.connect(self.open_settings)
 
@@ -296,44 +300,50 @@ class _RotorsHandler(QFrame):
         self.ukwd_indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self.ukwd_indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.ukwd_indicator.setLineWidth(3)
+        self.ukwd_indicator.hide()
 
-        indicator = _RotorHandler(
+        self._reflector_indicator = _RotorHandler(
             self,
             self._rotate_ref_plug(1, True),
             self._rotate_ref_plug(-1, True),
             self.set_positions,
         )
-        indicator.setStyleSheet("color: red;")
+        self._reflector_indicator.setStyleSheet("color: red;")
+        self._reflector_indicator.hide()
 
-        self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
-        self._reflector_indicator = indicator
-        self._layout.addWidget(self.settings_button)
-        self._layout.addWidget(self.ukwd_indicator)
+        self._left_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._right_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.generate_rotors()
         self.set_positions()
+
 
     def generate_rotors(self):
         """
         Regenerates rotor and reflector views (with position indicators and
         and buttons to rotate them
         """
+        self._layout.removeItem(self._left_spacer)
+        self._layout.removeItem(self._right_spacer)
         self._layout.removeWidget(self.settings_button)
+        self._layout.removeWidget(self.ukwd_indicator)
+        self._reflector_indicator.hide()
+        self._layout.removeWidget(self._reflector_indicator)
+        self._reflector_indicator.hide()
 
         for indicator in self._rotor_indicators:
             indicator.deleteLater()
 
+        self._layout.addItem(self._left_spacer)
+
         self._rotor_indicators = []
 
-        if self.enigma_api.reflector_rotatable():
-            self._reflector_indicator.show()
-        else:
-            self._reflector_indicator.hide()
-
         if self.enigma_api.reflector() == "UKW-D":
+            self._layout.addWidget(self.ukwd_indicator)
             self.ukwd_indicator.show()
-        else:
-            self.ukwd_indicator.hide()
+        elif self.enigma_api.reflector_rotatable():
+            self._layout.addWidget(self._reflector_indicator)
+            self._reflector_indicator.show()
 
         # Create
         for i in range(len(self._position_plug())):  # Rotor controls
@@ -346,6 +356,7 @@ class _RotorsHandler(QFrame):
             self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
             self._rotor_indicators.append(indicator)
 
+        self._layout.addItem(self._right_spacer)
         self._layout.addWidget(self.settings_button)
 
     def open_settings(self):
@@ -401,7 +412,6 @@ class _RotorHandler(QFrame):
 
         self.position_plus = QPushButton("+", self)
         self.position_plus.clicked.connect(self.increment)
-        self.position_plus.setStyleSheet("font-size: 20px; text-align: center; background-color: white")
         self.position_plus.setFixedSize(40, 40)
         self.position_plus.setToolTip("Rotates rotor forwards by one place")
 
@@ -418,7 +428,6 @@ class _RotorHandler(QFrame):
         # ROTATE FORWARD ======================================================
 
         self.position_minus = QPushButton("-", self)
-        self.position_minus.setStyleSheet("font-size: 20px; text-align: center; background-color: white")
         self.position_minus.setFixedSize(40, 40)
         self.position_minus.clicked.connect(self.decrement)
         self.position_minus.setToolTip("Rotates rotors backwards by one place")
@@ -500,11 +509,11 @@ class _InputTextBox(QPlainTextEdit):
 
         self.setPlaceholderText("Type your message here")
         self.textChanged.connect(self.input_detected)
-        self.setStyleSheet("background-color: white")
+        self.setStyleSheet("background-color: white; border-radius: 10px;")
 
         # FONT ================================================================
 
-        font = QFont("Monospace", 20)
+        font = QFont("Monospace", 12)
         self.setFont(font)
 
         # PLUGS ===============================================================
@@ -533,7 +542,7 @@ class _InputTextBox(QPlainTextEdit):
 
         if diff < 0:  # If text longer than before
             self.output_plug("".join(map(self.encrypt_plug, text[diff:])))
-        else:
+        elif diff > 0:
             self.sync_plug(new_len)
             self._revert_pos(diff)
 
@@ -561,11 +570,11 @@ class _OutputTextBox(QPlainTextEdit):
         self.setReadOnly(True)
         self.light_up_plug = light_up_plug
         self.letter_group_plug = letter_group_plug
+        self.setStyleSheet("background-color: white; border-radius: 10px;")
 
         # FONT ================================================================
 
-        font = QFont("Monospace", 20)
-        self.setStyleSheet("background-color: white")
+        font = QFont("Monospace", 12)
         self.setFont(font)
 
     def sync_length(self, length):

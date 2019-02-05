@@ -22,9 +22,7 @@ class Settings(QDialog):
         self.settings_frame = QFrame(self)
         self.settings_layout = QHBoxLayout(self.settings_frame)
         self.setWindowTitle("Settings")
-
         self.setLayout(main_layout)
-        self.resize(200, 200)
 
         # SAVE ATTRIBUTES ======================================================
 
@@ -48,18 +46,24 @@ class Settings(QDialog):
 
         # BUTTONS ==============================================================
 
+        self.button_frame = QFrame(self)
+        self.button_layout = QHBoxLayout(self.button_frame)
+        self.button_layout.setAlignment(Qt.AlignRight)
+
         self.apply_btn = QPushButton("Apply")
         self.apply_btn.clicked.connect(self.collect)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.close)
 
+        self.button_layout.addWidget(storno)
+        self.button_layout.addWidget(self.apply_btn)
+
         # SHOW WIDGETS =========================================================
 
         self.regen_model(self.enigma_api.model(), True)
         main_layout.addWidget(tab_widget)
-        main_layout.addWidget(self.apply_btn)
-        main_layout.addWidget(storno)
+        main_layout.addWidget(self.button_frame)
 
         self.refresh_ukwd()
 
@@ -105,16 +109,21 @@ class Settings(QDialog):
         :param rotor_n: {int} Number of rotors the Enigma model has
         """
         # REFLECTOR SETTINGS ===================================================
+        spacing = 15
+        style = "font-size: 18px; text-align: center;"
 
         reflector_frame = QFrame(self.settings_frame)
         reflector_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
 
         reflector_layout = QVBoxLayout(reflector_frame)
+        reflector_layout.setSpacing(spacing)
         reflector_layout.addWidget(
-            QLabel("REFLECTOR", reflector_frame), alignment=Qt.AlignTop
+            QLabel("REFLECTOR", reflector_frame, styleSheet=style), alignment=Qt.AlignTop
         )
 
         self.reflector_group = QButtonGroup(reflector_frame)
+        reflector_layout.setAlignment(Qt.AlignTop)
+
         for i, model in enumerate(reflectors):
             radio = QRadioButton(model, reflector_frame)
             radio.setToolTip(
@@ -125,6 +134,7 @@ class Settings(QDialog):
             self.reflector_group.setId(radio, i)
             reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
 
+        reflector_layout.addStretch()
         reflector_layout.addWidget(self.ukwd_button)
 
         self.reflector_group.button(0).setChecked(True)
@@ -141,14 +151,16 @@ class Settings(QDialog):
             rotor_frame = QFrame(self.settings_frame)
             rotor_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
             rotor_layout = QVBoxLayout(rotor_frame)
+            rotor_layout.setAlignment(Qt.AlignTop)
+            rotor_layout.setSpacing(spacing)
             rotor_frame.setLayout(rotor_layout)
 
             # ROTOR RADIOS =====================================================
 
-            label = QLabel(selector_labels[-rotor_n:][rotor], rotor_frame)
+            label = QLabel(selector_labels[-rotor_n:][rotor], rotor_frame, styleSheet=style)
             label.setToolTip(selector_tooltips[-rotor_n:][rotor])
 
-            rotor_layout.addWidget(label)
+            rotor_layout.addWidget(label, alignment=Qt.AlignTop)
 
             button_group = QButtonGroup(rotor_frame)
 
@@ -182,9 +194,10 @@ class Settings(QDialog):
             self.ring_selectors.append(combobox)
             self.rotor_selectors.append(button_group)
 
+            rotor_layout.addStretch()
             rotor_layout.addWidget(hr)
-            rotor_layout.addWidget(QLabel("RING SETTING", rotor_frame))
-            rotor_layout.addWidget(combobox, alignment=Qt.AlignBottom)
+            rotor_layout.addWidget(QLabel("RING SETTING", rotor_frame, styleSheet=style))
+            rotor_layout.addWidget(combobox)
 
             self.settings_layout.addWidget(rotor_frame)
             self.rotor_frames.append(rotor_frame)

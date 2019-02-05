@@ -31,6 +31,9 @@ class Plugboard(AbstractPlugboard):
 
         # BUTTONS ==============================================================
 
+        self._button_frame = QFrame(self)
+        self._button_layout = QHBoxLayout(self._button_frame)
+
         self.apply_btn = QPushButton("Apply")
         self.apply_btn.clicked.connect(self.collect)
         storno = QPushButton("Storno")
@@ -55,10 +58,13 @@ class Plugboard(AbstractPlugboard):
 
         # SHOW WIDGETS =========================================================
 
-        self.main_layout.addWidget(storno)
-        self.main_layout.addWidget(self.apply_btn)
-        self.main_layout.addWidget(self.uhr)
-        self.main_layout.addWidget(self.enable_uhr)
+        self._button_layout.addWidget(self.enable_uhr)
+        self._button_layout.addWidget(self.uhr)
+        self._button_layout.addStretch()
+        self._button_layout.addWidget(storno)
+        self._button_layout.addWidget(self.apply_btn)
+
+        self.main_layout.addWidget(self._button_frame)
 
         self.change_uhr_status()
 
@@ -70,14 +76,17 @@ class Plugboard(AbstractPlugboard):
         if self.enable_uhr.isChecked():
             pair_n = len(self._pairs())
             if pair_n != 10:
-                self.apply_btn.setEnabled(False)
+                self.apply_btn.setDisabled(True)
                 self.apply_btn.setToolTip(
                     "When using the Uhr, exactly 10 plug pairs "
                     "must be connected!\n%d pairs left to connect..." % (10 - pair_n)
                 )
             else:
-                self.apply_btn.setEnabled(True)
+                self.apply_btn.setDisabled(False)
                 self.apply_btn.setToolTip(None)
+        else:
+            self.apply_btn.setDisabled(False)
+            self.apply_btn.setToolTip(None)
 
     def change_uhr_status(self):
         """
@@ -122,6 +131,7 @@ class Uhr(QDialog):
         self.setWindowTitle("Uhr")
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
+        self.setFixedSize(280, 400)
 
         # UHR POSITION DIAL ====================================================
 
@@ -132,16 +142,19 @@ class Uhr(QDialog):
         except AssertionError:
             self.indicator = QLabel("00")
 
+        self.indicator.setStyleSheet(
+            "font-size: 20px; text-align: center; background-color: white")
+
         self.dial = QDial()
         self.dial.setWrapping(True)
         self.dial.setRange(0, 39)
+        self.dial.setFixedSize(300, 300)
 
         try:
             self.dial.setValue(uhr_position())
         except AssertionError:
             pass
 
-        self.dial.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.dial.valueChanged.connect(self.refresh_indicator)
 
         # BUTTONS ==============================================================

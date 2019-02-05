@@ -310,6 +310,10 @@ historical_data = {
 }
 
 
+def format_position(position, numeric=False):
+    return "%02d" % (position + 1) if numeric else alphabet[position]
+
+
 class Plugboard:
     def __init__(self, pairs=None):
         self._pairs = []
@@ -396,9 +400,7 @@ class _Rotatable(_Component):
         :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
         :return:
         """
-        return (
-            "%02d" % (self._offset + 1) if numeric else alphabet[self._offset]
-        )
+        return format_position(self._offset, numeric)
 
     def rotate(self, offset_by=1):
         """
@@ -490,7 +492,6 @@ class UKWD(Reflector):
                 if pair[::-1] not in pairs:
                     pairs.append(pair)
 
-            print("pairs" + str(pairs))
             return pairs
 
 

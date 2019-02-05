@@ -9,23 +9,28 @@
         "reflector": "UKW-A"
     },
     "saved": {
-        "model": "Enigma1",
+        "model": "EnigmaM3",
+        "reflector": "UKW-B",
         "rotors": [
             "I",
             "II",
             "III"
         ],
         "rotor_positions": [
-            "01",
-            "01",
-            "01"
+            "D",
+            "W",
+            "J"
         ],
         "ring_settings": [
             1,
             1,
             1
         ],
-        "reflector": "UKW-A",
-        "plugs": []
+        "plug_pairs": [
+            "QB",
+            "ER",
+            "TZ",
+            "HJ"
+        ]
     }
 }

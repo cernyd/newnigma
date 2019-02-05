@@ -255,7 +255,6 @@ class AbstractPlugboard(QDialog):
         Connects two sockets without unnecessary interaction of two sockets
         to avoid recursive event calls)
         """
-        print("here")
         if other_socket is None:
             other = self.pairs[socket]
 
@@ -310,12 +309,13 @@ class Socket(QFrame):
         self.entry = QLineEdit()
         self.entry.setMaxLength(1)
         self.entry.textChanged.connect(self.entry_event)
-        self.entry.setFixedSize(20, 20)
+        self.entry.setFixedSize(30, 30)
+        self.entry.setAlignment(Qt.AlignCenter)
 
         # SHOW WIDGETS
 
-        layout.addWidget(label, alignment=Qt.AlignCenter)
-        layout.addWidget(self.entry, alignment=Qt.AlignCenter)
+        layout.addWidget(label)
+        layout.addWidget(self.entry)
 
     def entry_event(self):
         """
@@ -337,7 +337,9 @@ class Socket(QFrame):
         :param letter: Sets text to the newly selected letter
         """
         if letter:
-            self.entry.setStyleSheet("background-color: black; color: white; border-radius: 10px;")
+            self.entry.setStyleSheet("background-color: black; color: white;"
+                                     "border-radius: 10px; text-align: center;")
         else:
-            self.entry.setStyleSheet("background-color: white; color: black")
+            self.entry.setStyleSheet("background-color: white; color: black;"
+                                     "text-align: center;")
         self.entry.setText(letter)

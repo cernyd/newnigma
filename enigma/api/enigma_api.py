@@ -17,7 +17,7 @@ class EnigmaAPI:
     Interface object between client and Enigma instance
     """
 
-    def __init__(self, model, reflector, rotors, position_buffer=1000):
+    def __init__(self, model, reflector, rotors, position_buffer=10000):
         """
         :param model: {str} Enigma machine model label
         :param reflector: {str} Reflector label like "UKW-B"
@@ -218,6 +218,18 @@ class EnigmaAPI:
         later be loaded)
         """
         self.__checkpoint = self.__serialized_position()
+
+    def load_checkpoint(self):
+        """
+        Sets rotor positions to the checkpoint position
+        """
+        self.positions(self.checkpoint())
+
+    def checkpoint(self):
+        """
+        Returns current checkpoint positions
+        """
+        return self.__load_position(self.__checkpoint)
 
     def __clear_buffer(self):
         """
@@ -439,7 +451,7 @@ class EnigmaAPI:
         data = self.get_config()
         header = "Enigma model: %s" % data["model"]
         rotors = "\nRotors: %s" % " ".join(data["rotors"])
-        positions = "\nRotor positions: %s" % " ".join(data["rotor_positions"])
+        positions = "\nRotor positions: %s" % " ".join()
         rings = "\nRing settings: %s" % " ".join(
             map(str, data["ring_settings"])
         )
