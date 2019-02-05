@@ -207,3 +207,136 @@ view_data = {
     "Railway": {"description": _railway, "img": base_dir + "enigmak.jpg"},
     "Tirpitz": {"description": _tirpitz, "img": base_dir + "tirpitz.jpg"},
 }
+
+
+class AbstractPlugboard(QDialog):
+    def __init__(self, master, enigma_api, title):
+        super().__init__(master)
+
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.setWindowTitle("UKW-D Wiring")
+        self.enigma_api = enigma_api
+
+        self.pairs = {}  # TODO: Duplicate
+        self.plugs = {}
+        self.banned = []
+
+    def _pairs(self):  # TODO: Duplicate
+        """
+        Returns all selected wiring pairs
+        """
+        pairs = []
+        for pair in self.pairs.items():
+            if pair[::-1] not in pairs and all(pair):
+                pairs.append(pair)
+
+        return pairs
+
+    def refresh_pairs(self):
+        """
+        Tries to load reflector pairs (UKW-D pairs) from EnigmaAPI
+        """
+        try:
+            for pair in self.enigma_api.reflector_pairs():
+                self.connect_sockets(*pair)
+        except Exception as e:
+            print(e)
+
+    def storno(self):
+        """
+        Clears all selected pairs and closes the window
+        """
+        self.pairs = {}
+        self.close()
+
+    def connect_sockets(self, socket, other_socket):
+        """
+        Connects two sockets without unnecessary interaction of two sockets
+        to avoid recursive event calls)
+        """
+        print("here")
+        if other_socket is None:
+            other = self.pairs[socket]
+
+            self.pairs[other] = None
+            self.pairs[socket] = None
+            self.plugs[socket].set_text("")
+            self.plugs[other].set_text("")
+        else:
+            if other_socket in self.banned or other_socket is None:
+                self.plugs[socket].setText("")
+                return
+
+            if self.pairs[other_socket] is not None:
+                self.plugs[socket].set_text("")
+            elif socket == other_socket:
+                self.plugs[socket].set_text("")
+            else:
+                self.pairs[socket] = other_socket
+                self.pairs[other_socket] = socket
+                self.plugs[socket].set_text(other_socket)
+                self.plugs[other_socket].set_text(socket)
+
+
+class Socket(QFrame):
+    def __init__(self, master, letter, connect_plug, apply_plug):
+        """
+        One sockets with label and text entry
+        :param master: Qt parent object
+        :param letter: Letter to serve as the label
+        :param connect_plug: calls parent to connect with the letter typed in
+                             the entry box
+        :param apply_plug: Refreshes the "Apply" button
+        """
+        super().__init__(master)
+
+        # QT WINDOW SETTINGS ===================================================
+
+        layout = QVBoxLayout(self)
+        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
+        # ATTRIBUTES ===========================================================
+
+        self.connect_plug = connect_plug
+        self.letter = letter
+        self.apply_plug = apply_plug
+        self.connected_to = None
+
+        # ENTRY ================================================================
+
+        label = QLabel(letter)
+
+        self.entry = QLineEdit()
+        self.entry.setMaxLength(1)
+        self.entry.textChanged.connect(self.entry_event)
+
+        # SHOW WIDGETS
+
+        layout.addWidget(label, alignment=Qt.AlignCenter)
+        layout.addWidget(self.entry)
+
+    def entry_event(self):
+        """
+        Responds to a event when something changes in the plug entry
+        """
+        self.apply_plug()
+
+        text = self.entry.text().upper()
+        if self.entry.isModified():  # Prevents recursive event calls
+            if text:
+                self.connect_plug(self.letter, text)
+            else:
+                self.connect_plug(self.letter, None)
+
+    def set_text(self, letter):
+        """
+        Sets text to the plug entrybox and sets white (vacant) or black
+        (occupied) background color
+        :param letter: Sets text to the newly selected letter
+        """
+        if letter:
+            self.entry.setStyleSheet("background-color: black; color: white")
+        else:
+            self.entry.setStyleSheet("background-color: white; color: black")
+        self.entry.setText(letter)

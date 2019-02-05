@@ -42,9 +42,7 @@ class Settings(QDialog):
 
         tab_widget = QTabWidget()
 
-        self.stacked_wikis = ViewSwitcher(
-            self, self.enigma_api.model, self.regen_model
-        )
+        self.stacked_wikis = ViewSwitcher(self, self.enigma_api.model, self.regen_model)
         tab_widget.addTab(self.stacked_wikis, "Enigma Model")
         tab_widget.addTab(self.settings_frame, "Component settings")
 
@@ -81,17 +79,13 @@ class Settings(QDialog):
         if self.reflector_group.checkedButton().text() == "UKW-D":
             if len(self.ukwd._pairs()) != 12:
                 self.apply_btn.setDisabled(True)
-                self.apply_btn.setToolTip(
-                    "Connect all 12 pairs in UKW-D wiring!"
-                )
+                self.apply_btn.setToolTip("Connect all 12 pairs in UKW-D wiring!")
             else:
                 self.apply_btn.setDisabled(False)
                 self.apply_btn.setToolTip(None)
 
             self.ukwd_button.setDisabled(False)
-            self.ukwd_button.setToolTip(
-                "Select the UKW-D rotor to edit settings"
-            )
+            self.ukwd_button.setToolTip("Select the UKW-D rotor to edit settings")
             if len(self.rotor_frames) == 4:  # IF THIN ROTORS
                 self.rotor_frames[0].setDisabled(True)
         else:
@@ -249,24 +243,19 @@ class Settings(QDialog):
         applies them to the EnigmaAPI as new settings
         """
         new_model = self.stacked_wikis.currently_selected
-        new_reflector = (
-            self.reflector_group.checkedButton().text()
-        )  # REFLECTOR CHOICES
+        new_reflector = self.reflector_group.checkedButton().text()  # REFLECTOR CHOICES
         reflector_pairs = self.ukwd._pairs()
 
         if new_reflector == "UKW-D" and new_model == "EnigmaM4":
             new_rotors = [
-                group.checkedButton().text()
-                for group in self.rotor_selectors[1:]
+                group.checkedButton().text() for group in self.rotor_selectors[1:]
             ]
         else:
             new_rotors = [
                 group.checkedButton().text() for group in self.rotor_selectors
             ]
 
-        ring_settings = [
-            ring.currentIndex() + 1 for ring in self.ring_selectors
-        ]
+        ring_settings = [ring.currentIndex() + 1 for ring in self.ring_selectors]
 
         if new_model != self.enigma_api.model():
             self.enigma_api.model(new_model)
@@ -308,9 +297,7 @@ class ViewSwitcher(QWidget):
         self.stacked_wikis = QStackedWidget()
         for i, model in enumerate(view_data.keys()):
             self.model_list.insertItem(i, model)
-            self.stacked_wikis.addWidget(
-                _EnigmaView(self, model, self.select_model)
-            )
+            self.stacked_wikis.addWidget(_EnigmaView(self, model, self.select_model))
 
         self.layout.addWidget(self.model_list)
         self.layout.addWidget(self.stacked_wikis)
@@ -376,23 +363,15 @@ class _EnigmaView(QWidget):
         self.main_layout.addWidget(self.wiki_text)
 
 
-class UKWD_Settings(QDialog):
+class UKWD_Settings(AbstractPlugboard):
     def __init__(self, master, enigma_api):
         """
         Settings menu for settings UKW-D wiring pairs
         :param master: Qt parent object
         :param enigma_api: {EnigmaAPI}
         """
-        super().__init__(master)
-
-        main_layout = QVBoxLayout()
-        self.setLayout(main_layout)
-        self.resize(100, 150)
-        self.setWindowTitle("UKW-D Wiring")
-        self.enigma_api = enigma_api
-
-        self.pairs = {}  # TODO: Duplicate
-        self.plugs = {}
+        super().__init__(master, enigma_api, "UKW-D Wiring")
+        self.banned = ["J", "Y"]
 
         plug_frame = QFrame(self)
         plug_layout = QHBoxLayout(plug_frame)
@@ -401,9 +380,7 @@ class UKWD_Settings(QDialog):
             col_layout = QVBoxLayout(col_frame)
 
             for letter in group:
-                socket = Socket(
-                    self, letter, self.connect_sockets, self.refresh_apply
-                )
+                socket = Socket(self, letter, self.connect_sockets, self.refresh_apply)
                 col_layout.addWidget(socket)
                 self.plugs[letter] = socket
                 self.pairs[letter] = None
@@ -416,21 +393,11 @@ class UKWD_Settings(QDialog):
         storno = QPushButton("Storno")
         storno.clicked.connect(self.storno)
 
-        main_layout.addWidget(plug_frame)
-        main_layout.addWidget(self.apply_btn)
-        main_layout.addWidget(storno)
+        self.main_layout.addWidget(plug_frame)
+        self.main_layout.addWidget(self.apply_btn)
+        self.main_layout.addWidget(storno)
 
         self.refresh_apply()
-
-    def refresh_pairs(self):
-        """
-        Tries to load reflector pairs (UKW-D pairs) from EnigmaAPI
-        """
-        try:
-            for pair in self.enigma_api.reflector_pairs():
-                self.connect_sockets(*pair)
-        except Exception as e:
-            print(e)
 
     def storno(self):
         """
@@ -449,40 +416,3 @@ class UKWD_Settings(QDialog):
         else:
             self.apply_btn.setDisabled(False)
             self.apply_btn.setToolTip(None)
-
-    def _pairs(self):  # TODO: Duplicate
-        """
-        Returns all selected wiring pairs
-        """
-        pairs = []
-        for pair in self.pairs.items():
-            if pair[::-1] not in pairs and all(pair):
-                pairs.append(pair)
-
-        return pairs
-
-    def connect_sockets(self, socket, other_socket):  # TODO: Duplicate
-        """
-        Pairs two sockets both visually and in the plug list
-        """
-        if other_socket is None:
-            other = self.pairs[socket]
-
-            self.pairs[other] = None
-            self.pairs[socket] = None
-            self.plugs[socket].set_text("")
-            self.plugs[other].set_text("")
-        else:
-            if other_socket in "JY":
-                self.plugs[socket].set_text("")
-                return
-
-            if self.pairs[other_socket] is not None:
-                self.plugs[socket].set_text("")
-            elif socket == other_socket:
-                self.plugs[socket].set_text("")
-            else:
-                self.pairs[socket] = other_socket
-                self.pairs[other_socket] = socket
-                self.plugs[socket].set_text(other_socket)
-                self.plugs[other_socket].set_text(socket)

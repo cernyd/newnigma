@@ -1,7 +1,7 @@
 from enigma.interface.gui import *
 
 
-class Plugboard(QDialog):
+class Plugboard(AbstractPlugboard):
     def __init__(self, master, enigma_api):
         """
         Allows choosing and viewing current plugboard pairs
@@ -9,20 +9,11 @@ class Plugboard(QDialog):
         :param pairs_plug: {callable} Provides access to setting and viewing plug
                                       pairs from api
         """
-        super().__init__(master)
-
-        # QT WINDOW SETTINGS ===================================================
-
-        self.resize(200, 200)
-        self.setWindowTitle("Plugboard")
-        main_layout = QVBoxLayout(self)
-        frame = QFrame(self)
-        self.setLayout(main_layout)
+        super().__init__(master, enigma_api, "Plugboard")
 
         # GENERATE PAIRS =======================================================
+        frame = QFrame(self)
 
-        self.pairs = {}
-        self.plugs = {}
         for row in layout:
             row_frame = QFrame(frame)
             row_layout = QHBoxLayout(row_frame)
@@ -36,7 +27,7 @@ class Plugboard(QDialog):
                 self.pairs[letter] = None
                 row_layout.addWidget(socket)
 
-            main_layout.addWidget(row_frame)
+            self.main_layout.addWidget(row_frame)
 
         # BUTTONS ==============================================================
 
@@ -64,10 +55,10 @@ class Plugboard(QDialog):
 
         # SHOW WIDGETS =========================================================
 
-        main_layout.addWidget(storno)
-        main_layout.addWidget(self.apply_btn)
-        main_layout.addWidget(self.uhr)
-        main_layout.addWidget(self.enable_uhr)
+        self.main_layout.addWidget(storno)
+        self.main_layout.addWidget(self.apply_btn)
+        self.main_layout.addWidget(self.uhr)
+        self.main_layout.addWidget(self.enable_uhr)
 
         self.change_uhr_status()
 
@@ -82,8 +73,7 @@ class Plugboard(QDialog):
                 self.apply_btn.setEnabled(False)
                 self.apply_btn.setToolTip(
                     "When using the Uhr, exactly 10 plug pairs "
-                    "must be connected!\n%d pairs left to connect..."
-                    % (10 - pair_n)
+                    "must be connected!\n%d pairs left to connect..." % (10 - pair_n)
                 )
             else:
                 self.apply_btn.setEnabled(True)
@@ -100,16 +90,6 @@ class Plugboard(QDialog):
             self.uhr.setEnabled(False)
             self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
 
-    def _pairs(self):
-        """
-        Returns all selected wiring pairs
-        """
-        pairs = []
-        for pair in self.pairs.items():
-            if pair[::-1] not in pairs and all(pair):
-                pairs.append(pair)
-        return pairs
-
     def collect(self):
         """
         Collects all unique letter pairs, enables and sets up Uhr if it's also
@@ -125,92 +105,6 @@ class Plugboard(QDialog):
 
         self.enigma_api.plug_pairs(pairs)
         self.close()
-
-    def connect_sockets(self, socket, other_socket):
-        """
-        Connects two sockets without unnecessary interaction of two sockets
-        to avoid recursive event calls)
-        """
-        if other_socket is None:
-            other = self.pairs[socket]
-
-            self.pairs[other] = None
-            self.pairs[socket] = None
-            self.plugs[socket].set_text("")
-            self.plugs[other].set_text("")
-        else:
-            if self.pairs[other_socket] is not None:
-                self.plugs[socket].set_text("")
-            elif socket == other_socket:
-                self.plugs[socket].set_text("")
-            else:
-                self.pairs[socket] = other_socket
-                self.pairs[other_socket] = socket
-                self.plugs[socket].set_text(other_socket)
-                self.plugs[other_socket].set_text(socket)
-
-
-class Socket(QFrame):
-    def __init__(self, master, letter, connect_plug, apply_plug):
-        """
-        One sockets with label and text entry
-        :param master: Qt parent object
-        :param letter: Letter to serve as the label
-        :param connect_plug: calls parent to connect with the letter typed in
-                             the entry box
-        :param apply_plug: Refreshes the "Apply" button
-        """
-        super().__init__(master)
-
-        # QT WINDOW SETTINGS ===================================================
-
-        layout = QVBoxLayout(self)
-        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-
-        # ATTRIBUTES ===========================================================
-
-        self.connect_plug = connect_plug
-        self.letter = letter
-        self.apply_plug = apply_plug
-        self.connected_to = None
-
-        # ENTRY ================================================================
-
-        label = QLabel(letter)
-
-        self.entry = QLineEdit()
-        self.entry.setMaxLength(1)
-        self.entry.textChanged.connect(self.entry_event)
-
-        # SHOW WIDGETS
-
-        layout.addWidget(label, alignment=Qt.AlignCenter)
-        layout.addWidget(self.entry)
-
-    def entry_event(self):
-        """
-        Responds to a event when something changes in the plug entry
-        """
-        self.apply_plug()
-
-        text = self.entry.text().upper()
-        if self.entry.isModified():  # Prevents recursive event calls
-            if text:
-                self.connect_plug(self.letter, text)
-            else:
-                self.connect_plug(self.letter, None)
-
-    def set_text(self, letter):
-        """
-        Sets text to the plug entrybox and sets white (vacant) or black
-        (occupied) background color
-        :param letter: Sets text to the newly selected letter
-        """
-        if letter:
-            self.entry.setStyleSheet("background-color: black; color: white")
-        else:
-            self.entry.setStyleSheet("background-color: white; color: black")
-        self.entry.setText(letter)
 
 
 class Uhr(QDialog):
