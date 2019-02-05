@@ -34,7 +34,7 @@ class Settings(QDialog):
         self.ukwd = UKWD_Settings(self, enigma_api)
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
-        
+
         self.ukwd_button = QPushButton("UKW-D Wiring")
         self.ukwd_button.clicked.connect(self.open_ukwd_wiring)
 
@@ -42,7 +42,9 @@ class Settings(QDialog):
 
         tab_widget = QTabWidget()
 
-        self.stacked_wikis = ViewSwitcher(self, self.enigma_api.model, self.regen_model)
+        self.stacked_wikis = ViewSwitcher(
+            self, self.enigma_api.model, self.regen_model
+        )
         tab_widget.addTab(self.stacked_wikis, "Enigma Model")
         tab_widget.addTab(self.settings_frame, "Component settings")
 
@@ -76,16 +78,20 @@ class Settings(QDialog):
         Refreshes Apply button according to criteria (UKW-D rotor must be
         selected to edit its settings)
         """
-        if self.reflector_group.checkedButton().text() == 'UKW-D':
+        if self.reflector_group.checkedButton().text() == "UKW-D":
             if len(self.ukwd._pairs()) != 12:
                 self.apply_btn.setDisabled(True)
-                self.apply_btn.setToolTip("Connect all 12 pairs in UKW-D wiring!")
+                self.apply_btn.setToolTip(
+                    "Connect all 12 pairs in UKW-D wiring!"
+                )
             else:
                 self.apply_btn.setDisabled(False)
                 self.apply_btn.setToolTip(None)
 
             self.ukwd_button.setDisabled(False)
-            self.ukwd_button.setToolTip("Select the UKW-D rotor to edit settings")
+            self.ukwd_button.setToolTip(
+                "Select the UKW-D rotor to edit settings"
+            )
             if len(self.rotor_frames) == 4:  # IF THIN ROTORS
                 self.rotor_frames[0].setDisabled(True)
         else:
@@ -105,7 +111,7 @@ class Settings(QDialog):
         :param rotor_n: {int} Number of rotors the Enigma model has
         """
         # REFLECTOR SETTINGS ===================================================
-        
+
         reflector_frame = QFrame(self.settings_frame)
         reflector_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
 
@@ -114,12 +120,13 @@ class Settings(QDialog):
             QLabel("REFLECTOR", reflector_frame), alignment=Qt.AlignTop
         )
 
-
         self.reflector_group = QButtonGroup(reflector_frame)
         for i, model in enumerate(reflectors):
             radio = QRadioButton(model, reflector_frame)
-            radio.setToolTip("Reflector is an Enigma component that \nreflects "
-                             "letters from the rotors back to the lightboard")
+            radio.setToolTip(
+                "Reflector is an Enigma component that \nreflects "
+                "letters from the rotors back to the lightboard"
+            )
             self.reflector_group.addButton(radio)
             self.reflector_group.setId(radio, i)
             reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
@@ -141,7 +148,7 @@ class Settings(QDialog):
             rotor_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
             rotor_layout = QVBoxLayout(rotor_frame)
             rotor_frame.setLayout(rotor_layout)
-            
+
             # ROTOR RADIOS =====================================================
 
             label = QLabel(selector_labels[-rotor_n:][rotor], rotor_frame)
@@ -150,15 +157,15 @@ class Settings(QDialog):
             rotor_layout.addWidget(label)
 
             button_group = QButtonGroup(rotor_frame)
-            
+
             final_rotors = rotors
 
-            if 'Beta' in rotors:
+            if "Beta" in rotors:
                 if rotor == 0:
-                    final_rotors = ['Beta', 'Gamma']
+                    final_rotors = ["Beta", "Gamma"]
                 else:
-                    final_rotors.remove('Beta')
-                    final_rotors.remove('Gamma')
+                    final_rotors.remove("Beta")
+                    final_rotors.remove("Gamma")
 
             for i, model in enumerate(final_rotors):
                 radios = QRadioButton(model, rotor_frame)
@@ -167,7 +174,7 @@ class Settings(QDialog):
                 rotor_layout.addWidget(radios, alignment=Qt.AlignTop)
 
             button_group.button(0).setChecked(True)
-            
+
             # RINGSTELLUNG =====================================================
 
             combobox = QComboBox(rotor_frame)
@@ -200,7 +207,7 @@ class Settings(QDialog):
                 del wgt
             else:
                 break
-    
+
     def regen_model(self, new_model, from_api=False):
         """
         Regenerates component settings
@@ -209,31 +216,27 @@ class Settings(QDialog):
         """
         self.clear_components()
 
-        reflectors = self.enigma_api.model_labels(new_model)['reflectors']
-        rotors = self.enigma_api.model_labels(new_model)['rotors']
+        reflectors = self.enigma_api.model_labels(new_model)["reflectors"]
+        rotors = self.enigma_api.model_labels(new_model)["rotors"]
         rotor_n = self.enigma_api.rotor_n(new_model)
 
-        self.generate_components(
-            reflectors,
-            rotors[::],
-            rotor_n
-        )
-        
+        self.generate_components(reflectors, rotors[::], rotor_n)
+
         if from_api:  # Loads from API
             reflector_i = reflectors.index(self.enigma_api.reflector())
             self.reflector_group.button(reflector_i).setChecked(True)
-            
+
             for i, rotor in enumerate(self.enigma_api.rotors()):
-                if 'Beta' in rotors and self.enigma_api.reflector() != 'UKW-D':
+                if "Beta" in rotors and self.enigma_api.reflector() != "UKW-D":
                     if i == 0:
-                        rotor_i = ['Beta', 'Gamma'].index(rotor)
+                        rotor_i = ["Beta", "Gamma"].index(rotor)
                 else:
                     rotor_i = rotors.index(rotor)
 
                 self.rotor_selectors[i].button(rotor_i).setChecked(True)
-            
+
             for i, ring in enumerate(self.enigma_api.ring_settings()):
-                self.ring_selectors[i].setCurrentIndex(ring-1)
+                self.ring_selectors[i].setCurrentIndex(ring - 1)
         else:
             for i in range(rotor_n):
                 self.rotor_selectors[i].button(i).setChecked(True)
@@ -246,21 +249,30 @@ class Settings(QDialog):
         applies them to the EnigmaAPI as new settings
         """
         new_model = self.stacked_wikis.currently_selected
-        new_reflector = self.reflector_group.checkedButton().text() # REFLECTOR CHOICES
+        new_reflector = (
+            self.reflector_group.checkedButton().text()
+        )  # REFLECTOR CHOICES
         reflector_pairs = self.ukwd._pairs()
 
-        if new_reflector == 'UKW-D' and new_model == 'EnigmaM4':
-            new_rotors = [group.checkedButton().text() for group in self.rotor_selectors[1:]]
+        if new_reflector == "UKW-D" and new_model == "EnigmaM4":
+            new_rotors = [
+                group.checkedButton().text()
+                for group in self.rotor_selectors[1:]
+            ]
         else:
-            new_rotors = [group.checkedButton().text() for group in self.rotor_selectors]
-            
-        ring_settings = [ring.currentIndex()+1 for ring in self.ring_selectors]
-        
+            new_rotors = [
+                group.checkedButton().text() for group in self.rotor_selectors
+            ]
+
+        ring_settings = [
+            ring.currentIndex() + 1 for ring in self.ring_selectors
+        ]
+
         if new_model != self.enigma_api.model():
             self.enigma_api.model(new_model)
 
         self.enigma_api.reflector(new_reflector)
-        if new_reflector == 'UKW-D':
+        if new_reflector == "UKW-D":
             print("set pairs")
             self.enigma_api._enigma.reflector_pairs(reflector_pairs)
 
@@ -296,7 +308,9 @@ class ViewSwitcher(QWidget):
         self.stacked_wikis = QStackedWidget()
         for i, model in enumerate(view_data.keys()):
             self.model_list.insertItem(i, model)
-            self.stacked_wikis.addWidget(_EnigmaView(self, model, self.select_model))
+            self.stacked_wikis.addWidget(
+                _EnigmaView(self, model, self.select_model)
+            )
 
         self.layout.addWidget(self.model_list)
         self.layout.addWidget(self.stacked_wikis)
@@ -337,9 +351,9 @@ class _EnigmaView(QWidget):
 
         # MODEL IMAGE ==========================================================
 
-        self.description = view_data[model]['description']  # TODO: Decouple
+        self.description = view_data[model]["description"]  # TODO: Decouple
         self.img = QLabel("")
-        pixmap = QPixmap(view_data[model]['img']).scaled(300, 400)
+        pixmap = QPixmap(view_data[model]["img"]).scaled(300, 400)
         self.img.setPixmap(pixmap)
         self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
         self.img.setLineWidth(5)
@@ -382,16 +396,18 @@ class UKWD_Settings(QDialog):
 
         plug_frame = QFrame(self)
         plug_layout = QHBoxLayout(plug_frame)
-        for group in 'ABCDEF', 'GHIKLM', 'NOPQRS', 'TUVWXZ':
+        for group in "ABCDEF", "GHIKLM", "NOPQRS", "TUVWXZ":
             col_frame = QFrame(plug_frame)
             col_layout = QVBoxLayout(col_frame)
 
             for letter in group:
-                socket = Socket(self, letter, self.connect_sockets, self.refresh_apply)
+                socket = Socket(
+                    self, letter, self.connect_sockets, self.refresh_apply
+                )
                 col_layout.addWidget(socket)
                 self.plugs[letter] = socket
                 self.pairs[letter] = None
-            
+
             plug_layout.addWidget(col_frame)
 
         self.apply_btn = QPushButton("Apply")
@@ -403,7 +419,6 @@ class UKWD_Settings(QDialog):
         main_layout.addWidget(plug_frame)
         main_layout.addWidget(self.apply_btn)
         main_layout.addWidget(storno)
-
 
         self.refresh_apply()
 
@@ -434,7 +449,6 @@ class UKWD_Settings(QDialog):
         else:
             self.apply_btn.setDisabled(False)
             self.apply_btn.setToolTip(None)
-            
 
     def _pairs(self):  # TODO: Duplicate
         """
@@ -456,17 +470,17 @@ class UKWD_Settings(QDialog):
 
             self.pairs[other] = None
             self.pairs[socket] = None
-            self.plugs[socket].set_text('')
-            self.plugs[other].set_text('')
+            self.plugs[socket].set_text("")
+            self.plugs[other].set_text("")
         else:
-            if other_socket in 'JY':
-                self.plugs[socket].set_text('')
+            if other_socket in "JY":
+                self.plugs[socket].set_text("")
                 return
 
             if self.pairs[other_socket] is not None:
-                self.plugs[socket].set_text('')
+                self.plugs[socket].set_text("")
             elif socket == other_socket:
-                self.plugs[socket].set_text('')
+                self.plugs[socket].set_text("")
             else:
                 self.pairs[socket] = other_socket
                 self.pairs[other_socket] = socket

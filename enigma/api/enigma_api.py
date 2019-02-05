@@ -1,7 +1,15 @@
 #! /usr/env python3
 
-from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
-                                    Stator, alphabet, historical_data)
+from enigma.core.components import (
+    UKW_D,
+    UKWD,
+    Enigma,
+    Reflector,
+    Rotor,
+    Stator,
+    alphabet,
+    historical_data,
+)
 
 
 class EnigmaAPI:
@@ -37,13 +45,13 @@ class EnigmaAPI:
         if model is None:
             return self._enigma.rotor_n()
         else:
-            return historical_data[model]['rotor_n']
+            return historical_data[model]["rotor_n"]
 
     def letter_group(self):
         """
         Returns the historical letter group for this Enigma model
         """
-        return historical_data[self.model()]['letter_group']
+        return historical_data[self.model()]["letter_group"]
 
     def model_labels(self, model=None):
         """
@@ -54,11 +62,13 @@ class EnigmaAPI:
         if model is None:
             model = self.model()
 
-        refs = [reflector['label'] for reflector in
-                historical_data[model]['reflectors']]
-        rotors = [rotor['label'] for rotor in historical_data[model]['rotors']]
+        refs = [
+            reflector["label"]
+            for reflector in historical_data[model]["reflectors"]
+        ]
+        rotors = [rotor["label"] for rotor in historical_data[model]["rotors"]]
 
-        return {'reflectors': refs, 'rotors': rotors}
+        return {"reflectors": refs, "rotors": rotors}
 
     def reflector_rotatable(self):
         """
@@ -77,8 +87,8 @@ class EnigmaAPI:
         if new_model is not None:
             labels = self.model_labels(new_model)
 
-            rotors = labels['rotors'][:self.rotor_n(new_model)]
-            reflector = labels['reflectors'][0]
+            rotors = labels["rotors"][: self.rotor_n(new_model)]
+            reflector = labels["reflectors"][0]
 
             del self._enigma
             self._enigma = self.generate_enigma(new_model, reflector, rotors)
@@ -92,8 +102,9 @@ class EnigmaAPI:
         :param new_reflector: {str}
         """
         if new_reflector is not None:
-            new_reflector = self.generate_component(self.model(), 'Reflector',
-                                                    new_reflector)
+            new_reflector = self.generate_component(
+                self.model(), "Reflector", new_reflector
+            )
             self._enigma.reflector(new_reflector)
         else:
             return self._enigma.reflector()
@@ -161,6 +172,7 @@ class EnigmaAPI:
         :param by: {int} Positive or negative integer
                          describing the number of spaces
         """
+
         def rotate_rotor(rotor_id, by=1):
             self.__clear_buffer()
             self._enigma.rotate_rotor(rotor_id, by)
@@ -190,7 +202,7 @@ class EnigmaAPI:
         For example: [02, 13, 5, 22] -> 2130522
         This method saves space in memory
         """
-        serialized = ''
+        serialized = ""
 
         for pos in self._enigma.positions():
             if pos in alphabet:
@@ -228,14 +240,14 @@ class EnigmaAPI:
         rotor positions)
         :param position: {int} position to be loaded
         """
-        formula = "%0" + str(self.rotor_n()*2) + "d"
+        formula = "%0" + str(self.rotor_n() * 2) + "d"
         positions = []
-        pair = ''
+        pair = ""
         for letter in formula % position:
             pair += letter
             if len(pair) == 2:
                 positions.append(int(pair))
-                pair = ''
+                pair = ""
 
         return positions
 
@@ -291,14 +303,21 @@ class EnigmaAPI:
         rotors = cls.generate_rotors(model, rotor_labels)
         reflector = cls.generate_component(model, "Reflector", reflector_label)
         stator = cls.generate_component(model, "Stator")
-        rotor_n = historical_data[model]['rotor_n']
-        plugboard = historical_data[model]['plugboard']
-        rotatable_ref = historical_data[model]['rotatable_ref']
-        numeric = historical_data[model]['numeric']
+        rotor_n = historical_data[model]["rotor_n"]
+        plugboard = historical_data[model]["plugboard"]
+        rotatable_ref = historical_data[model]["rotatable_ref"]
+        numeric = historical_data[model]["numeric"]
 
-        return Enigma(model, reflector, rotors, stator, plugboard=plugboard,
-                      rotor_n=rotor_n, rotatable_ref=rotatable_ref,
-                      numeric=numeric)
+        return Enigma(
+            model,
+            reflector,
+            rotors,
+            stator,
+            plugboard=plugboard,
+            rotor_n=rotor_n,
+            rotatable_ref=rotatable_ref,
+            numeric=numeric,
+        )
 
     @classmethod
     def generate_component(cls, model, comp_type, label=None):
@@ -315,30 +334,31 @@ class EnigmaAPI:
         data = historical_data[model]
 
         if label is None and comp_type != "Stator":
-            raise TypeError("A label has to be supplied for "
-                            "Rotor and Reflector object!")
+            raise TypeError(
+                "A label has to be supplied for " "Rotor and Reflector object!"
+            )
 
-        assert model in historical_data, "The model argument must be a " \
-                                         "historical Enigma model!"
+        assert model in historical_data, (
+            "The model argument must be a " "historical Enigma model!"
+        )
 
         component = None
         i = 0
         if comp_type == "Rotor":
             for rotor in data["rotors"]:
-                if rotor['label'] == label or label == i:
+                if rotor["label"] == label or label == i:
                     component = Rotor(**rotor)
                     break
                 i += 1
             assert component, "No component with label %s found!" % label
         elif comp_type == "Reflector":
-            if label == 'UKW-D':
-                return UKWD(UKW_D['wiring'])
+            if label == "UKW-D":
+                return UKWD(UKW_D["wiring"])
 
             for reflector in data["reflectors"]:
-                if reflector['label'] == label or label == i:
+                if reflector["label"] == label or label == i:
                     component = Reflector(
-                        **reflector,
-                        rotatable=data['rotatable_ref']
+                        **reflector, rotatable=data["rotatable_ref"]
                     )
                     break
                 i += 1
@@ -346,8 +366,9 @@ class EnigmaAPI:
         elif comp_type == "Stator":
             return Stator(**data["stator"])
         else:
-            raise TypeError('The comp_type must be '
-                            '"Reflector", "Stator" or "Rotor"')
+            raise TypeError(
+                "The comp_type must be " '"Reflector", "Stator" or "Rotor"'
+            )
 
         return component
 
@@ -358,29 +379,29 @@ class EnigmaAPI:
         Generates components and sets their settings based on input data
         :param config: {dict} Dictionary of saved settings
         """
-        self.model(config['model'])
-        self.reflector(config['reflector'])
-        self.rotors(config['rotors'])
-        self.positions(config['rotor_positions'])
-        self.ring_settings(config['ring_settings'])
+        self.model(config["model"])
+        self.reflector(config["reflector"])
+        self.rotors(config["rotors"])
+        self.positions(config["rotor_positions"])
+        self.ring_settings(config["ring_settings"])
 
         try:
             self._enigma.reflector_position(
-                config.get('reflector_position', None)
+                config.get("reflector_position", None)
             )
         except (AssertionError, KeyError):
             pass
 
         try:
-            self.reflector_pairs(config['reflector_wiring'])
+            self.reflector_pairs(config["reflector_wiring"])
         except (AssertionError, KeyError):
             pass
 
-        if 'uhr_position' in config:
+        if "uhr_position" in config:
             self._enigma.uhr(True)
-            self._enigma.uhr_position(config['uhr_position'])
+            self._enigma.uhr_position(config["uhr_position"])
 
-        self.plug_pairs(config['plug_pairs'])
+        self.plug_pairs(config["plug_pairs"])
 
     def get_config(self):
         """
@@ -388,25 +409,25 @@ class EnigmaAPI:
         for any purpose)
         """
         data = {}
-        data['model'] = self._enigma.model()
-        data['reflector'] = self._enigma.reflector()
-        data['rotors'] = self._enigma.rotors()
-        data['rotor_positions'] = self._enigma.positions()
-        data['ring_settings'] = self._enigma.ring_settings()
-        data['plug_pairs'] = []
+        data["model"] = self._enigma.model()
+        data["reflector"] = self._enigma.reflector()
+        data["rotors"] = self._enigma.rotors()
+        data["rotor_positions"] = self._enigma.positions()
+        data["ring_settings"] = self._enigma.ring_settings()
+        data["plug_pairs"] = []
         for plug in self._enigma.plug_pairs():
-            data['plug_pairs'].append(''.join(plug))
+            data["plug_pairs"].append("".join(plug))
 
         try:
-            data['reflector_position'] = self._enigma.reflector_position()
+            data["reflector_position"] = self._enigma.reflector_position()
         except AssertionError:
             pass
         try:
-            data['reflector_wiring'] = self.reflector_pairs()
+            data["reflector_wiring"] = self.reflector_pairs()
         except AssertionError:
             pass
         try:
-            data['uhr_position'] = self._enigma.uhr_position()
+            data["uhr_position"] = self._enigma.uhr_position()
         except AssertionError:
             pass
 
@@ -416,33 +437,31 @@ class EnigmaAPI:
 
     def __str__(self):
         data = self.get_config()
-        header = "Enigma model: %s" % data['model']
-        rotors = "\nRotors: %s" % ' '.join(data['rotors'])
-        positions = "\nRotor positions: %s" % ' '.join(data['rotor_positions'])
-        rings = "\nRing settings: %s" % ' '.join(
-            map(str, data['ring_settings'])
+        header = "Enigma model: %s" % data["model"]
+        rotors = "\nRotors: %s" % " ".join(data["rotors"])
+        positions = "\nRotor positions: %s" % " ".join(data["rotor_positions"])
+        rings = "\nRing settings: %s" % " ".join(
+            map(str, data["ring_settings"])
         )
-        reflector = "\nReflector: %s" % data['reflector']
+        reflector = "\nReflector: %s" % data["reflector"]
         msg = header + rotors + positions + rings + reflector
 
         try:
-            msg += "\nReflector position: %s" % data['reflector_position']
+            msg += "\nReflector position: %s" % data["reflector_position"]
         except KeyError:
             pass
 
         try:
-            msg += "\nReflector wiring: %s" % ' '.join(
-                data['reflector_wiring']
-            )
+            msg += "\nReflector wiring: %s" % " ".join(data["reflector_wiring"])
         except KeyError:
             pass
 
-        plug_pairs = "\nPlugboard pairs: %s" % ' '.join(data['plug_pairs'])
+        plug_pairs = "\nPlugboard pairs: %s" % " ".join(data["plug_pairs"])
         msg += plug_pairs
 
         if self.uhr():
-            msg += "\nUhr position: %02d" % data['uhr_position']
+            msg += "\nUhr position: %02d" % data["uhr_position"]
 
-        msg += "\n" + "="*40
+        msg += "\n" + "=" * 40
 
         return msg

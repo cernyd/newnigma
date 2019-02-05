@@ -29,8 +29,9 @@ class Plugboard(QDialog):
 
             for letter in row:
                 letter = alphabet[letter]
-                socket = Socket(row_frame, letter, self.connect_sockets,
-                                self.refresh_apply)
+                socket = Socket(
+                    row_frame, letter, self.connect_sockets, self.refresh_apply
+                )
                 self.plugs[letter] = socket
                 self.pairs[letter] = None
                 row_layout.addWidget(socket)
@@ -48,12 +49,14 @@ class Plugboard(QDialog):
         self.uhrmenu = Uhr(self, enigma_api._enigma.uhr_position)
         self.uhr.clicked.connect(self.uhrmenu.exec)
 
-        self.enable_uhr = QCheckBox("Enable Uhr")  # In that case all plugs must be occupied! (and red/white)
+        self.enable_uhr = QCheckBox(
+            "Enable Uhr"
+        )  # In that case all plugs must be occupied! (and red/white)
         self.enable_uhr.setChecked(enigma_api.uhr())
         self.enable_uhr.stateChanged.connect(self.change_uhr_status)
 
         # CONNECTS SOCKETS =====================================================
-        
+
         self.enigma_api = enigma_api
 
         for pair in self.enigma_api.plug_pairs():
@@ -77,8 +80,11 @@ class Plugboard(QDialog):
             pair_n = len(self._pairs())
             if pair_n != 10:
                 self.apply_btn.setEnabled(False)
-                self.apply_btn.setToolTip("When using the Uhr, exactly 10 plug pairs "
-                                          "must be connected!\n%d pairs left to connect..." % (10 - pair_n))
+                self.apply_btn.setToolTip(
+                    "When using the Uhr, exactly 10 plug pairs "
+                    "must be connected!\n%d pairs left to connect..."
+                    % (10 - pair_n)
+                )
             else:
                 self.apply_btn.setEnabled(True)
                 self.apply_btn.setToolTip(None)
@@ -130,13 +136,13 @@ class Plugboard(QDialog):
 
             self.pairs[other] = None
             self.pairs[socket] = None
-            self.plugs[socket].set_text('')
-            self.plugs[other].set_text('')
+            self.plugs[socket].set_text("")
+            self.plugs[other].set_text("")
         else:
             if self.pairs[other_socket] is not None:
-                self.plugs[socket].set_text('')
+                self.plugs[socket].set_text("")
             elif socket == other_socket:
-                self.plugs[socket].set_text('')
+                self.plugs[socket].set_text("")
             else:
                 self.pairs[socket] = other_socket
                 self.pairs[other_socket] = socket
@@ -190,9 +196,9 @@ class Socket(QFrame):
         text = self.entry.text().upper()
         if self.entry.isModified():  # Prevents recursive event calls
             if text:
-                 self.connect_plug(self.letter, text)
+                self.connect_plug(self.letter, text)
             else:
-                 self.connect_plug(self.letter, None)
+                self.connect_plug(self.letter, None)
 
     def set_text(self, letter):
         """
