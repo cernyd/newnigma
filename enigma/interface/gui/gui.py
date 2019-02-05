@@ -295,10 +295,13 @@ class _RotorsHandler(QFrame):
         # GENERATE ROTORS AND REFLECTOR =======================================
 
         self.ukwd_indicator = QLabel("D")
-        self.ukwd_indicator.setStyleSheet("color: red;")
+        self.ukwd_indicator.setStyleSheet(
+            "QLabel{font-size: 20px; text-align: center; background-color: white; color: red}"
+        )
         self.ukwd_indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self.ukwd_indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.ukwd_indicator.setLineWidth(3)
+        self.ukwd_indicator.setFixedSize(40, 40)
         self.ukwd_indicator.hide()
 
         self._reflector_indicator = _RotorHandler(
