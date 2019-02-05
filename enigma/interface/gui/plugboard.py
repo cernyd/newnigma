@@ -266,4 +266,3 @@ class Uhr(QDialog):
         Returns current Uhr dial setting
         """
         return self.dial.value()
-

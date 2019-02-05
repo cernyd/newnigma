@@ -1,6 +1,7 @@
 import argparse
-from enigma.api.enigma_api import EnigmaAPI
 import logging
+
+from enigma.api.enigma_api import EnigmaAPI
 
 
 def cli(enigma_api, args):
@@ -41,4 +42,3 @@ def cli(enigma_api, args):
     for letter in args.message[0].upper():
         print(enigma_api.encrypt(letter), end='')
     print()
-

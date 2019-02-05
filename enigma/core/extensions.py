@@ -69,4 +69,3 @@ class Uhr:
                 else:
                     if plug[3]  == receive_pin:
                         return plug[1]
-

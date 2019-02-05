@@ -472,4 +472,3 @@ class UKWD_Settings(QDialog):
                 self.pairs[other_socket] = socket
                 self.plugs[socket].set_text(other_socket)
                 self.plugs[other_socket].set_text(socket)
-

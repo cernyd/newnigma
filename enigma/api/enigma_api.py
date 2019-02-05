@@ -1,7 +1,7 @@
 #! /usr/env python3
 
-from enigma.core.components import (historical_data, Enigma, Rotor, Reflector,
-                                    Stator, alphabet, UKWD, UKW_D)
+from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
+                                    Stator, alphabet, historical_data)
 
 
 class EnigmaAPI:

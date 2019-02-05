@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from string import ascii_uppercase as alphabet
-from enigma.core.extensions import Uhr
 
+from enigma.core.extensions import Uhr
 
 # Stators
 ETW = {'wiring': alphabet}
@@ -586,4 +586,3 @@ class Enigma:
             self._uhr.position(new_position)
         else:
             return self._uhr.position()
-    

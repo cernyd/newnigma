@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from time import sleep
-from enigma.interface.gui import *
-from enigma.interface.gui.settings import *
-from enigma.interface.gui.plugboard import *
+from re import sub
 from string import ascii_uppercase as alphabet
 from textwrap import wrap
-from re import sub
+
+from enigma.interface.gui import *
+from enigma.interface.gui.plugboard import *
+from enigma.interface.gui.settings import *
 
 
 class Runtime:
@@ -25,7 +25,7 @@ class Runtime:
             QIcon(base_dir + 'enigma_200px.png')
         )
         self.root = Root(api, cfg_load_plug, cfg_save_plug)
-    
+
     def run(self):
         self.app.exec_()
 
@@ -41,22 +41,22 @@ class Root(QWidget):
         """
         super().__init__()
 
-        # QT WINDOW SETTINGS ===================================================
+        # QT WINDOW SETTINGS ==================================================
 
         self.title = 'Enigma'
         self.setWindowTitle(enigma_api.model())
         self.setWindowIcon(
             QIcon(base_dir + 'enigma_200px.png')
         )
-        #self.setStyleSheet("QFrame{ border-radius: 5px}")
+        # self.setStyleSheet("QFrame{ border-radius: 5px}")
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
-        
-        # SAVE ATTRIBUTES ======================================================
+
+        # SAVE ATTRIBUTES =====================================================
 
         self.enigma_api = enigma_api
 
-        # MENU BAR =============================================================
+        # MENU BAR ============================================================
 
         menu = QMenuBar(self)
         menu.addAction("Load Settings", self.load_config)
@@ -65,39 +65,41 @@ class Root(QWidget):
         url = QUrl("https://www.cryptomuseum.com/index.htm")
         menu.addAction("About", lambda: QDesktopServices.openUrl(url))
 
-        # ROTORS INDICATOR =====================================================
+        # ROTORS INDICATOR ====================================================
 
-        self._rotors = _RotorsHandler(self, self.enigma_api.positions, 
+        self._rotors = _RotorsHandler(self, self.enigma_api.positions,
                                       self.enigma_api.generate_rotate_callback,
                                       self.enigma_api.rotate_reflector,
                                       enigma_api, self.refresh_gui,
                                       enigma_api.reflector_position)
 
-        # LIGHTBOARD FRAME =====================================================
+        # LIGHTBOARD FRAME ====================================================
 
         lightboard = Lightboard(self)
 
-        # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ===============================
+        # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ==============================
 
-        self.o_textbox = _OutputTextBox(self, lightboard.light_up, enigma_api.letter_group)
-        self.i_textbox = _InputTextBox(self, enigma_api.encrypt, 
-                                  self.o_textbox.insert,
-                                  self.o_textbox.sync_length,
-                                  self._rotors.set_positions,
-                                  enigma_api.letter_group, enigma_api.revert_by)
+        self.o_textbox = _OutputTextBox(self, lightboard.light_up,
+                                        enigma_api.letter_group)
+        self.i_textbox = _InputTextBox(self, enigma_api.encrypt,
+                                       self.o_textbox.insert,
+                                       self.o_textbox.sync_length,
+                                       self._rotors.set_positions,
+                                       enigma_api.letter_group,
+                                       enigma_api.revert_by)
 
-        # PLUGBOARD BUTTONS ====================================================
+        # PLUGBOARD BUTTONS ===================================================
 
         self.plug_button = QPushButton('Plugboard')
         self.plug_button.setToolTip("Edit plugboard letter pairs")
         self.plug_button.clicked.connect(self.get_pairs)
 
-        # PLUGS ================================================================
+        # PLUGS ===============================================================
 
         self.cfg_load_plug = cfg_load_plug
         self.cfg_save_plug = cfg_save_plug
 
-        # SHOW WIDGETS =========================================================
+        # SHOW WIDGETS ========================================================
 
         main_layout.addWidget(menu, alignment=Qt.AlignTop)
         main_layout.addWidget(self._rotors, alignment=Qt.AlignBottom)
@@ -109,12 +111,12 @@ class Root(QWidget):
         main_layout.addWidget(self.plug_button)
 
         self.show()
-    
+
     def get_pairs(self):
         plugboard = Plugboard(self, self.enigma_api)  # TODO: Refactor
         plugboard.exec()
         del plugboard
-    
+
     def refresh_gui(self):
         self.setWindowTitle(self.enigma_api.model())
         self.i_textbox.clear()
@@ -130,7 +132,7 @@ class Root(QWidget):
         self.refresh_gui()
         self.i_textbox.blockSignals(False)
         self._rotors.generate_rotors()
-        self._rotors.set_positions()  # Refreshes positons... TODO: Maybe redundant?
+        # self._rotors.set_positions()  # Refreshes positons... TODO: Maybe redundant?  # noqa
 
     def save_config(self):
         data = self.enigma_api.get_config()
@@ -143,7 +145,12 @@ class Root(QWidget):
         filename = dialog.getSaveFileName(self, "Save enigma message")[0]
 
         if ".txt" not in filename and filename:  # TODO: Make less rudimentary
-            QMessageBox.warning(self, "Overwrite warning", "Overwriting files that are not .txt textfiles is not permitted!")
+            QMessageBox.warning(
+                self,
+                "Overwrite warning",
+                "Overwriting files that are not "
+                ".txt textfiles is not permitted!"
+            )
         elif filename:
             with open(filename, 'w') as f:
                 message = '\n'.join(wrap(self.o_textbox.text(), 29))
@@ -154,19 +161,19 @@ class Lightboard(QWidget):
     def __init__(self, master):
         super().__init__(master)
 
-        # BASIC QT SETTINGS  ===================================================
+        # BASIC QT SETTINGS  ==================================================
 
         lb_layout = QVBoxLayout(self)
         lb_layout.setSpacing(10)
         frame = QFrame(self)
 
-        # ATTRIBUTES ===========================================================
+        # ATTRIBUTES ==========================================================
 
         self._lightbulbs = {}
         self._base_style = "QLabel{background-color: gray; color: %s;" \
                            "border: 1px solid black; border-radius: 10px;}"
 
-        # CONSTRUCT LIGHTBOARD =================================================
+        # CONSTRUCT LIGHTBOARD ================================================
 
         for row in layout:
             row_frame = QFrame(frame)
@@ -182,18 +189,18 @@ class Lightboard(QWidget):
 
             lb_layout.addWidget(row_frame)
 
-
     def power_off(self):
         for bulb in self._lightbulbs.values():
             bulb.setStyleSheet(self._base_style % "black")
 
     def light_up(self, letter):
         """
-        Lights up letters on the lightboard, only powers off if letter not found
+        Lights up letters on the lightboard, only powers off if letter
+        not found
         :param letter: {char} Letter to light up
         """
         self.power_off()
-        
+
         if letter in self._lightbulbs:
             self._lightbulbs[letter].setStyleSheet(self._base_style % "yellow")
 
@@ -203,19 +210,21 @@ class _RotorsHandler(QFrame):
                  enigma_api, label_plug, reflector_pos_plug):
         """
         :param master: {Qt} Master qt object
-        :param position_plug: {callable} Callable method for getting rotor positions
-        :param rotate_plug: {callable} Temporary callable for getting rotor offset handlers
+        :param position_plug: {callable} Callable method for getting rotor
+                                         positions
+        :param rotate_plug: {callable} Temporary callable for getting
+                                       rotor offset handlers
         """
         super().__init__(master)
 
-        # QT WINDOW SETTINGS ===================================================
+        # QT WINDOW SETTINGS ==================================================
 
         self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._layout = QHBoxLayout(self)
         self._rotor_indicators = []
         self._reflector_indicator = None
 
-        # ATTRIBUTES ===========================================================
+        # ATTRIBUTES ==========================================================
 
         self.enigma_api = enigma_api
         self._rotate_plug = rotate_plug
@@ -224,16 +233,19 @@ class _RotorsHandler(QFrame):
         self._rotate_ref_plug = rotate_ref_plug
         self._reflector_pos_plug = reflector_pos_plug
 
-        # SETTINGS ICON ========================================================
+        # SETTINGS ICON =======================================================
 
-        self.settings_button = QPushButton(QIcon(base_dir + 'settings.png'), '', self)
+        self.settings_button = QPushButton(QIcon(base_dir + 'settings.png'),
+                                           '', self)
         self.settings_button.setIconSize(QSize(50, 50))
-        self.settings_button.setToolTip("Edit Enigma rotor and reflector settings")
-        self.settings_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.settings_button.setToolTip(
+            "Edit Enigma rotor and reflector settings"
+        )
+        self.settings_button.setSizePolicy(QSizePolicy.Expanding,
+                                           QSizePolicy.Expanding)
         self.settings_button.clicked.connect(self.open_settings)
 
-        # GENERATE ROTORS AND REFLECTOR ========================================
-
+        # GENERATE ROTORS AND REFLECTOR =======================================
 
         self.ukwd_indicator = QLabel("D")
         self.ukwd_indicator.setStyleSheet("color: red;")
@@ -253,7 +265,7 @@ class _RotorsHandler(QFrame):
 
         self.generate_rotors()
 
-        # PLUGS ================================================================
+        # PLUGS ===============================================================
 
         self.set_positions()
 
@@ -282,7 +294,9 @@ class _RotorsHandler(QFrame):
 
         # Create
         for i in range(len(self._position_plug())):  # Rotor controls
-            indicator = _RotorHandler(self, self._rotate_plug(i, 1), self._rotate_plug(i, -1), self.set_positions)
+            indicator = _RotorHandler(self, self._rotate_plug(i, 1),
+                                      self._rotate_plug(i, -1),
+                                      self.set_positions)
             self._layout.addWidget(indicator, alignment=Qt.AlignLeft)
             self._rotor_indicators.append(indicator)
 
@@ -306,7 +320,8 @@ class _RotorsHandler(QFrame):
         if self.enigma_api.reflector_rotatable():
             self._reflector_indicator.set(self._reflector_pos_plug())
 
-        for rotor, position in zip(self._rotor_indicators, self._position_plug()):
+        for rotor, position in zip(self._rotor_indicators,
+                                   self._position_plug()):
             rotor.set(position)
 
 
@@ -324,36 +339,36 @@ class _RotorHandler(QFrame):
         """
         super().__init__(master)
 
-        # QT WINDOW SETTINGS ===================================================
+        # QT WINDOW SETTINGS ==================================================
 
         self._layout = QVBoxLayout(self)
-            
-        # SAVE ATTRIBUTES ======================================================
+
+        # SAVE ATTRIBUTES =====================================================
 
         self.plus_plug = plus_plug
         self.minus_plug = minus_plug
         self.set_positions = set_pos_plug
 
-        # ROTATE FORWARD =======================================================
+        # ROTATE FORWARD ======================================================
 
         self.position_plus = QPushButton('+', self)
         self.position_plus.clicked.connect(self.increment)
         self.position_plus.setToolTip("Rotates rotor forwards by one place")
 
-        # POSITION INDICATOR ===================================================
+        # POSITION INDICATOR ==================================================
 
         self._indicator = QLabel('A', self)
         self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self._indicator.setLineWidth(3)
 
-        # ROTATE FORWARD =======================================================
+        # ROTATE FORWARD ======================================================
 
         self.position_minus = QPushButton('-', self)
         self.position_minus.clicked.connect(self.decrement)
         self.position_minus.setToolTip("Rotates rotors backwards by one place")
 
-        # SHOW WIDGETS =========================================================
+        # SHOW WIDGETS ========================================================
 
         self._layout.addWidget(self.position_plus, alignment=Qt.AlignTop)
         self._layout.addWidget(self._indicator)
@@ -393,7 +408,7 @@ def letter_groups(text, group_size=5):
 
 
 class _InputTextBox(QPlainTextEdit):
-    def __init__(self, master, encrypt_plug, output_plug, sync_plug, 
+    def __init__(self, master, encrypt_plug, output_plug, sync_plug,
                  refresh_plug, letter_group_plug, revert_pos):
         """
         Handles user input and sends it to the output textbox
@@ -408,22 +423,22 @@ class _InputTextBox(QPlainTextEdit):
                                         a rotor positions
         :param letter_group_plug: {callable} Formats input text into blocks of
                                              n letters
-        :param revert_pos: {callable} Reverts Enigma rotor position when the text
-                                      gets shorter
+        :param revert_pos: {callable} Reverts Enigma rotor position when the
+                                      text gets shorter
         """
         super().__init__(master)
 
-        # QT WIDGET SETTINGS ===================================================
+        # QT WIDGET SETTINGS ==================================================
 
         self.setPlaceholderText("Type your message here")
         self.textChanged.connect(self.input_detected)
 
-        # FONT =================================================================
-        
+        # FONT ================================================================
+
         font = QFont("Monospace", 10)
         self.setFont(font)
 
-        # PLUGS ================================================================
+        # PLUGS ===============================================================
 
         self.encrypt_plug = encrypt_plug
         self.output_plug = output_plug
@@ -432,17 +447,17 @@ class _InputTextBox(QPlainTextEdit):
         self.letter_group_plug = letter_group_plug
         self._revert_pos = revert_pos
 
-        # ATTRIBUTES ===========================================================
+        # ATTRIBUTES ==========================================================
 
         self.last_len = 0
         self._revert_pos = revert_pos
-        
+
     def input_detected(self):
         """
         Encrypts newly typed/inserted text and outputs it to the output textbox
         """
         text = sub('[^A-Z]+', '', self.toPlainText().upper())
-        
+
         new_len = len(text)
         diff = self.last_len - new_len
         self.last_len = new_len
@@ -478,7 +493,7 @@ class _OutputTextBox(QPlainTextEdit):
         self.light_up_plug = light_up_plug
         self.letter_group_plug = letter_group_plug
 
-        # FONT =================================================================
+        # FONT ================================================================
 
         font = QFont("Monospace", 10)
         self.setFont(font)
@@ -489,7 +504,9 @@ class _OutputTextBox(QPlainTextEdit):
         :param length: {int} new length of the displayed text
         """
         self.light_up_plug('')
-        text = letter_groups(self.toPlainText().replace(' ', '')[:length], self.letter_group_plug())
+        text = letter_groups(self.toPlainText().replace(' ', '')[:length],
+                             self.letter_group_plug())
+
         self.setPlainText(text)
         self.moveCursor(QTextCursor.End)
 
@@ -508,4 +525,3 @@ class _OutputTextBox(QPlainTextEdit):
         Returns currently displayed text
         """
         return self.toPlainText()
-
