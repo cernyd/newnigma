@@ -44,8 +44,6 @@ class Root(QWidget):
         self.setWindowIcon(QIcon(base_dir + "enigma_200px.png"))
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
-        self.setMaximumSize(800, 800)
-        self.setFixedSize(500, 800)
 
         # SAVE ATTRIBUTES =====================================================
 

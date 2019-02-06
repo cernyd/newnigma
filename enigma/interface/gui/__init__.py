@@ -215,7 +215,7 @@ class AbstractPlugboard(QDialog):
 
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-        self.setWindowTitle("UKW-D Wiring")
+        self.setWindowTitle(title)
         self.enigma_api = enigma_api
 
         self.pairs = {}  # TODO: Duplicate
