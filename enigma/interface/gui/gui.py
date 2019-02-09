@@ -10,12 +10,10 @@ from enigma.interface.gui.settings import *
 
 
 class Runtime:
-    def __init__(self, api, cfg_load_plug, cfg_save_plug):
+    def __init__(self, api):
         """
         Runtime object wrapping the root window
         :param api: {EnigmaAPI}
-        :param cfg_load_plug: {callable} Returns loaded config
-        :param cfg_save_plug: {callable} Allows to save data to config file
         """
         from sys import argv
 
@@ -23,19 +21,17 @@ class Runtime:
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
         self.app.setWindowIcon(QIcon(base_dir + "enigma_200px.png"))
-        Root(api, cfg_load_plug, cfg_save_plug)
+        Root(api)
         self.app.exec_()
 
 
 class Root(QWidget):
     """Root window for Enigma Qt GUI"""
 
-    def __init__(self, enigma_api, cfg_load_plug, cfg_save_plug):
+    def __init__(self, enigma_api):
         """
         Initializes Root QT window widgets
         :param enigma_api: {EnigmaAPI} Initialized EnigmaAPI object
-        :param cfg_load_plug: {callable} Returns loaded config
-        :param cfg_save_plug: {callable} Allows to save data to config file
         """
         super().__init__()
 
@@ -52,9 +48,10 @@ class Root(QWidget):
         # MENU BAR ============================================================
 
         menu = QMenuBar(self)
-        menu.addAction("Load Settings", self.load_config)
-        menu.addAction("Save Settings", self.save_config)
-        menu.addAction("Export message", self.export_message)
+        save_load_menu = menu.addMenu("Settings")
+        save_load_menu.addAction("Save settings", self.save_config)
+        save_load_menu.addAction("Load settings", self.load_config)
+        menu.addAction("Export", self.export_message)
         url = QUrl("https://www.cryptomuseum.com/index.htm")
         menu.addAction("About", lambda: QDesktopServices.openUrl(url))
 
@@ -94,11 +91,6 @@ class Root(QWidget):
         self.plug_button = QPushButton("Plugboard")
         self.plug_button.setToolTip("Edit plugboard letter pairs")
         self.plug_button.clicked.connect(self.get_pairs)
-
-        # PLUGS ===============================================================
-
-        self.cfg_load_plug = cfg_load_plug
-        self.cfg_save_plug = cfg_save_plug
 
         # SHOW WIDGETS ========================================================
 
@@ -144,24 +136,41 @@ class Root(QWidget):
         """
         Loads EnigmaAPI settings from config file and refershes GUI
         """
-        data = self.cfg_load_plug()
-        self.enigma_api.load_from_config(data["saved"])
-        self._rotors.generate_rotors()
+        dialog = QFileDialog(self)
+        filename = dialog.getOpenFileName(
+            self, "Load settings", QDir.homePath(), "Enigma config (*.json)"
+        )[0]
 
-        self.i_textbox.blockSignals(True)
-        self.refresh_gui()
-        self.i_textbox.blockSignals(False)
-        self._rotors.set_positions()
-        self.enigma_api.set_checkpoint()
+        if filename:
+            try:
+                data = load_config(filename)
+                self.enigma_api.load_from_config(data)
+            except KeyError:
+                QMessageBox.critical(
+                    self, "Load config", "Unable to load config from the selected file!"
+                )
+                return
+
+            self._rotors.generate_rotors()
+
+            self.i_textbox.blockSignals(True)
+            self.refresh_gui()
+            self.i_textbox.blockSignals(False)
+            self._rotors.set_positions()
+            self.enigma_api.set_checkpoint()
 
     def save_config(self):
         """
         Collects data from EnigmaAPI and saves it to config
         """
-        data = self.enigma_api.get_config()
-        old_data = self.cfg_load_plug()
-        old_data["saved"] = data
-        self.cfg_save_plug(old_data)
+        dialog = QFileDialog(self)
+        filename = dialog.getSaveFileName(
+            self, "Save settings", QDir.homePath(), "Enigma config (*.json)"
+        )[0]
+
+        if filename:
+            data = self.enigma_api.get_config()
+            save_config(filename, data)
 
     def export_message(self):
         """
@@ -169,15 +178,11 @@ class Root(QWidget):
         settings and encrypted message to the file
         """
         dialog = QFileDialog(self)
-        filename = dialog.getSaveFileName(self, "Save enigma message")[0]
+        filename = dialog.getSaveFileName(
+            self, "Save enigma message", QDir.homePath(), "*.txt"
+        )[0]
 
-        if not findall("\.txt$", filename) and filename:
-            QMessageBox.warning(
-                self,
-                "Overwrite warning",
-                "Overwriting files that are not " ".txt textfiles is not permitted!",
-            )
-        elif filename:
+        if filename:
             with open(filename, "w") as f:
                 message = "\n".join(wrap(self.o_textbox.text(), 29))
                 f.write("%s\n%s\n" % (str(self.enigma_api), message))

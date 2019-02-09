@@ -7,7 +7,8 @@ import pytest
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
-from enigma.utils.cfg_handler import Config
+from enigma.utils.cfg_handler import save_config, load_config
+
 
 if __name__ == "__main__":
     # ====================================================
@@ -127,9 +128,7 @@ if __name__ == "__main__":
     # CONFIG LOAD ====================================================
 
     logging.info("Loading config...")
-    cfg = Config("config.json")
-    cfg.mk_cache()
-    data = cfg.cache["default"]
+    data = load_config("config.json")["default"]
 
     # APPLICATION INIT ====================================================
     # LOADS EITHER CLI OR GUI BASED ON COMMAND LINE ARG
@@ -148,4 +147,4 @@ if __name__ == "__main__":
         exit()
     else:
         logging.info("Launching newnigma Qt Application...")
-        Runtime(enigma_api, cfg.load, cfg.save)
+        Runtime(enigma_api)

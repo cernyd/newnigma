@@ -1,7 +1,8 @@
 from PySide2.QtWidgets import *
-from PySide2.QtCore import QUrl, QSize, Qt
-from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor
+from PySide2.QtCore import QUrl, QSize, Qt, QDir
+from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor, QDesktopServices
 from string import ascii_uppercase as alphabet
+from enigma.utils.cfg_handler import save_config, load_config
 
 labels = [
     "A-01",
