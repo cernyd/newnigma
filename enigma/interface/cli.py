@@ -27,8 +27,6 @@ def cli(enigma_api, args):
         enigma_api.positions(args.positions)
     if args.ring_settings is not None:
         enigma_api.ring_settings(map(int, args.ring_settings))
-    if args.plug_pairs is not None:
-        enigma_api.plug_pairs(args.plug_pairs)
     if args.reflector_position is not None:
         enigma_api.reflector_position(int(args.reflector_position[0]))
     if args.reflector_pairs is not None:
@@ -36,6 +34,8 @@ def cli(enigma_api, args):
     if args.uhr is not None:
         enigma_api.uhr(True)
         enigma_api._enigma.uhr_position(int(args.uhr[0]))
+    if args.plug_pairs is not None:
+        enigma_api.plug_pairs(args.plug_pairs)
 
     print(enigma_api)
     print("Encrypted message: ", "")
