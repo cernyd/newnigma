@@ -81,7 +81,7 @@ class EnigmaAPI:
 
     def model(self, new_model=None):
         """
-        Returns model or sets a new one if new_model is overriden
+        Returns model or sets a new one if new_model is overridden
         :param new_model: {str}
         """
         if new_model is not None:
@@ -98,7 +98,7 @@ class EnigmaAPI:
 
     def reflector(self, new_reflector=None):
         """
-        Returns reflector or sets a new one if new_reflector is overriden
+        Returns reflector or sets a new one if new_reflector is overridden
         :param new_reflector: {str}
         """
         if new_reflector is not None:
@@ -111,7 +111,7 @@ class EnigmaAPI:
 
     def rotors(self, new_rotors=None):
         """
-        Returns rotors or sets a new one if new_rotors is overriden
+        Returns rotors or sets a new one if new_rotors is overridden
         :param new_rotors: {str}
         """
         if new_rotors is not None:
@@ -121,7 +121,7 @@ class EnigmaAPI:
 
     def positions(self, new_positions=None):
         """
-        Returns positions or sets a new one if new_positions is overriden
+        Returns positions or sets a new one if new_positions is overridden
         :param new_positions: {str}
         """
         return self._enigma.positions(new_positions)
@@ -129,14 +129,14 @@ class EnigmaAPI:
     def ring_settings(self, new_ring_settings=None):
         """
         Returns ring_settings or sets a new one if new_ring_settings
-        is overriden
+        is overridden
         :param ring_settings: {str}
         """
         return self._enigma.ring_settings(new_ring_settings)
 
     def plug_pairs(self, new_plug_pairs=None):
         """
-        Returns plug_pairs or sets a new one if new_plug_pairs is overriden
+        Returns plug_pairs or sets a new one if new_plug_pairs is overridden
         :param new_plug_pairs: {str}
         """
         return self._enigma.plug_pairs(new_plug_pairs)
