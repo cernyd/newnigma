@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     # APPLICATION INIT ====================================================
     # LOADS EITHER CLI OR GUI BASED ON COMMAND LINE ARG
-    logging.info("Starting newnigma...")
+    logging.info("Starting Enigma...")
 
     enigma_api = EnigmaAPI(data["model"], data["reflector"], data["rotors"])
 
@@ -146,5 +146,5 @@ if __name__ == "__main__":
         )
         exit()
     else:
-        logging.info("Launching newnigma Qt Application...")
+        logging.info("Launching Enigma Qt Application...")
         Runtime(enigma_api)

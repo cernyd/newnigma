@@ -10,7 +10,7 @@ def cli(enigma_api, args):
     :param enigma_api: {EnigmaAPI}
     :param args: Object containing parsed command line arguments
     """
-    logging.info("Launching newnigma in the command line...")
+    logging.info("Launching Enigma in the command line...")
     components = (args.model[0], args.reflector[0], args.rotors)
 
     if any(components) and not all(components):
