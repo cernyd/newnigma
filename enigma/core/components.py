@@ -322,18 +322,21 @@ class Plugboard:
     def pairs(self, pairs=None):
         """
         Sets plugboard pairs to the supplied pairs
-        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
-                      where each letter can only be used once
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as
+                                          strings or sublists with 2 chars)
+                                          where each letter can only be used
+                                          once
         :return: {dict} dictionary with pairs usable by the plugboard
         """
-        if pairs is not None:
+        if pairs:
             self._pairs = pairs
         else:
             return self._pairs
 
     def route(self, letter):
         """
-        Routes letter trough the wiring pair (if the letter is wired), otherwise returns the same letter
+        Routes letter trough the wiring pair (if the letter is wired), otherwise
+        returns the same letter
         :param letter: {char} input letter
         :return: {char} output routed letter
         """
@@ -365,7 +368,8 @@ class _Component:  # Base component
 class Stator(_Component):
     def __init__(self, wiring):
         """
-        :param wiring: {str} defines the way letters are routed trough the rotor
+        :param wiring: {str} defines the way letters are routed
+                             trough the rotor
         """
         super().__init__("ETW", wiring)
 
@@ -387,7 +391,7 @@ class _Rotatable(_Component):
         Sets offset of the rotor
         :param offset: {int} new rotor offset
         """
-        if offset is not None:
+        if type(offset) is int:
             self._offset = offset % 26
         else:
             return self._offset
@@ -463,7 +467,7 @@ class UKWD(Reflector):
         self.wiring(pairs)
 
     def wiring(self, pairs=None):
-        if pairs is not None:
+        if pairs:
             if len(pairs) != 12:
                 raise ValueError(
                     "There must be exactly 12 pairs for correct wiring!"
@@ -542,7 +546,7 @@ class Rotor(_Rotatable):
         Sets "Rinstellung" (ring settings) which can be misaligned with internal wiring
         :param setting: {int} new ring setting
         """
-        if offset is not None:
+        if offset:
             self._ring_offset = offset % 26
         return self._ring_offset
 
@@ -597,9 +601,9 @@ class Enigma:
             return self._rotor_n
 
     def _route(self, letter, backwards=False):
-        if self._uhr is not None:
+        if self._uhr:
             return self._uhr.route(letter, backwards)
-        elif self._plugboard is not None:
+        elif self._plugboard:
             return self._plugboard.route(letter)
         return letter
 
@@ -647,7 +651,7 @@ class Enigma:
         return self._model
 
     def reflector(self, new_reflector=None):
-        if new_reflector is not None:
+        if new_reflector:
             self._reflector = new_reflector
         else:
             return self._reflector.label()
@@ -665,7 +669,7 @@ class Enigma:
         self._reflector.rotate(by)
 
     def reflector_position(self, new_position=None):
-        if new_position is not None:
+        if new_position:
             if type(new_position) == str:
                 new_position = alphabet.index(new_position)
             self._reflector.offset(new_position)
@@ -683,7 +687,8 @@ class Enigma:
         :param new_positions: {[int, int, int]} or {[char, char, char]} new
                               positions to be set on the Enigma
         """
-        if new_positions is not None:
+        if new_positions:
+            print("New positions: ")
             if not (
                 all([type(pos) == str for pos in new_positions])
                 or all([type(pos) == int for pos in new_positions])
@@ -708,14 +713,14 @@ class Enigma:
         real ones! (01 in normal notation is 00 in internal notation)
         :param new_ring_settings: {[int, int, int]} new ring settings
         """
-        if new_ring_settings is not None:
+        if new_ring_settings:
             for setting, rotor in zip(new_ring_settings, self._rotors):
                 rotor.ring_offset(setting - 1)
         else:
             return [rotor.ring_offset() + 1 for rotor in self._rotors]
 
     def rotors(self, new_rotors=None):
-        if new_rotors is not None:
+        if new_rotors:
             if len(new_rotors) != self.rotor_n():
                 raise ValueError("This enigma has %d rotors!" % self.rotor_n())
 
@@ -726,7 +731,7 @@ class Enigma:
     # PLUGBOARD AND UHR
 
     def plug_pairs(self, new_plug_pairs=None):
-        if self._uhr is not None:
+        if self._uhr:
             return self._uhr.pairs(new_plug_pairs)
         else:
             if self._plugboard is not None:
@@ -735,8 +740,8 @@ class Enigma:
                 return ""
 
     def uhr(self, connect=None):
-        if connect is None:
-            return self._uhr is not None
+        if not connect:
+            return bool(self._uhr)
         else:
             if connect:
                 self._uhr = Uhr()
@@ -745,10 +750,10 @@ class Enigma:
                 self._uhr = None
 
     def uhr_position(self, new_position=None):
-        if self._uhr is None:
+        if not self._uhr:
             raise ValueError("Can't set uhr position - uhr not connected!")
 
-        if new_position is not None:
+        if new_position:
             self._uhr.position(new_position)
         else:
             return self._uhr.position()
