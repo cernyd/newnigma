@@ -599,6 +599,10 @@ class _OutputTextBox(QPlainTextEdit):
 
         self.setPlainText(text)
         self.moveCursor(QTextCursor.End)
+        try:
+            self.light_up_plug(self.toPlainText()[-1])
+        except IndexError:
+            pass
 
     def insert(self, text):
         """

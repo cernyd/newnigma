@@ -139,7 +139,7 @@ class Uhr(QDialog):
 
         try:
             self.indicator = QLabel(str(uhr_position()))
-        except AssertionError:
+        except ValueError:
             self.indicator = QLabel("00")
 
         self.indicator.setStyleSheet(
@@ -153,7 +153,7 @@ class Uhr(QDialog):
 
         try:
             self.dial.setValue(uhr_position())
-        except AssertionError:
+        except ValueError:
             pass
 
         self.dial.valueChanged.connect(self.refresh_indicator)

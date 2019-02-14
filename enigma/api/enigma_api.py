@@ -267,7 +267,9 @@ class EnigmaAPI:
         Reverts by "by" positions back (used when backspace is pressed
         or text is deleted)
         """
-        assert by >= 0, "Enigma can only be reverted by 1 or more positions"
+        if not by >= 0:
+            raise ValueError("Enigma can only be reverted by 1 or more positions")
+
         self.__buffer = self.__buffer[:-by]
 
         if not self.__buffer:
@@ -340,7 +342,8 @@ class EnigmaAPI:
                                      numerical index of their position in
                                      historical data (0 = "I", 2 = "II", ...)
         """
-        assert model in historical_data, "Invalid enigma model %s!" % model
+        if model not in historical_data:
+            raise ValueError("Invalid enigma model %s!" % model)
 
         data = historical_data[model]
 
@@ -348,10 +351,6 @@ class EnigmaAPI:
             raise TypeError(
                 "A label has to be supplied for " "Rotor and Reflector object!"
             )
-
-        assert model in historical_data, (
-            "The model argument must be a " "historical Enigma model!"
-        )
 
         component = None
         i = 0
@@ -361,7 +360,8 @@ class EnigmaAPI:
                     component = Rotor(**rotor)
                     break
                 i += 1
-            assert component, "No component with label %s found!" % label
+            if not component:
+                raise ValueError("No component with label %s found!" % label)
         elif comp_type == "Reflector":
             if label == "UKW-D":
                 return UKWD(UKW_D["wiring"])
@@ -371,7 +371,8 @@ class EnigmaAPI:
                     component = Reflector(**reflector, rotatable=data["rotatable_ref"])
                     break
                 i += 1
-            assert component, "No component with label %s found!" % label
+            if not component:  # TODO: Could be simplified
+                raise ValueError("No component with label %s found!" % label)
         elif comp_type == "Stator":
             return Stator(**data["stator"])
         else:
@@ -394,12 +395,12 @@ class EnigmaAPI:
 
         try:
             self._enigma.reflector_position(config.get("reflector_position", None))
-        except (AssertionError, KeyError):
+        except (KeyError, ValueError):
             pass
 
         try:
             self.reflector_pairs(config["reflector_wiring"])
-        except (AssertionError, KeyError):
+        except (KeyError, ValueError):
             pass
 
         if "uhr_position" in config:
@@ -425,15 +426,15 @@ class EnigmaAPI:
 
         try:
             data["reflector_position"] = self._enigma.reflector_position()
-        except AssertionError:
+        except ValueError:
             pass
         try:
             data["reflector_wiring"] = self.reflector_pairs()
-        except AssertionError:
+        except ValueError:
             pass
         try:
             data["uhr_position"] = self._enigma.uhr_position()
-        except AssertionError:
+        except ValueError:
             pass
 
         return data

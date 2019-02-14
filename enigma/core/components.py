@@ -347,9 +347,9 @@ class _Component:  # Base component
     def __init__(self, label, wiring):
         self._label = label
 
-        assert (
-            len(wiring) == 26
-        ), "Wiring must be of same length as the alphabet!"
+        if len(wiring) != 26:
+            raise ValueError("Wiring must be of same length as the alphabet!")
+
         self._wiring = wiring
 
     def _forward(self, letter):
@@ -431,19 +431,20 @@ class Reflector(_Rotatable):
         return alphabet[abs_result]
 
     def offset(self, offset=None):
-        assert self.__rotatable, "Non-rotatable reflectors don't have offset!"
+        if not self.__rotatable:
+            raise ValueError("Non-rotatable reflectors don't have offset!")
 
         super().offset(offset)
 
     def rotate(self, by=1):
-        assert self.__rotatable, "Non-rotatable reflectors can't be rotated!"
+        if not self.__rotatable:
+            raise ValueError("Non-rotatable reflectors can't be rotated!")
 
         super().rotate(by)
 
     def position(self, numeric=False):
-        assert (
-            self.__rotatable
-        ), "Non-rotatable reflectors don't have a position!"
+        if not self.__rotatable:
+            raise ValueError("Non-rotatable reflectors don't have a position!")
 
         return super().position(numeric)
 
@@ -463,15 +464,17 @@ class UKWD(Reflector):
 
     def wiring(self, pairs=None):
         if pairs is not None:
-            assert (
-                len(pairs) == 12
-            ), "There must be exactly 12 pairs for correct wiring!"
+            if len(pairs) != 12:
+                raise ValueError(
+                    "There must be exactly 12 pairs for correct wiring!"
+                )
+
             wiring = ["N"] + [""] * 12 + ["A"] + [""] * 12
 
             for pair in pairs:
-                assert (
-                    "J" not in pair and "Y" not in pair
-                ), "J and Y are hardwired!"
+                if "J" in pair or "Y" in pair:
+                    raise ValueError("J and Y are hardwired!")
+
                 a, b = pair
                 a_index = self._marking.index(a)
                 b_index = self._marking.index(b)
@@ -650,9 +653,9 @@ class Enigma:
             return self._reflector.label()
 
     def reflector_pairs(self, new_pairs=None):
-        assert (
-            self._reflector.label() == "UKW-D"
-        ), "Only UKW-D reflector has wiring pairs!"
+        if self._reflector.label() != "UKW-D":
+            raise ValueError("Only UKW-D reflector has wiring pairs!")
+
         return self._reflector.wiring(new_pairs)
 
     def reflector_rotatable(self):
@@ -677,12 +680,15 @@ class Enigma:
     def positions(self, new_positions=None):
         """
         Sets positions of all rotors
-        :param new_positions: {[int, int, int]} or {[char, char, char]} new positions to be set on the Enigma
+        :param new_positions: {[int, int, int]} or {[char, char, char]} new
+                              positions to be set on the Enigma
         """
         if new_positions is not None:
-            assert all([type(pos) == str for pos in new_positions]) or all(
-                [type(pos) == int for pos in new_positions]
-            )
+            if not (
+                all([type(pos) == str for pos in new_positions])
+                or all([type(pos) == int for pos in new_positions])
+            ):
+                raise ValueError("Mixed numeric and string positions!")
 
             for position, rotor in zip(new_positions, self._rotors):
                 if type(position) == str:
@@ -710,9 +716,9 @@ class Enigma:
 
     def rotors(self, new_rotors=None):
         if new_rotors is not None:
-            assert len(new_rotors) == self.rotor_n(), (
-                "This enigma has %d rotors!" % self.rotor_n()
-            )
+            if len(new_rotors) != self.rotor_n():
+                raise ValueError("This enigma has %d rotors!" % self.rotor_n())
+
             self._rotors = new_rotors
         else:
             return [rotor.label() for rotor in self._rotors]
@@ -739,9 +745,8 @@ class Enigma:
                 self._uhr = None
 
     def uhr_position(self, new_position=None):
-        assert (
-            self._uhr is not None
-        ), "Can't set uhr position - uhr not connected!"
+        if self._uhr is None:
+            raise ValueError("Can't set uhr position - uhr not connected!")
 
         if new_position is not None:
             self._uhr.position(new_position)

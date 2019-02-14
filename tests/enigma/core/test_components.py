@@ -111,7 +111,7 @@ def test_implementation():
     """
     Tests t
 he implementation by encrypting each letter of the alphabet
-    4000 times and checking if the encrypted message does not contain the 
+    4000 times and checking if the encrypted message does not contain the
     letter (this must always be true because the Enigma worked this way)
 
     The number of iterations is arbitrary (not to slow down the testing process)
@@ -189,7 +189,7 @@ def test_enigma_models(model, n_rotors, should_fail):
     # Fake values instead of rotors because they are not needed in this test
 
     if should_fail:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             EnigmaAPI.generate_enigma(model, "UKW-B", rotors)
     else:
         EnigmaAPI.generate_enigma(model, "UKW-B", rotors)

@@ -67,9 +67,9 @@ class Uhr:
         Sets pairs
         """
         if pairs is not None:
-            assert (
-                len(pairs) == 10
-            ), "Uhr allows only exactly 10 pairs to be plugged in at a time!"
+            if len(pairs) != 10:
+                raise ValueError("Uhr allows only exactly 10 pairs to be "
+                                 "plugged in at a time!")
             self._pairs = pairs
         else:
             return self._pairs
