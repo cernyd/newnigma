@@ -60,19 +60,18 @@ class EnigmaAPI:
         model
         :param model: {str} Enigma model
         """
-        if model is None:
-            model = self.model()
+        model = model if model else self.model()
+        labels = lambda component: [item["label"] for item in
+                                    historical_data[model][component]]
 
-        refs = [
-            reflector["label"] for reflector in historical_data[model]["reflectors"]
-        ]
-        rotors = [rotor["label"] for rotor in historical_data[model]["rotors"]]
-
-        return {"reflectors": refs, "rotors": rotors}
+        return {
+            "reflectors": labels("reflectors"),
+            "rotors": labels(["rotors"])
+        }
 
     def reflector_rotatable(self):
         """
-        Returns a value of whether or not the current Enigma model
+        Returns a value of is not None whether or not the current Enigma model
         supports reflector rotation
         """
         return self._enigma.reflector_rotatable()
