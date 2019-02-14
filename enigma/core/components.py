@@ -614,10 +614,14 @@ class Enigma:
         result)
         :param key: {char} letter to encrypt
         """
-        self.step_rotors()
+        if self._rotors[-1].in_turnover():
+            self._rotors[-2].rotate()
+        if self._rotors[-2].in_turnover():
+            self._rotors[-2].rotate()
+            self._rotors[-3].rotate()
+        self._rotors[-1].rotate()
 
         output = self._route(key)
-
         output = self._stator.forward(output)
 
         for rotor in reversed(self._rotors):
@@ -633,18 +637,6 @@ class Enigma:
         output = self._route(output, True)
 
         return output
-
-    def step_rotors(self):
-        """Advance rotor positions, the fourth rotor is not included because
-        it never rotates"""
-        if self._rotors[-1].in_turnover():
-            self._rotors[-2].rotate()
-
-        if self._rotors[-2].in_turnover():
-            self._rotors[-2].rotate()
-            self._rotors[-3].rotate()
-
-        self._rotors[-1].rotate()
 
     # REFLECTOR
 
