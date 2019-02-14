@@ -3,6 +3,7 @@
 from string import ascii_uppercase as alphabet
 
 from enigma.core.extensions import Uhr
+from enigma import contains
 
 # Stators
 ETW = {"wiring": alphabet}
@@ -495,7 +496,7 @@ class UKWD(Reflector):
                     continue
 
                 pair = self._marking[i] + self._marking[alphabet.index(letter)]
-                if pair[::-1] not in pairs:
+                if not contains(pairs, pair):
                     pairs.append(pair)
 
             return pairs
@@ -689,7 +690,7 @@ class Enigma:
         b) Numbers: 0, 1, ..., 26
         c) Numbers of type string: "01", "02", ..., "27"
 
-        :param new_positions: {iterable}                                          
+        :param new_positions: {iterable}
         """
         if new_positions:
             for position, rotor in zip(new_positions, self._rotors):

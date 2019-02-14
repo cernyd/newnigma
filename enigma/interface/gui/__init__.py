@@ -3,6 +3,7 @@ from PySide2.QtCore import QUrl, QSize, Qt, QDir
 from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor, QDesktopServices
 from string import ascii_uppercase as alphabet
 from enigma.utils.cfg_handler import save_config, load_config
+from enigma import contains
 
 labels = [
     "A-01",
@@ -229,7 +230,7 @@ class AbstractPlugboard(QDialog):
         """
         pairs = []
         for pair in self.pairs.items():
-            if pair[::-1] not in pairs and all(pair):
+            if not contains(pairs, pair) and all(pair):
                 pairs.append(pair)
 
         return pairs

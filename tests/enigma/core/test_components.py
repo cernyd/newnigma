@@ -5,6 +5,7 @@ from string import ascii_uppercase as alphabet
 import pytest
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import UKWD, Enigma, Plugboard, Uhr
+from enigma import contains
 
 
 def test_single_encrypt():
@@ -41,7 +42,7 @@ def test_ukwd():
     assert ukwd.reflect("T") == "P"
 
     for pair in ukwd.wiring():
-        assert pair in pairs or pair[::-1] in pairs
+        assert contains(pairs, pair)
 
 
 def test_uhr_addon():
