@@ -395,7 +395,7 @@ class UKWD_Settings(AbstractPlugboard):
 
         plug_frame = QFrame(self)
         plug_layout = QHBoxLayout(plug_frame)
-        for group in "ABCDEF", "GHIKLM", "NOPQRS", "TUVWXZ":
+        for group in "ABCD", "EFGH", "IKLM", "NOPQ", "RSTU", "VWXZ":
             col_frame = QFrame(plug_frame)
             col_layout = QVBoxLayout(col_frame)
 

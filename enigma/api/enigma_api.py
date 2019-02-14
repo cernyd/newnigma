@@ -66,7 +66,7 @@ class EnigmaAPI:
 
         return {
             "reflectors": labels("reflectors"),
-            "rotors": labels(["rotors"])
+            "rotors": labels("rotors")
         }
 
     def reflector_rotatable(self):

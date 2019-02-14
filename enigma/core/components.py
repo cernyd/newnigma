@@ -688,7 +688,6 @@ class Enigma:
                               positions to be set on the Enigma
         """
         if new_positions:
-            print("New positions: ")
             if not (
                 all([type(pos) == str for pos in new_positions])
                 or all([type(pos) == int for pos in new_positions])
