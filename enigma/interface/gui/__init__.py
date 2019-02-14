@@ -268,7 +268,7 @@ class AbstractPlugboard(QDialog):
                 self.plugs[socket].setText("")
                 return
 
-            if self.pairs[other_socket] is not None:
+            if self.pairs[other_socket]:
                 self.plugs[socket].set_text("")
             elif socket == other_socket:
                 self.plugs[socket].set_text("")

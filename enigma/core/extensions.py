@@ -57,7 +57,7 @@ class Uhr:
         self._offset = (self._offset + offset_by) % 40
 
     def position(self, new_position=None):
-        if new_position is not None:
+        if new_position:
             self._offset = new_position % 40
         else:
             return self._offset
@@ -66,7 +66,7 @@ class Uhr:
         """
         Sets pairs
         """
-        if pairs is not None:
+        if pairs:
             if len(pairs) != 10:
                 raise ValueError("Uhr allows only exactly 10 pairs to be "
                                  "plugged in at a time!")

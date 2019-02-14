@@ -22,18 +22,18 @@ def cli(enigma_api, args):
         print("Supply message with --message MESSAGE argument!")
         exit(-1)
 
-    if args.positions is not None:
+    if args.positions:
         enigma_api.positions(args.positions)
-    if args.ring_settings is not None:
+    if args.ring_settings:
         enigma_api.ring_settings(map(int, args.ring_settings))
-    if args.reflector_position is not None:
+    if args.reflector_position:
         enigma_api.reflector_position(int(args.reflector_position[0]))
-    if args.reflector_pairs is not None:
+    if args.reflector_pairs:
         enigma_api.reflector_pairs(args.reflector_pairs)
-    if args.uhr is not None:
+    if args.uhr:
         enigma_api.uhr(True)
         enigma_api._enigma.uhr_position(int(args.uhr[0]))
-    if args.plug_pairs is not None:
+    if args.plug_pairs:
         enigma_api.plug_pairs(args.plug_pairs)
 
     print(enigma_api)
