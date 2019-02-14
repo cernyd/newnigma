@@ -43,7 +43,7 @@ class EnigmaAPI:
         Returns rotor count of current model or other model
         :param model: {str} Model to get rotor count for
         """
-        if model is None:
+        if not model:
             return self._enigma.rotor_n()
         else:
             return historical_data[model]["rotor_n"]
@@ -341,14 +341,14 @@ class EnigmaAPI:
                                      numerical index of their position in
                                      historical data (0 = "I", 2 = "II", ...)
         """
-        if model not in historical_data:
+        try:
+            data = historical_data[model]
+        except KeyError:
             raise ValueError("Invalid enigma model %s!" % model)
 
-        data = historical_data[model]
-
         if label is None and comp_type != "Stator":
-            raise TypeError(
-                "A label has to be supplied for " "Rotor and Reflector object!"
+            raise ValueError(
+                "A label has to be supplied for Rotor and Reflector object!"
             )
 
         component = None

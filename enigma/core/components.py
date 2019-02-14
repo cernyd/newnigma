@@ -684,22 +684,23 @@ class Enigma:
     def positions(self, new_positions=None):
         """
         Sets positions of all rotors
-        :param new_positions: {[int, int, int]} or {[char, char, char]} new
-                              positions to be set on the Enigma
+        Accepted types of indexes are
+        a) Letters: "A", "B", ..., "Z"
+        b) Numbers: 0, 1, ..., 26
+        c) Numbers of type string: "01", "02", ..., "27"
+
+        :param new_positions: {iterable}                                          
         """
         if new_positions:
-            if not (
-                all([type(pos) == str for pos in new_positions])
-                or all([type(pos) == int for pos in new_positions])
-            ):
-                raise ValueError("Mixed numeric and string positions!")
-
             for position, rotor in zip(new_positions, self._rotors):
                 if type(position) == str:
                     if position in alphabet:
                         position = alphabet.index(position)
                     else:
                         position = int(position) - 1
+                elif type(position) != int:
+                    print("Invalid position type!")
+
                 rotor.offset(position)
         else:
             return tuple(

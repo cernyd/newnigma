@@ -256,7 +256,7 @@ class AbstractPlugboard(QDialog):
         Connects two sockets without unnecessary interaction of two sockets
         to avoid recursive event calls)
         """
-        if other_socket is None:
+        if not other_socket:
             other = self.pairs[socket]
 
             self.pairs[other] = None
@@ -264,7 +264,7 @@ class AbstractPlugboard(QDialog):
             self.plugs[socket].set_text("")
             self.plugs[other].set_text("")
         else:
-            if other_socket in self.banned or other_socket is None:
+            if other_socket in self.banned or not other_socket:
                 self.plugs[socket].setText("")
                 return
 

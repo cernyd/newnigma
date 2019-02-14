@@ -76,7 +76,7 @@ class Uhr:
 
     def route(self, letter, backwards=False):  # ! Refactor here!
         coords = []
-        for i, pair in enumerate(self._pairs):
+        for i, pair in enumerate(self._pairs):  # Constructs all pairs
             coords.append(
                 ("%da" % (i + 1), pair[0], self.a_pairs[i], self.a_pairs[i] + 2)
             )
@@ -85,25 +85,25 @@ class Uhr:
             )
 
         board = None
-        for plug in coords:
+        for plug in coords:  # Finds target board and pin
             if plug[1] == letter:
-                board = "a" if "b" in plug[0] else "b"
                 if backwards:
                     send_pin = (plug[3] + self._offset) % 40
                 else:
                     send_pin = (plug[2] + self._offset) % 40
+
+                board = "a" if "b" in plug[0] else "b"
+                if board == "a":
+                    receive_pin = self.contacts[send_pin]
+                elif board == "b":
+                    receive_pin = self.contacts.index(send_pin)
+                receive_pin = (receive_pin - self._offset) % 40
                 break
 
-        if board == "a":
-            receive_pin = self.contacts[send_pin]
-        elif board == "b":
-            receive_pin = self.contacts.index(send_pin)
-        else:
-            return letter  # Unconnected pairs are not routed
+        if not board:  # Returns letter if it's not connected to anything
+            return letter
 
-        receive_pin = (receive_pin - self._offset) % 40
-
-        for plug in coords:
+        for plug in coords:  # Finds target letter if connected
             if board in plug[0]:
                 if backwards:
                     if plug[2] == receive_pin:
