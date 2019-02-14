@@ -45,8 +45,7 @@ class EnigmaAPI:
         """
         if not model:
             return self._enigma.rotor_n()
-        else:
-            return historical_data[model]["rotor_n"]
+        return historical_data[model]["rotor_n"]
 
     def letter_group(self):
         """
@@ -102,7 +101,7 @@ class EnigmaAPI:
         """
         if new_reflector is not None:
             new_reflector = self.generate_component(
-                self.model(), "Reflector", new_reflector
+                self.model(), "reflectors", new_reflector
             )
             self._enigma.reflector(new_reflector)
         else:
@@ -300,7 +299,7 @@ class EnigmaAPI:
         """
         rotors = []
         for label in rotor_labels:
-            rotors.append(cls.generate_component(model, "Rotor", label))
+            rotors.append(cls.generate_component(model, "rotors", label))
         return rotors
 
     @classmethod
@@ -313,8 +312,8 @@ class EnigmaAPI:
                                                like "I", "II", "III"
         """
         rotors = cls.generate_rotors(model, rotor_labels)
-        reflector = cls.generate_component(model, "Reflector", reflector_label)
-        stator = cls.generate_component(model, "Stator")
+        reflector = cls.generate_component(model, "reflectors", reflector_label)
+        stator = cls.generate_component(model, "stator")
         rotor_n = historical_data[model]["rotor_n"]
         plugboard = historical_data[model]["plugboard"]
         rotatable_ref = historical_data[model]["rotatable_ref"]
@@ -336,7 +335,7 @@ class EnigmaAPI:
         """
         Initializes a Stator, Rotor or Reflector.
         :param model: {str} Enigma machine model
-        :param comp_type: {str} "Stator", "Rotor" or "Reflector"
+        :param comp_type: {str} "stator", "rotors" or "reflectors"
         :param label: {str} or {int} Component label like "I", "II", "UKW-B" or
                                      numerical index of their position in
                                      historical data (0 = "I", 2 = "II", ...)
@@ -346,38 +345,26 @@ class EnigmaAPI:
         except KeyError:
             raise ValueError("Invalid enigma model %s!" % model)
 
-        if label is None and comp_type != "Stator":
-            raise ValueError(
-                "A label has to be supplied for Rotor and Reflector object!"
-            )
-
-        component = None
-        i = 0
-        if comp_type == "Rotor":
-            for rotor in data["rotors"]:
-                if rotor["label"] == label or label == i:
-                    component = Rotor(**rotor)
+        final_data = None
+        if comp_type == "stator":
+            return Stator(**data[comp_type])
+        if type(label) == int:
+            final_data = data[comp_type][label]
+        else:
+            for comp_data in data[comp_type]:
+                if comp_data["label"] == label:
+                    final_data = comp_data
                     break
-                i += 1
-            if not component:
-                raise ValueError("No component with label %s found!" % label)
-        elif comp_type == "Reflector":
+
+        if not final_data:
+            raise ValueError("No %s with label %s found!" % (comp_type, label))
+
+        if comp_type == "rotors":
+            return Rotor(**final_data)
+        elif comp_type == "reflectors":
             if label == "UKW-D":
                 return UKWD(UKW_D["wiring"])
-
-            for reflector in data["reflectors"]:
-                if reflector["label"] == label or label == i:
-                    component = Reflector(**reflector, rotatable=data["rotatable_ref"])
-                    break
-                i += 1
-            if not component:  # TODO: Could be simplified
-                raise ValueError("No component with label %s found!" % label)
-        elif comp_type == "Stator":
-            return Stator(**data["stator"])
-        else:
-            raise TypeError("The comp_type must be " '"Reflector", "Stator" or "Rotor"')
-
-        return component
+            return Reflector(**final_data, rotatable=data["rotatable_ref"])
 
     # CONFIG SAVE/LOAD
 

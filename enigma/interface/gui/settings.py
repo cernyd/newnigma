@@ -213,12 +213,11 @@ class Settings(QDialog):
         """
         while True:
             child = self.settings_layout.takeAt(0)
-            if child:
-                wgt = child.widget()
-                wgt.deleteLater()
-                del wgt
-            else:
+            if not child:
                 break
+            wgt = child.widget()
+            wgt.deleteLater()
+            del wgt
 
     def regen_model(self, new_model, from_api=False):
         """

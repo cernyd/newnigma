@@ -8,7 +8,7 @@ from enigma.core.components import UKWD, Enigma, Plugboard, Uhr
 
 
 def test_single_encrypt():
-    enigma = EnigmaAPI.generate_component("Enigma1", "Rotor", "I")
+    enigma = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
 
     assert enigma.forward("A") == "E"
     enigma.rotate()
@@ -97,7 +97,7 @@ def test_routing():
     Tests if the forward routing is being routed correctly in the opposite direction (taking the
     relative rotor position into account)
     """
-    rotor = EnigmaAPI.generate_component("Enigma1", "Rotor", "I")
+    rotor = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
 
     for i in 1, 3, -2, 5, 7, 20:
         for letter in alphabet:
@@ -130,7 +130,7 @@ he implementation by encrypting each letter of the alphabet
     ((5, 5), (-1, 25), (26, 0), (15, 15), (50, 24), (-40, 12), (25, 25)),
 )
 def test_rotation(offset_by, result):
-    enigma = EnigmaAPI.generate_component("Enigma1", "Rotor", "I")
+    enigma = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
     enigma.rotate(offset_by)
     assert (
         enigma.offset() == result
@@ -138,7 +138,7 @@ def test_rotation(offset_by, result):
 
 
 def test_position():
-    rotor = EnigmaAPI.generate_component("Enigma1", "Rotor", "I")
+    rotor = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
 
     rotor.rotate()
     assert rotor.position(True) == "02"
@@ -148,14 +148,14 @@ def test_position():
 
 
 def test_reflector():
-    reflector = EnigmaAPI.generate_component("EnigmaM3", "Reflector", "UKW-B")
+    reflector = EnigmaAPI.generate_component("EnigmaM3", "reflectors", "UKW-B")
 
     result = reflector.reflect("A")
     assert "A" == reflector.reflect(result)
 
 
 def test_turnover():
-    enigma = EnigmaAPI.generate_component("EnigmaM4", "Rotor", "VI")
+    enigma = EnigmaAPI.generate_component("EnigmaM4", "rotors", "VI")
 
     for _ in range(50):
         if enigma.in_turnover():

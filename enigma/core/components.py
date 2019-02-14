@@ -306,6 +306,7 @@ historical_data = {
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
+        "numeric": False
     },
 }
 
@@ -597,8 +598,7 @@ class Enigma:
     def rotor_n(self):
         if self._reflector.label() == "UKW-D":
             return 3
-        else:
-            return self._rotor_n
+        return self._rotor_n
 
     def _route(self, letter, backwards=False):
         if self._uhr:
@@ -736,8 +736,7 @@ class Enigma:
         else:
             if self._plugboard is not None:
                 return self._plugboard.pairs(new_plug_pairs)
-            else:
-                return ""
+            return ""
 
     def uhr(self, connect=None):
         if not connect:
