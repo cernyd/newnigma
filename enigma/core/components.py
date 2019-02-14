@@ -593,20 +593,14 @@ class Enigma:
 
         # PLUGBOARD AND UHR
         self._plugboard = Plugboard(plug_pairs) if plugboard else None
-        self._uhr = None
+        self._plugboard_route = lambda letter, blank=None: self._plugboard.route(letter)
+        self._storage = Uhr()  # Stores currently unused object
         self._numeric = numeric
 
     def rotor_n(self):
         if self._reflector.label() == "UKW-D":
             return 3
         return self._rotor_n
-
-    def _route(self, letter, backwards=False):
-        if self._uhr:
-            return self._uhr.route(letter, backwards)
-        elif self._plugboard:
-            return self._plugboard.route(letter)
-        return letter
 
     def press_key(self, key):
         """
@@ -621,7 +615,7 @@ class Enigma:
             self._rotors[-3].rotate()
         self._rotors[-1].rotate()
 
-        output = self._route(key)
+        output = self._plugboard_route(key)
         output = self._stator.forward(output)
 
         for rotor in reversed(self._rotors):
@@ -634,7 +628,7 @@ class Enigma:
 
         output = self._stator.backward(output)
 
-        output = self._route(output, True)
+        output = self._plugboard_route(output, True)
 
         return output
 
@@ -724,28 +718,27 @@ class Enigma:
     # PLUGBOARD AND UHR
 
     def plug_pairs(self, new_plug_pairs=None):
-        if self._uhr:
-            return self._uhr.pairs(new_plug_pairs)
-        else:
-            if self._plugboard is not None:
-                return self._plugboard.pairs(new_plug_pairs)
-            return ""
+        if self._plugboard is not None:
+            return self._plugboard.pairs(new_plug_pairs)
+        return ""
 
     def uhr(self, connect=None):
         if not connect:
-            return bool(self._uhr)
+            return isinstance(self._plugboard, Uhr)
         else:
-            if connect:
-                self._uhr = Uhr()
+            if isinstance(self._storage, Uhr) and connect:
+                self._storage, self._plugboard = self._plugboard, self._storage
+                self._plugboard_route = self._plugboard.route
             else:
-                del self._uhr
-                self._uhr = None
+                if not isinstance(self._storage, Uhr):
+                    self._storage, self._plugboard = self._plugboard, self._storage
+                    self._plugboard_route = lambda letter, blank=None: self._plugboard.route(letter)
 
     def uhr_position(self, new_position=None):
-        if not self._uhr:
+        if not isinstance(self._plugboard, Uhr):
             raise ValueError("Can't set uhr position - uhr not connected!")
 
         if new_position:
-            self._uhr.position(new_position)
+            self._plugboard.position(new_position)
         else:
-            return self._uhr.position()
+            return self._plugboard.position()
