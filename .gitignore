@@ -106,3 +106,4 @@ venv.bak/
 
 # Enigma settings
 config.json
+.vscode/

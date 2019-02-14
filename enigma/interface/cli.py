@@ -1,4 +1,3 @@
-import argparse
 import logging
 
 from enigma.api.enigma_api import EnigmaAPI
