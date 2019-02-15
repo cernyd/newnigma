@@ -49,7 +49,7 @@ def test_uhr_addon():
     enigma = EnigmaAPI.generate_enigma(
         "EnigmaM4", "UKW-b", ["Beta", "I", "II", "III"]
     )
-    enigma.uhr(True)
+    enigma.uhr('connect')
     enigma.uhr_position(3)
     enigma.plug_pairs(
         ["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"]
@@ -90,7 +90,7 @@ def test_uhr_reciprocity():
         uhr.position(position)
 
         for ltr in alphabet:
-            assert uhr.route(ltr, True) == uhr.route(ltr)
+            assert uhr.route(uhr.route(ltr), True) == ltr
 
 
 def test_routing():

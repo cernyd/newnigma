@@ -76,7 +76,7 @@ ENIGMA_D_K = {
 }
 
 
-historical_data = {
+historical = {
     "Enigma1": {
         "stator": ETW,
         "rotors": (I, II, III, IV, V),
@@ -481,12 +481,9 @@ class UKWD(Reflector):
                 if "J" in pair or "Y" in pair:
                     raise ValueError("J and Y are hardwired!")
 
-                a, b = pair
-                a_index = self._marking.index(a)
-                b_index = self._marking.index(b)
+                a_index, b_index = map(self._marking.index, pair)
 
-                wiring[a_index] = alphabet[b_index]
-                wiring[b_index] = alphabet[a_index]
+                wiring[a_index], wiring[b_index] = alphabet[b_index], alphabet[a_index]
 
             self._wiring = "".join(wiring)
         else:
@@ -593,7 +590,7 @@ class Enigma:
 
         # PLUGBOARD AND UHR
         self._plugboard = Plugboard(plug_pairs) if plugboard else None
-        self._plugboard_route = lambda letter, blank=None: self._plugboard.route(letter)
+        self._plugboard_route = lambda letter, _=None: self._plugboard.route(letter)
         self._storage = Uhr()  # Stores currently unused object
         self._numeric = numeric
 
@@ -722,17 +719,18 @@ class Enigma:
             return self._plugboard.pairs(new_plug_pairs)
         return ""
 
-    def uhr(self, connect=None):
-        if not connect:
+    def uhr(self, action=None):
+        if not action:
             return isinstance(self._plugboard, Uhr)
-        else:
-            if isinstance(self._storage, Uhr) and connect:
+        elif action == 'connect':
+            if isinstance(self._storage, Uhr):
                 self._storage, self._plugboard = self._plugboard, self._storage
                 self._plugboard_route = self._plugboard.route
-            else:
-                if not isinstance(self._storage, Uhr):
-                    self._storage, self._plugboard = self._plugboard, self._storage
-                    self._plugboard_route = lambda letter, blank=None: self._plugboard.route(letter)
+        elif action == 'disconnect' and not isinstance(self._storage, Uhr):
+            self._storage, self._plugboard = self._plugboard, self._storage
+            self._plugboard_route = lambda letter, _=None: self._plugboard.route(letter)
+        else:
+            raise ValueError("Invalid action!")
 
     def uhr_position(self, new_position=None):
         if not isinstance(self._plugboard, Uhr):

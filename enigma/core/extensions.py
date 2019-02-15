@@ -1,17 +1,10 @@
 class Uhr:
     def __init__(self):
-        # Way contacts 00 ... 39 are steckered with the A board
-        self.contacts = [26, 11, 24, 21, 2, 31, 0, 25, 30, 39, 28, 13, 22, 35,
-                         20, 37, 6, 23, 4, 33, 34, 19, 32, 9, 18, 7, 16, 17, 10,
-                         3, 8, 1, 38, 27, 36, 29, 14, 15, 12, 5]
-
-        # The first contact of each plug hole (1a, 2a, 3a, ...)
-        self.a_pairs = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
-        # The first contact of each plug hole (1b, 2b, 3b, ...)
-        self.b_pairs = [4, 16, 28, 36, 24, 12, 0, 8, 20, 32]
+        self._alphabet = "ABCDEFGHIJKLMNOPQRST"
+        self._back_wiring = "NSLAJCTERGPIHKBMDOFQ"  # rest is unmapped
+        self._front_wiring = "DOFQHSJMLENCPARKTIBG"
 
         self._pairs = []
-
         self._offset = 0  # Scrambler disc offset
 
     def rotate(self, offset_by=1):
@@ -31,44 +24,22 @@ class Uhr:
             if len(pairs) != 10:
                 raise ValueError("Uhr allows only exactly 10 pairs to be "
                                  "plugged in at a time!")
-            self._pairs = pairs
+
+            self._pairs = [''.join(pair) for pair in pairs]
         else:
             return self._pairs
 
     def route(self, letter, backwards=False):  # ! Refactor here!
-        coords = []
-        for i, pair in enumerate(self._pairs):  # Constructs all pairs
-            coords.append(
-                ("%da" % (i + 1), pair[0], self.a_pairs[i], self.a_pairs[i] + 2)
-            )
-            coords.append(
-                ("%db" % (i + 1), pair[1], self.b_pairs[i], self.b_pairs[i] + 2)
-            )
+        wiring = ''.join(self._pairs)
 
-        board = None
-        for plug in coords:  # Finds target board and pin
-            if plug[1] == letter:
-                if backwards:
-                    send_pin = (plug[3] + self._offset) % 40
-                else:
-                    send_pin = (plug[2] + self._offset) % 40
-
-                board = "a" if "b" in plug[0] else "b"
-                if board == "a":
-                    receive_pin = self.contacts[send_pin]
-                elif board == "b":
-                    receive_pin = self.contacts.index(send_pin)
-                receive_pin = (receive_pin - self._offset) % 40
-                break
-
-        if not board:  # Returns letter if it's not connected to anything
+        if letter not in wiring:
             return letter
+        else:
+            abs_input = (wiring.index(letter) + self._offset) % 20
 
-        for plug in coords:  # Finds target letter if connected
-            if board in plug[0]:
-                if backwards:
-                    if plug[2] == receive_pin:
-                        return plug[1]
-                else:
-                    if plug[3] == receive_pin:
-                        return plug[1]
+            if backwards:
+                rel_result = self._alphabet.index(self._front_wiring[abs_input])
+            else:
+                rel_result = self._alphabet.index(self._back_wiring[abs_input])
+
+            return wiring[(rel_result - self._offset) % 20]

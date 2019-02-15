@@ -107,10 +107,10 @@ class Plugboard(AbstractPlugboard):
         pairs = self._pairs()
 
         if self.enable_uhr.isChecked():
-            self.enigma_api.uhr(True)
+            self.enigma_api.uhr('connect')
             self.enigma_api._enigma.uhr_position(self.uhrmenu.position())
         else:
-            self.enigma_api.uhr(False)
+            self.enigma_api.uhr('disconnect')
 
         self.enigma_api.plug_pairs(pairs)
         self.close()

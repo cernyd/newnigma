@@ -8,7 +8,7 @@ from enigma.core.components import (
     Rotor,
     Stator,
     alphabet,
-    historical_data,
+    historical,
     format_position,
 )
 
@@ -36,7 +36,7 @@ class EnigmaAPI:
         """
         Returns historical data for the current model
         """
-        return historical_data[self.model()]
+        return historical[self.model()]
 
     def rotor_n(self, model=None):
         """
@@ -45,13 +45,13 @@ class EnigmaAPI:
         """
         if not model:
             return self._enigma.rotor_n()
-        return historical_data[model]["rotor_n"]
+        return historical[model]["rotor_n"]
 
     def letter_group(self):
         """
         Returns the historical letter group for this Enigma model
         """
-        return historical_data[self.model()]["letter_group"]
+        return historical[self.model()]["letter_group"]
 
     def model_labels(self, model=None):
         """
@@ -61,7 +61,7 @@ class EnigmaAPI:
         """
         model = model if model else self.model()
         labels = lambda component: [item["label"] for item in
-                                    historical_data[model][component]]
+                                    historical[model][component]]
 
         return {
             "reflectors": labels("reflectors"),
@@ -314,10 +314,10 @@ class EnigmaAPI:
         rotors = cls.generate_rotors(model, rotor_labels)
         reflector = cls.generate_component(model, "reflectors", reflector_label)
         stator = cls.generate_component(model, "stator")
-        rotor_n = historical_data[model]["rotor_n"]
-        plugboard = historical_data[model]["plugboard"]
-        rotatable_ref = historical_data[model]["rotatable_ref"]
-        numeric = historical_data[model]["numeric"]
+        rotor_n = historical[model]["rotor_n"]
+        plugboard = historical[model]["plugboard"]
+        rotatable_ref = historical[model]["rotatable_ref"]
+        numeric = historical[model]["numeric"]
 
         return Enigma(
             model,
@@ -341,7 +341,7 @@ class EnigmaAPI:
                                      historical data (0 = "I", 2 = "II", ...)
         """
         try:
-            data = historical_data[model]
+            data = historical[model]
         except KeyError:
             raise ValueError("Invalid enigma model %s!" % model)
 
@@ -390,7 +390,7 @@ class EnigmaAPI:
             pass
 
         if "uhr_position" in config:
-            self._enigma.uhr(True)
+            self._enigma.uhr('connect')
             self._enigma.uhr_position(config["uhr_position"])
 
         self.plug_pairs(config["plug_pairs"])

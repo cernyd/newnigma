@@ -7,7 +7,7 @@ import pytest
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
-from enigma.utils.cfg_handler import save_config, load_config
+from enigma.utils.cfg_handler import load_config
 
 
 if __name__ == "__main__":
