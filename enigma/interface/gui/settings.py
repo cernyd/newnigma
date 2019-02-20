@@ -113,13 +113,13 @@ class Settings(QDialog):
         style = "font-size: 18px; text-align: center;"
 
         reflector_frame = QFrame(self.settings_frame)
-        reflector_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
+        reflector_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
 
         reflector_layout = QVBoxLayout(reflector_frame)
         reflector_layout.setSpacing(spacing)
         reflector_layout.addWidget(
             QLabel("REFLECTOR", reflector_frame, styleSheet=style),
-            alignment=Qt.AlignTop,
+            alignment=Qt.AlignHCenter
         )
 
         self.reflector_group = QButtonGroup(reflector_frame)
@@ -150,7 +150,7 @@ class Settings(QDialog):
 
         for rotor in range(rotor_n):
             rotor_frame = QFrame(self.settings_frame)
-            rotor_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
+            rotor_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
             rotor_layout = QVBoxLayout(rotor_frame)
             rotor_layout.setAlignment(Qt.AlignTop)
             rotor_layout.setSpacing(spacing)
@@ -159,11 +159,12 @@ class Settings(QDialog):
             # ROTOR RADIOS =====================================================
 
             label = QLabel(
-                selector_labels[-rotor_n:][rotor], rotor_frame, styleSheet=style
+                selector_labels[-rotor_n:][rotor], rotor_frame,
+                styleSheet=style
             )
             label.setToolTip(selector_tooltips[-rotor_n:][rotor])
 
-            rotor_layout.addWidget(label, alignment=Qt.AlignTop)
+            rotor_layout.addWidget(label, alignment=Qt.AlignHCenter)
 
             button_group = QButtonGroup(rotor_frame)
 
@@ -200,7 +201,8 @@ class Settings(QDialog):
             rotor_layout.addStretch()
             rotor_layout.addWidget(hr)
             rotor_layout.addWidget(
-                QLabel("RING SETTING", rotor_frame, styleSheet=style)
+                QLabel("RING SETTING", rotor_frame, styleSheet=style),
+                alignment=Qt.AlignHCenter
             )
             rotor_layout.addWidget(combobox)
 
@@ -363,6 +365,7 @@ class _EnigmaView(QWidget):
         self.img.setPixmap(pixmap)
         self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
         self.img.setLineWidth(5)
+        self.img.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         # MODEL TITLE AND IMAGE ================================================
 

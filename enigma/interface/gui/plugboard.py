@@ -1,7 +1,7 @@
 from enigma.interface.gui import *
 
 
-class Plugboard(AbstractPlugboard):
+class PlugboardDialog(AbstractPlugboard):
     def __init__(self, master, enigma_api):
         """
         Allows choosing and viewing current plugboard pairs
@@ -40,7 +40,7 @@ class Plugboard(AbstractPlugboard):
         storno.clicked.connect(self.hide)
 
         self.uhr = QPushButton("Uhr")
-        self.uhrmenu = Uhr(self, enigma_api._enigma.uhr_position)
+        self.uhrmenu = UhrDialog(self, enigma_api._enigma.uhr_position)
         self.uhr.clicked.connect(self.uhrmenu.exec)
 
         self.enable_uhr = QCheckBox(
@@ -116,7 +116,7 @@ class Plugboard(AbstractPlugboard):
         self.close()
 
 
-class Uhr(QDialog):
+class UhrDialog(QDialog):
     def __init__(self, master, uhr_position):
         """
         Uhr plugboard device

@@ -117,7 +117,7 @@ class Root(QWidget):
         """
         Opens the plugboard menu
         """
-        plugboard = Plugboard(self, self.enigma_api)
+        plugboard = PlugboardDialog(self, self.enigma_api)
         plugboard.exec()
         del plugboard
 
@@ -428,12 +428,13 @@ class _RotorHandler(QFrame):
 
         self._indicator = QLabel("A", self)
         self._indicator.setStyleSheet(
-            "QLabel{font-size: 20px; text-align: center; background-color: white}"
+            "QLabel{font-size: 20px; text-align: center;"
+            "background-color: white}"
         )
         self._indicator.setFixedSize(40, 40)
-        # self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
-        self._indicator.setLineWidth(3)
+        self._indicator.setLineWidth(2)
 
         # ROTATE FORWARD ======================================================
 

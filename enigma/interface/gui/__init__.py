@@ -307,17 +307,18 @@ class Socket(QFrame):
         # ENTRY ================================================================
 
         label = QLabel(letter)
-        label.setStyleSheet("font-size: 30px;")
+        label.setStyleSheet("font-size: 30px; text-align: center;")
+        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.entry = QLineEdit()
         self.entry.setMaxLength(1)
         self.entry.textChanged.connect(self.entry_event)
-        self.entry.setFixedSize(30, 30)
+        self.entry.setFixedSize(40, 40)
         self.entry.setAlignment(Qt.AlignCenter)
 
         # SHOW WIDGETS
 
-        layout.addWidget(label)
-        layout.addWidget(self.entry)
+        layout.addWidget(label, alignment=Qt.AlignCenter)
+        layout.addWidget(self.entry, alignment=Qt.AlignCenter)
 
     def entry_event(self):
         """
@@ -340,8 +341,9 @@ class Socket(QFrame):
         """
         if letter:
             self.entry.setStyleSheet("background-color: black; color: white;"
-                                     "border-radius: 10px; text-align: center;")
+                                     "text-align: center;"
+                                     "font-size: 30px;")
         else:
             self.entry.setStyleSheet("background-color: white; color: black;"
-                                     "text-align: center;")
+                                     "text-align: center; font-size: 30px;")
         self.entry.setText(letter)

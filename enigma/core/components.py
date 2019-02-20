@@ -726,7 +726,7 @@ class Enigma:
             if isinstance(self._storage, Uhr):
                 self._storage, self._plugboard = self._plugboard, self._storage
                 self._plugboard_route = self._plugboard.route
-        elif action == 'disconnect' and not isinstance(self._storage, Uhr):
+        elif action == 'disconnect' and isinstance(self._storage, Uhr):
             self._storage, self._plugboard = self._plugboard, self._storage
             self._plugboard_route = lambda letter, _=None: self._plugboard.route(letter)
         else:
