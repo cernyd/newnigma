@@ -131,7 +131,7 @@ class UhrDialog(QDialog):
         self.setWindowTitle("Uhr")
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
-        self.setFixedSize(280, 400)
+        # self.setFixedSize(280, 400)
 
         # UHR POSITION DIAL ====================================================
 
@@ -145,6 +145,9 @@ class UhrDialog(QDialog):
         self.indicator.setStyleSheet(
             "font-size: 20px; text-align: center; background-color: white"
         )
+        self.indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self.indicator.setFixedSize(40, 40)
+        self.indicator.setLineWidth(2)
 
         self.dial = QDial()
         self.dial.setWrapping(True)
