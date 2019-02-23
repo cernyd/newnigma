@@ -92,13 +92,6 @@ def test_uhr_reciprocity():
         for ltr in alphabet:
             assert uhr.route(uhr.route(ltr), True) == ltr
 
-    plugboard = Plugboard()
-    plugboard.pairs(["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"])
-
-    uhr.position(0)
-    print()
-    print(uhr.route("B"))
-    print(plugboard.route("B"))
 
 def test_routing():
     """

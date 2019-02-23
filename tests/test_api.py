@@ -157,20 +157,17 @@ def test_uhr():  # TODO: Finish
     enigma_api.uhr_position(other)
     assert enigma_api.encrypt(encrypted) != message
 
-    # Test compatibility
+    # Test Uhr position 00 compatibility mode
     enigma_api.load_checkpoint()
     enigma_api.uhr_position(0)
     with_uhr = enigma_api.encrypt(message)
-    print(with_uhr)
-    print(enigma_api)
 
     enigma_api.load_checkpoint()
     enigma_api.uhr('disconnect')
     enigma_api.plug_pairs(pairs)
-    #enigma_api.encrypt(with_uhr) == message
     without_uhr = enigma_api.encrypt(message)
-    print(without_uhr)
-    print(enigma_api)
+
+    assert with_uhr == without_uhr
 
 
 def test_generate_rotor_callback():  # TODO: Finish

@@ -545,9 +545,10 @@ class Rotor(_Rotatable):
         Sets "Rinstellung" (ring settings) which can be misaligned with internal wiring
         :param setting: {int} new ring setting
         """
-        if offset:
+        if type(offset) == int:
             self._ring_offset = offset % 26
-        return self._ring_offset
+        else:
+            return self._ring_offset
 
     def in_turnover(self):
         """
