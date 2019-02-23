@@ -279,14 +279,16 @@ class EnigmaAPI:
 
     # ENCRYPTION
 
-    def encrypt(self, letter):
+    def encrypt(self, text):
         """
-        Encrypts letter using the current Enigma object, also saves position
+        Encrypts text using the current Enigma object, also saves position
         to the position buffer
-        :param letter: {char} Letter to encrypt
+        :param text: {char} Text to encrypt
         """
-        output = self._enigma.press_key(letter)
-        self.__save_position()
+        output = ''
+        for letter in text:
+            output += self._enigma.press_key(letter)
+            self.__save_position()
         return output
 
     # COMPONENT GENERATORS

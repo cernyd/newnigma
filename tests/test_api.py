@@ -1,12 +1,23 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import *
 import pytest
-from random import choice, choices, randint
-
+from random import choice, choices, randint, shuffle, sample
+from string import ascii_uppercase as alphabet
 
 trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, None, -1332, "heaaafs", "",
               "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))
+
+
+def generate_pairs(k):
+    pairs = []
+    available = list(alphabet)
+    while available:
+        shuffle(available)
+        pairs.append(available.pop() + available.pop())
+
+    return list(sample(pairs, k=k))
 
 
 @pytest.mark.parametrize("settings, rotor_n", (
@@ -102,7 +113,7 @@ def test_positions_set():
     return
     enigma_api = EnigmaAPI("EnigmaM4")
     for _ in range(100):
-        new_positions = [randint(0, 26) for _ in range(4)]
+        new_positions = [randint(0, 25) for _ in range(4)]
         enigma_api.positions(new_positions)
         assert enigma_api.positions() == new_positions
 
@@ -110,13 +121,16 @@ def test_positions_set():
 def test_ring_settings_set():
     enigma_api = EnigmaAPI("EnigmaM4")
     for _ in range(100):
-        new_ring_settings = [randint(0, 26) for _ in range(4)]
+        new_ring_settings = [randint(0, 25) for _ in range(4)]
         enigma_api.ring_settings(new_ring_settings)
         assert enigma_api.ring_settings() == new_ring_settings
 
 
 def test_plug_pairs():  # TODO: Finish
-    pass
+    pairs = generate_pairs(randint(0, 13))
+    enigma_api = EnigmaAPI("EnigmaM3")
+    enigma_api.plug_pairs(pairs)
+    assert enigma_api.plug_pairs() == pairs
 
 
 def test_reflector_position():  # TODO: Finish
@@ -126,9 +140,14 @@ def test_reflector_position():  # TODO: Finish
 def test_reflector_pairs():  # TODO: Finish
     pass
 
-
 def test_uhr():  # TODO: Finish
-    pass
+    pairs = generate_pairs(10)
+    enigma_api = EnigmaAPI("EnigmaM3")
+    enigma_api.uhr('connect')
+    enigma_api.plug_pairs(pairs)
+
+    message = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+
 
 
 def test_generate_rotor_callback():  # TODO: Finish
