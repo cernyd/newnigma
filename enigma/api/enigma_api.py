@@ -18,7 +18,7 @@ class EnigmaAPI:
     Interface object between client and Enigma instance
     """
 
-    def __init__(self, model, reflector, rotors, position_buffer=10000):
+    def __init__(self, model, reflector=None, rotors=None, position_buffer=10000):
         """
         :param model: {str} Enigma machine model label
         :param reflector: {str} Reflector label like "UKW-B"
@@ -64,8 +64,8 @@ class EnigmaAPI:
                                     historical[model][component]]
 
         return {
-            "reflectors": labels("reflectors"),
-            "rotors": labels("rotors")
+            "reflectors": tuple(labels("reflectors")),
+            "rotors": tuple(labels("rotors"))
         }
 
     def reflector_rotatable(self):
@@ -311,13 +311,19 @@ class EnigmaAPI:
         :param rotor_labels: {[str, str, str]} List of rotor labels
                                                like "I", "II", "III"
         """
-        rotors = cls.generate_rotors(model, rotor_labels)
+        if not reflector_label:  # TODO: Could use model labels?
+            reflector_label = historical[model]["reflectors"][0]["label"]
         reflector = cls.generate_component(model, "reflectors", reflector_label)
-        stator = cls.generate_component(model, "stator")
-        rotor_n = historical[model]["rotor_n"]
+
+        rotor_n = historical[model]["rotor_n"] if reflector_label != "UKW-D" else 3
+        if not rotor_labels:  # Default config generation
+            rotor_labels = [cfg['label'] for cfg in historical[model]["rotors"][:rotor_n]]
+        rotors = cls.generate_rotors(model, rotor_labels)
+
         plugboard = historical[model]["plugboard"]
         rotatable_ref = historical[model]["rotatable_ref"]
         numeric = historical[model]["numeric"]
+        stator = cls.generate_component(model, "stator")
 
         return Enigma(
             model,
