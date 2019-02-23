@@ -161,6 +161,11 @@ class EnigmaAPI:
         """
         return self._enigma.uhr(action)
 
+    def uhr_position(self, position=None):
+        """  TODO: Add
+        """
+        return self._enigma.uhr_position(position)
+
     def generate_rotate_callback(self, rotor_id, by=1):
         """
         Generates a function that will rotate a select rotor by one position
@@ -399,7 +404,7 @@ class EnigmaAPI:
 
         if "uhr_position" in config:
             self._enigma.uhr('connect')
-            self._enigma.uhr_position(config["uhr_position"])
+            self.uhr_position(config["uhr_position"])
 
         self.plug_pairs(config["plug_pairs"])
 
@@ -427,7 +432,7 @@ class EnigmaAPI:
         except ValueError:
             pass
         try:
-            data["uhr_position"] = self._enigma.uhr_position()
+            data["uhr_position"] = self.uhr_position()
         except ValueError:
             pass
 

@@ -40,7 +40,7 @@ class PlugboardDialog(AbstractPlugboard):
         storno.clicked.connect(self.hide)
 
         self.uhr = QPushButton("Uhr")
-        self.uhrmenu = UhrDialog(self, enigma_api._enigma.uhr_position)
+        self.uhrmenu = UhrDialog(self, enigma_api.uhr_position)
         self.uhr.clicked.connect(self.uhrmenu.exec)
 
         self.enable_uhr = QCheckBox(
@@ -108,7 +108,7 @@ class PlugboardDialog(AbstractPlugboard):
 
         if self.enable_uhr.isChecked():
             self.enigma_api.uhr('connect')
-            self.enigma_api._enigma.uhr_position(self.uhrmenu.position())
+            self.enigma_api.uhr_position(self.uhrmenu.position())
         else:
             self.enigma_api.uhr('disconnect')
 

@@ -32,7 +32,7 @@ def cli(enigma_api, args):
         enigma_api.reflector_pairs(args.reflector_pairs)
     if args.uhr:
         enigma_api.uhr('connect')
-        enigma_api._enigma.uhr_position(int(args.uhr[0]))
+        enigma_api.uhr_position(int(args.uhr[0]))
     if args.plug_pairs:
         enigma_api.plug_pairs(args.plug_pairs)
 

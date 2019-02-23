@@ -140,14 +140,37 @@ def test_reflector_position():  # TODO: Finish
 def test_reflector_pairs():  # TODO: Finish
     pass
 
+
 def test_uhr():  # TODO: Finish
-    pairs = generate_pairs(10)
     enigma_api = EnigmaAPI("EnigmaM3")
+    pairs = generate_pairs(10)
     enigma_api.uhr('connect')
     enigma_api.plug_pairs(pairs)
+    correct, other = sample(range(0, 40), 2)
+    enigma_api.uhr_position(correct)
 
-    message = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    message = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    enigma_api.set_checkpoint()
+    encrypted = enigma_api.encrypt(message)
+    enigma_api.load_checkpoint()
+    assert enigma_api.encrypt(encrypted) == message
+    enigma_api.uhr_position(other)
+    assert enigma_api.encrypt(encrypted) != message
 
+    # Test compatibility
+    enigma_api.load_checkpoint()
+    enigma_api.uhr_position(0)
+    with_uhr = enigma_api.encrypt(message)
+    print(with_uhr)
+    print(enigma_api)
+
+    enigma_api.load_checkpoint()
+    enigma_api.uhr('disconnect')
+    enigma_api.plug_pairs(pairs)
+    #enigma_api.encrypt(with_uhr) == message
+    without_uhr = enigma_api.encrypt(message)
+    print(without_uhr)
+    print(enigma_api)
 
 
 def test_generate_rotor_callback():  # TODO: Finish

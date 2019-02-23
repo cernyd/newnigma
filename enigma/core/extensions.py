@@ -11,7 +11,7 @@ class Uhr:
         self._offset = (self._offset + offset_by) % 40
 
     def position(self, new_position=None):
-        if new_position:
+        if type(new_position) == int:
             self._offset = new_position % 40
         else:
             return self._offset

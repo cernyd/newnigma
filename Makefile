@@ -9,3 +9,5 @@ install:
 	sudo -H pip3 install -r requirements.txt
 clean:
 	find . -name "*pyc*" -delete
+benchmark:
+	python3 benchmark.py

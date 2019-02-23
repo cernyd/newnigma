@@ -330,7 +330,7 @@ class Plugboard:
                                           once
         :return: {dict} dictionary with pairs usable by the plugboard
         """
-        if pairs:
+        if pairs is not None:
             self._pairs = pairs
         else:
             return self._pairs
@@ -703,7 +703,7 @@ class Enigma:
         else:
             return [rotor.ring_offset() + 1 for rotor in self._rotors]
 
-    def rotors(self, new_rotors=None):
+    def rotors(self, new_rotors=None):  # TODO: Add
         if new_rotors:
             if len(new_rotors) != self.rotor_n():
                 raise ValueError("This enigma has %d rotors!" % self.rotor_n())
@@ -725,9 +725,11 @@ class Enigma:
         elif action == 'connect':
             if isinstance(self._storage, Uhr):
                 self._storage, self._plugboard = self._plugboard, self._storage
+                self._plugboard.pairs([])
                 self._plugboard_route = self._plugboard.route
-        elif action == 'disconnect' and isinstance(self._storage, Uhr):
+        elif action == 'disconnect' and isinstance(self._plugboard, Uhr):
             self._storage, self._plugboard = self._plugboard, self._storage
+            self._plugboard.pairs([])
             self._plugboard_route = lambda letter, _=None: self._plugboard.route(letter)
         else:
             raise ValueError("Invalid action!")
@@ -736,7 +738,7 @@ class Enigma:
         if not isinstance(self._plugboard, Uhr):
             raise ValueError("Can't set uhr position - uhr not connected!")
 
-        if new_position:
+        if type(new_position) == int:
             self._plugboard.position(new_position)
         else:
             return self._plugboard.position()
