@@ -64,8 +64,8 @@ class EnigmaAPI:
                                     historical[model][component]]
 
         return {
-            "reflectors": tuple(labels("reflectors")),
-            "rotors": tuple(labels("rotors"))
+            "reflectors": labels("reflectors"),
+            "rotors": labels("rotors")
         }
 
     def reflector_rotatable(self):

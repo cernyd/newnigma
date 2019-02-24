@@ -48,10 +48,10 @@ class Root(QWidget):
         # MENU BAR ============================================================
 
         menu = QMenuBar(self)
-        save_load_menu = menu.addMenu("Settings")
+        save_load_menu = menu.addMenu("Save/load settings")
         save_load_menu.addAction("Save settings", self.save_config)
         save_load_menu.addAction("Load settings", self.load_config)
-        menu.addAction("Export", self.export_message)
+        menu.addAction("Export message", self.export_message)
         url = QUrl("https://www.cryptomuseum.com/index.htm")
         menu.addAction("About", lambda: QDesktopServices.openUrl(url))
 

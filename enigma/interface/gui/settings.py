@@ -396,10 +396,10 @@ class UKWD_Settings(AbstractPlugboard):
         self.banned = ["J", "Y"]
 
         plug_frame = QFrame(self)
-        plug_layout = QHBoxLayout(plug_frame)
-        for group in "ABCD", "EFGH", "IKLM", "NOPQ", "RSTU", "VWXZ":
+        plug_layout = QVBoxLayout(plug_frame)
+        for group in "ABCDEF", "GHIKLM", "NOPQRS", "TUVWXZ":
             col_frame = QFrame(plug_frame)
-            col_layout = QVBoxLayout(col_frame)
+            col_layout = QHBoxLayout(col_frame)
 
             for letter in group:
                 socket = Socket(self, letter, self.connect_sockets, self.refresh_apply)
@@ -409,15 +409,20 @@ class UKWD_Settings(AbstractPlugboard):
 
             plug_layout.addWidget(col_frame)
 
+        btn_frame = QFrame(self)
+        btn_layout = QHBoxLayout(btn_frame)
+        btn_layout.setAlignment(Qt.AlignRight)
         self.apply_btn = QPushButton("Apply")
         self.apply_btn.clicked.connect(self.close)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.storno)
 
+        btn_layout.addWidget(storno)
+        btn_layout.addWidget(self.apply_btn)
+
         self.main_layout.addWidget(plug_frame)
-        self.main_layout.addWidget(self.apply_btn)
-        self.main_layout.addWidget(storno)
+        self.main_layout.addWidget(btn_frame)
 
         self.refresh_apply()
 
