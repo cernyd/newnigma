@@ -212,7 +212,6 @@ class EnigmaAPI:
                 serialized += "%02d" % alphabet.index(pos)
             else:
                 serialized += "%02d" % (int(pos) - 1)
-
         return int(serialized)
 
     def set_checkpoint(self):
@@ -260,7 +259,7 @@ class EnigmaAPI:
         for letter in formula % position:
             pair += letter
             if len(pair) == 2:
-                positions.append(int(pair))
+                positions.append(int(pair) + 1)
                 pair = ""
 
         return positions

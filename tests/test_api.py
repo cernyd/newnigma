@@ -113,7 +113,7 @@ def test_positions_set():
     return
     enigma_api = EnigmaAPI("EnigmaM4")
     for _ in range(100):
-        new_positions = [randint(0, 25) for _ in range(4)]
+        new_positions = [randint(1, 26) for _ in range(4)]
         enigma_api.positions(new_positions)
         assert enigma_api.positions() == new_positions
 
@@ -121,7 +121,7 @@ def test_positions_set():
 def test_ring_settings_set():
     enigma_api = EnigmaAPI("EnigmaM4")
     for _ in range(100):
-        new_ring_settings = [randint(0, 25) for _ in range(4)]
+        new_ring_settings = [randint(1, 26) for _ in range(4)]
         enigma_api.ring_settings(new_ring_settings)
         assert enigma_api.ring_settings() == new_ring_settings
 

@@ -22,7 +22,8 @@ class Uhr:
 
     def position(self, new_position=None):
         if type(new_position) == int:
-            self._offset = new_position % 40
+            assert new_position in range(0, 40)
+            self._offset = new_position
         else:
             return self._offset
 

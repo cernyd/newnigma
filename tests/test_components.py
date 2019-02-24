@@ -54,8 +54,9 @@ def test_uhr_addon():
     enigma.plug_pairs(
         ["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"]
     )
+    setting = [3, 1, 1, 1]
 
-    enigma.positions([2, 0, 0, 0])
+    enigma.positions(setting)
 
     original = "TESTINGHOWUHRENCRYPTSTHISMESSAGE"
 
@@ -63,7 +64,7 @@ def test_uhr_addon():
     for letter in original:
         output += enigma.press_key(letter)
 
-    enigma.positions([2, 0, 0, 0])
+    enigma.positions(setting)
 
     result = ""
     for letter in output:
@@ -71,7 +72,7 @@ def test_uhr_addon():
 
     assert result == original
 
-    enigma.positions([2, 0, 0, 0])
+    enigma.positions(setting)
     enigma.uhr_position(35)
 
     result = ""
@@ -128,7 +129,7 @@ he implementation by encrypting each letter of the alphabet
 
 @pytest.mark.parametrize(
     "offset_by, result",
-    ((5, 5), (-1, 25), (26, 0), (15, 15), (50, 24), (-40, 12), (25, 25)),
+    ((5, 6), (-1, 26), (26, 1), (15, 16), (50, 25), (-40, 13), (25, 26)),
 )
 def test_rotation(offset_by, result):
     enigma = EnigmaAPI.generate_component("Enigma1", "rotors", "I")

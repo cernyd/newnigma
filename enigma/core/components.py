@@ -313,7 +313,7 @@ historical = {
 
 
 def format_position(position, numeric=False):
-    return "%02d" % (position + 1) if numeric else alphabet[position]
+    return "%02d" % (position) if numeric else alphabet[position-1]
 
 
 class Plugboard:
@@ -394,9 +394,10 @@ class _Rotatable(_Component):
         :param offset: {int} new rotor offset
         """
         if type(offset) is int:
-            self._offset = offset % 26
+            assert offset in range(1, 27)
+            self._offset = offset - 1
         else:
-            return self._offset
+            return self._offset + 1
 
     def position(self, numeric=False):
         """
@@ -404,7 +405,7 @@ class _Rotatable(_Component):
         :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
         :return:
         """
-        return format_position(self._offset, numeric)
+        return format_position(self._offset + 1, numeric)
 
     def rotate(self, offset_by=1):
         """
@@ -413,7 +414,7 @@ class _Rotatable(_Component):
         :param offset_by: {int} how many places the rotor should be offset
                           (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
         """
-        self.offset(self._offset + offset_by)
+        self._offset = (self._offset + offset_by) % 26
 
 
 class Reflector(_Rotatable):
@@ -546,9 +547,10 @@ class Rotor(_Rotatable):
         :param setting: {int} new ring setting
         """
         if type(offset) == int:
-            self._ring_offset = offset % 26
+            assert offset in range(1, 27)
+            self._ring_offset = offset - 1
         else:
-            return self._ring_offset
+            return self._ring_offset + 1
 
     def in_turnover(self):
         """
@@ -671,8 +673,8 @@ class Enigma:
         Sets positions of all rotors
         Accepted types of indexes are
         a) Letters: "A", "B", ..., "Z"
-        b) Numbers: 0, 1, ..., 26
-        c) Numbers of type string: "01", "02", ..., "27"
+        b) Numbers: 1, 1, ..., 26
+        c) Numbers of type string: "01", "02", ..., "26"
 
         :param new_positions: {iterable}
         """
@@ -680,9 +682,9 @@ class Enigma:
             for position, rotor in zip(new_positions, self._rotors):
                 if type(position) == str:
                     if position in alphabet:
-                        position = alphabet.index(position)
+                        position = alphabet.index(position) + 1
                     else:
-                        position = int(position) - 1
+                        position = int(position)
                 elif type(position) != int:
                     print("Invalid position type!")
 
@@ -700,9 +702,9 @@ class Enigma:
         """
         if new_ring_settings:
             for setting, rotor in zip(new_ring_settings, self._rotors):
-                rotor.ring_offset(setting - 1)
+                rotor.ring_offset(setting)
         else:
-            return [rotor.ring_offset() + 1 for rotor in self._rotors]
+            return [rotor.ring_offset() for rotor in self._rotors]
 
     def rotors(self, new_rotors=None):  # TODO: Add
         if new_rotors:
