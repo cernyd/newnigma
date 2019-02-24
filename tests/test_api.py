@@ -110,30 +110,39 @@ def test_rotors_set():
 
 
 def test_positions_set():
-    return
     enigma_api = EnigmaAPI("EnigmaM4")
     for _ in range(100):
-        new_positions = [randint(1, 26) for _ in range(4)]
-        enigma_api.positions(new_positions)
-        assert enigma_api.positions() == new_positions
+        new_positions = [randint(-30, 30) for _ in range(4)]
+
+        if not all(map(lambda x: x in range(1, 27), new_positions)):
+            with pytest.raises(ValueError):
+                enigma_api.positions(new_positions)
+        else:
+            enigma_api.positions(new_positions)
+            assert enigma_api.positions() == tuple(map(lambda x: alphabet[x-1], new_positions))
 
 
 def test_ring_settings_set():
     enigma_api = EnigmaAPI("EnigmaM4")
     for _ in range(100):
-        new_ring_settings = [randint(1, 26) for _ in range(4)]
-        enigma_api.ring_settings(new_ring_settings)
-        assert enigma_api.ring_settings() == new_ring_settings
+        new_ring_settings = [randint(-30, 30) for _ in range(4)]
+
+        if not all(map(lambda x: x in range(1, 27), new_ring_settings)):
+            with pytest.raises(ValueError):
+                enigma_api.ring_settings(new_ring_settings)
+        else:
+            enigma_api.ring_settings(new_ring_settings)
+            assert enigma_api.ring_settings() == new_ring_settings
 
 
-def test_plug_pairs():  # TODO: Finish
+def test_plug_pairs():
     pairs = generate_pairs(randint(0, 13))
     enigma_api = EnigmaAPI("EnigmaM3")
     enigma_api.plug_pairs(pairs)
     assert enigma_api.plug_pairs() == pairs
 
 
-def test_reflector_position():  # TODO: Finish
+def test_reflector_position():
     enigma_api = EnigmaAPI("EnigmaK", "UKW")
 
     for _ in range(100):
@@ -150,7 +159,7 @@ def test_reflector_pairs():  # TODO: Finish
     pass
 
 
-def test_uhr():  # TODO: Finish
+def test_uhr():
     enigma_api = EnigmaAPI("EnigmaM3")
     pairs = generate_pairs(10)
     enigma_api.uhr('connect')
