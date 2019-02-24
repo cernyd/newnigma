@@ -39,12 +39,12 @@ class Uhr:
             b_coords = []
             for i, pair in enumerate(self._pairs):
                 a_coords.append(
-                    ("%da" % (i + 1), pair[0], self.a_pairs[i], self.a_pairs[i] + 2)
+                    ("a", pair[0], self.a_pairs[i], self.a_pairs[i] + 2)
                 )
                 b_coords.append(
-                    ("%db" % (i + 1), pair[1], self.b_pairs[i], self.b_pairs[i] + 2)
+                    ("b", pair[1], self.b_pairs[i], self.b_pairs[i] + 2)
                 )
-                self._real_coords = {'a': a_coords, 'b': b_coords}
+            self._real_coords = {'a': a_coords, 'b': b_coords}
         else:
             return self._pairs
 
@@ -52,11 +52,8 @@ class Uhr:
         board = None
         for plug in self._real_coords['a'] + self._real_coords['b']:
             if plug[1] == letter:
-                board = "a" if "b" in plug[0] else "b"
-                if backwards:
-                    send_pin = (plug[3] + self._offset) % 40
-                else:
-                    send_pin = (plug[2] + self._offset) % 40
+                board = "a" if plug[0] == "b" else "b"
+                send_pin = (plug[3 if backwards else 2] + self._offset) % 40
                 break
 
         if board == "a":
@@ -68,10 +65,7 @@ class Uhr:
 
         receive_pin = (receive_pin - self._offset) % 40
 
+        index = 2 if backwards else 3
         for plug in self._real_coords[board]:
-            if backwards:
-                if plug[2] == receive_pin:
-                    return plug[1]
-            else:
-                if plug[3] == receive_pin:
-                    return plug[1]
+            if plug[index] == receive_pin:
+                return plug[1]
