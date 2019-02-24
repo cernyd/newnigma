@@ -134,7 +134,16 @@ def test_plug_pairs():  # TODO: Finish
 
 
 def test_reflector_position():  # TODO: Finish
-    pass
+    enigma_api = EnigmaAPI("EnigmaK", "UKW")
+
+    for _ in range(100):
+        new_position = randint(-30, 30)
+        if new_position not in range(1, 27):
+            with pytest.raises(ValueError):
+                enigma_api.reflector_position(new_position)
+        else:
+            enigma_api.reflector_position(new_position)
+            assert enigma_api.reflector_position() == alphabet[new_position - 1]
 
 
 def test_reflector_pairs():  # TODO: Finish

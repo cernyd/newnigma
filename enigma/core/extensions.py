@@ -22,7 +22,8 @@ class Uhr:
 
     def position(self, new_position=None):
         if type(new_position) == int:
-            assert new_position in range(0, 40)
+            if new_position not in range(0, 40):
+                raise ValueError("Positions can only be set to values 1 - 26!")
             self._offset = new_position
         else:
             return self._offset

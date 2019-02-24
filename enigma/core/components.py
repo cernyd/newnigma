@@ -394,7 +394,8 @@ class _Rotatable(_Component):
         :param offset: {int} new rotor offset
         """
         if type(offset) is int:
-            assert offset in range(1, 27)
+            if offset not in range(1, 27):
+                raise ValueError("Positions can only be set to values 1 - 26!")
             self._offset = offset - 1
         else:
             return self._offset + 1
@@ -547,7 +548,8 @@ class Rotor(_Rotatable):
         :param setting: {int} new ring setting
         """
         if type(offset) == int:
-            assert offset in range(1, 27)
+            if offset not in range(1, 27):
+                raise ValueError("Positions can only be set to values 1 - 26!")
             self._ring_offset = offset - 1
         else:
             return self._ring_offset + 1
@@ -656,7 +658,7 @@ class Enigma:
         self._reflector.rotate(by)
 
     def reflector_position(self, new_position=None):
-        if new_position:
+        if type(new_position) == int:
             if type(new_position) == str:
                 new_position = alphabet.index(new_position)
             self._reflector.offset(new_position)
