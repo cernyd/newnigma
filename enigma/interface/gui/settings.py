@@ -412,12 +412,17 @@ class UKWD_Settings(AbstractPlugboard):
         btn_frame = QFrame(self)
         btn_layout = QHBoxLayout(btn_frame)
         btn_layout.setAlignment(Qt.AlignRight)
+
+        self.reset_all = QPushButton("Clear pairs")
+        self.reset_all.clicked.connect(self.set_pairs)
+
         self.apply_btn = QPushButton("Apply")
         self.apply_btn.clicked.connect(self.close)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.storno)
 
+        btn_layout.addWidget(self.reset_all)
         btn_layout.addWidget(storno)
         btn_layout.addWidget(self.apply_btn)
 
@@ -425,6 +430,12 @@ class UKWD_Settings(AbstractPlugboard):
         self.main_layout.addWidget(btn_frame)
 
         self.refresh_apply()
+
+    def refresh_pairs(self):
+        try:
+            self.set_pairs(self.enigma_api.reflector_pairs())
+        except ValueError:
+            pass
 
     def storno(self):
         """

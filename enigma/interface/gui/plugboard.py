@@ -34,6 +34,9 @@ class PlugboardDialog(AbstractPlugboard):
         self._button_frame = QFrame(self)
         self._button_layout = QHBoxLayout(self._button_frame)
 
+        self.reset_all = QPushButton("Clear pairs")
+        self.reset_all.clicked.connect(self.set_pairs)
+
         self.apply_btn = QPushButton("Apply")
         self.apply_btn.clicked.connect(self.collect)
         storno = QPushButton("Storno")
@@ -61,12 +64,19 @@ class PlugboardDialog(AbstractPlugboard):
         self._button_layout.addWidget(self.enable_uhr)
         self._button_layout.addWidget(self.uhr)
         self._button_layout.addStretch()
+        self._button_layout.addWidget(self.reset_all)
         self._button_layout.addWidget(storno)
         self._button_layout.addWidget(self.apply_btn)
 
         self.main_layout.addWidget(self._button_frame)
 
         self.change_uhr_status()
+
+    def refresh_pairs(self):
+        try:
+            self.set_pairs(self.enigma_api.plug_pairs())
+        except ValueError:
+            pass
 
     def refresh_apply(self):
         """
@@ -110,7 +120,10 @@ class PlugboardDialog(AbstractPlugboard):
             self.enigma_api.uhr('connect')
             self.enigma_api.uhr_position(self.uhrmenu.position())
         else:
-            self.enigma_api.uhr('disconnect')
+            try:
+                self.enigma_api.uhr('disconnect')
+            except ValueError:
+                pass
 
         self.enigma_api.plug_pairs(pairs)
         self.close()

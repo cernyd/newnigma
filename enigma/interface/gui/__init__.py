@@ -235,15 +235,15 @@ class AbstractPlugboard(QDialog):
 
         return pairs
 
-    def refresh_pairs(self):
-        """
-        Tries to load reflector pairs (UKW-D pairs) from EnigmaAPI
-        """
-        try:
-            for pair in self.enigma_api.reflector_pairs():
+    def set_pairs(self, new_pairs=[]):
+        if new_pairs:
+            for pair in new_pairs:
                 self.connect_sockets(*pair)
-        except Exception as e:
-            print(e)
+        else:
+            for key in self.pairs:
+                self.pairs[key] = None
+            for plug in self.plugs.values():
+                plug.set_text("")
 
     def storno(self):
         """
@@ -266,7 +266,7 @@ class AbstractPlugboard(QDialog):
             self.plugs[other].set_text("")
         else:
             if other_socket in self.banned or not other_socket:
-                self.plugs[socket].setText("")
+                self.plugs[socket].set_text("")
                 return
 
             if self.pairs[other_socket]:

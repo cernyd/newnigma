@@ -595,7 +595,10 @@ class Enigma:
 
         # PLUGBOARD AND UHR
         self._plugboard = Plugboard(plug_pairs) if plugboard else None
-        self._plugboard_route = lambda letter, _=None: self._plugboard.route(letter)
+        if self._plugboard is None:
+            self._plugboard_route = lambda letter, _=None: letter
+        else:
+            self._plugboard_route = lambda letter, _=None: self._plugboard.route(letter)
         self._storage = Uhr()  # Stores currently unused object
         self._numeric = numeric
 
