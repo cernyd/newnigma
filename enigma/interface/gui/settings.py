@@ -2,6 +2,7 @@
 
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import Socket
+import logging
 
 selector_labels = ("THIN", "SLOW", "MEDIUM", "FAST")
 selector_tooltips = ("Does not rotate", None, None, "Rotates on every keypress")
@@ -71,6 +72,7 @@ class Settings(QDialog):
         """
         Opens UKWD wiring menu
         """
+        logging.info("Opened UKW-D wiring menu...")
         self.ukwd.refresh_pairs()
         self.ukwd.exec_()
         self.refresh_ukwd()
@@ -81,6 +83,8 @@ class Settings(QDialog):
         selected to edit its settings)
         """
         if self.reflector_group.checkedButton().text() == "UKW-D":
+            logging.info("UKW-D reflector selected, enabling UKW-D button...")
+
             if len(self.ukwd._pairs()) != 12:
                 self.apply_btn.setDisabled(True)
                 self.apply_btn.setToolTip("Connect all 12 pairs in UKW-D wiring!")
@@ -91,14 +95,17 @@ class Settings(QDialog):
             self.ukwd_button.setDisabled(False)
             self.ukwd_button.setToolTip("Select the UKW-D rotor to edit settings")
             if len(self.rotor_frames) == 4:  # IF THIN ROTORS
+                logging.info("Disabling thin rotor radiobuttons...")
                 self.rotor_frames[0].setDisabled(True)
         else:
+            logging.info("UKW-D reflector deselected, disabling UKW-D button...")
             self.apply_btn.setDisabled(False)
             self.apply_btn.setToolTip(None)
 
             self.ukwd_button.setDisabled(True)
             self.ukwd_button.setToolTip(None)
             if len(self.rotor_frames) == 4:  # IF THIN ROTORS
+                logging.info("Enabling thin rotor radiobuttons...")
                 self.rotor_frames[0].setDisabled(False)
 
     def generate_components(self, reflectors, rotors, rotor_n):
@@ -171,6 +178,7 @@ class Settings(QDialog):
             final_rotors = rotors
 
             if "Beta" in rotors:
+                logging.info("EnigmaM4 rotors detected, adjusting radiobuttons...")
                 if rotor == 0:
                     final_rotors = ["Beta", "Gamma"]
                 else:
@@ -227,6 +235,7 @@ class Settings(QDialog):
         :param new_model: {str} Enigma model
         :param from_api: {boo} Sets settings to current api settings if True
         """
+        logging.info("Regenerating component settings...")
         self.clear_components()
 
         reflectors = self.enigma_api.model_labels(new_model)["reflectors"]
@@ -236,6 +245,7 @@ class Settings(QDialog):
         self.generate_components(reflectors, rotors[::], rotor_n)
 
         if from_api:  # Loads from API
+            logging.info("Loading component settings from EnigmaAPI...")
             reflector_i = reflectors.index(self.enigma_api.reflector())
             self.reflector_group.button(reflector_i).setChecked(True)
 
@@ -261,6 +271,8 @@ class Settings(QDialog):
         Collects all selected settings for rotors and other components,
         applies them to the EnigmaAPI as new settings
         """
+        logging.info("Collecting new settings...")
+
         new_model = self.stacked_wikis.currently_selected
         new_reflector = self.reflector_group.checkedButton().text()  # REFLECTOR CHOICES
         reflector_pairs = self.ukwd._pairs()
@@ -276,17 +288,24 @@ class Settings(QDialog):
 
         ring_settings = [ring.currentIndex() + 1 for ring in self.ring_selectors]
 
+        logging.info("EnigmaAPI state before applying settings:\n%s" % str(self.enigma_api))
+
         if new_model != self.enigma_api.model():
             self.enigma_api.model(new_model)
 
-        self.enigma_api.reflector(new_reflector)
+        if new_reflector != self.enigma_api.reflector():
+            self.enigma_api.reflector(new_reflector)
+
         if new_reflector == "UKW-D":
             self.enigma_api._enigma.reflector_pairs(reflector_pairs)
 
         if new_rotors != self.enigma_api.rotors():
             self.enigma_api.rotors(new_rotors)
 
-        self.enigma_api.ring_settings(ring_settings)
+        if ring_settings != self.enigma_api.ring_settings():
+            self.enigma_api.ring_settings(ring_settings)
+
+        logging.info("EnigmaAPI state when closing settings:\n%s" % str(self.enigma_api))
 
         self.close()
 
@@ -336,6 +355,7 @@ class ViewSwitcher(QWidget):
         Called when the "Use this model" button is pressed
         :param model: {str} Newly selected model
         """
+        logging.info('Changing settings view to model "%s"' % list(view_data.keys())[i])
         model = list(view_data.keys())[i]
         self.regen_plug(model)
         self.stacked_wikis.setCurrentIndex(i)
@@ -436,13 +456,6 @@ class UKWD_Settings(AbstractPlugboard):
             self.set_pairs(self.enigma_api.reflector_pairs())
         except ValueError:
             pass
-
-    def storno(self):
-        """
-        Clears all selected pairs and closes the window
-        """
-        self.pairs = {}
-        self.close()
 
     def refresh_apply(self):
         """

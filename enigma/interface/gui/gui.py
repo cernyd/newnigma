@@ -91,6 +91,7 @@ class Root(QWidget):
             self._rotors.set_positions,
             enigma_api.letter_group,
             enigma_api.revert_by,
+            enigma_api.buffer_full
         )
 
         # PLUGBOARD BUTTONS ===================================================
@@ -126,6 +127,7 @@ class Root(QWidget):
         """
         Opens the plugboard menu
         """
+        logging.info("Opening Plugboard menu...")
         plugboard = PlugboardDialog(self, self.enigma_api)
         plugboard.exec()
         del plugboard
@@ -528,6 +530,7 @@ class _InputTextBox(QPlainTextEdit):
         refresh_plug,
         letter_group_plug,
         revert_pos,
+        overflow_plug
     ):
         """
         Handles user input and sends it to the output textbox
@@ -544,6 +547,7 @@ class _InputTextBox(QPlainTextEdit):
                                              n letters
         :param revert_pos: {callable} Reverts Enigma rotor position when the
                                       text gets shorter
+        :param overflow_plug: {callable} Checks if the position buffer is overflowing
         """
         super().__init__(master)
 
@@ -566,6 +570,7 @@ class _InputTextBox(QPlainTextEdit):
         self.refresh_plug = refresh_plug
         self.letter_group_plug = letter_group_plug
         self._revert_pos = revert_pos
+        self.overflow_plug = overflow_plug
 
         # ATTRIBUTES ==========================================================
 
@@ -580,9 +585,16 @@ class _InputTextBox(QPlainTextEdit):
 
         new_len = len(text)
         diff = self.last_len - new_len
-        self.last_len = new_len
 
-        if diff != 0:
+
+        if diff <= -10000:
+            logging.warning('Blocked attempt to insert %d characters...' % abs(diff))
+            QMessageBox.critical(
+                self, "Input too long", "Inserting more than 10000 characters at a time is disallowed!"
+            )
+            text = text[:self.last_len]
+            self.sync_plug(self.last_len)
+        elif diff != 0:
             if diff < 0:  # If text longer than before
                 encrypted = "".join(map(self.encrypt_plug, text[diff:]))
 
@@ -592,15 +604,26 @@ class _InputTextBox(QPlainTextEdit):
                     logging.info('Buffer longer by %d, new encrypted text "%s..."' % (abs(diff), encrypted[:30]))
 
                 self.output_plug(encrypted)
+
+                if self.overflow_plug():
+                    logging.warning("Position buffer is full, trimming...")
             elif diff > 0:
                 logging.info("Buffer shorter by %d, trimming and reverting positions..." % abs(diff))
+
                 self.sync_plug(new_len)
                 self._revert_pos(diff)
 
             self.refresh_plug()
+            self.last_len = new_len
         else:
             logging.info("No changes to buffer made...")
 
+
+        if len(text) == 0:
+            logging.info("Text buffer now empty...")
+        self.set_text(text)
+
+    def set_text(self, text):
         self.blockSignals(True)  # Blocks programatical edits to the widget
         self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)

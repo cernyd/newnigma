@@ -1,5 +1,7 @@
 gui:
 	python3 enigma.py
+verbose_gui:
+	python3 enigma.py --verbose
 cli:
 	echo "Run the command 'python3 enigma.py --cli'"
 test:

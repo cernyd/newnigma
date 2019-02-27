@@ -1,4 +1,5 @@
 from enigma.interface.gui import *
+import logging
 
 
 class PlugboardDialog(AbstractPlugboard):
@@ -55,9 +56,7 @@ class PlugboardDialog(AbstractPlugboard):
         # CONNECTS SOCKETS =====================================================
 
         self.enigma_api = enigma_api
-
-        for pair in self.enigma_api.plug_pairs():
-            self.connect_sockets(*pair)
+        self.set_pairs(self.enigma_api.plug_pairs())
 
         # SHOW WIDGETS =========================================================
 
@@ -117,14 +116,17 @@ class PlugboardDialog(AbstractPlugboard):
         pairs = self._pairs()
 
         if self.enable_uhr.isChecked():
+            logging.info("Connecting Uhr, setting position to %d" % self.uhrmenu.position())
             self.enigma_api.uhr('connect')
             self.enigma_api.uhr_position(self.uhrmenu.position())
         else:
             try:
+                logging.info("Disconnecting Uhr...")
                 self.enigma_api.uhr('disconnect')
             except ValueError:
                 pass
 
+        logging.info('Setting plug pairs to "%s"' % str([''.join(pair) for pair in pairs]))
         self.enigma_api.plug_pairs(pairs)
         self.close()
 
@@ -168,9 +170,10 @@ class UhrDialog(QDialog):
         self.dial.setFixedSize(300, 300)
 
         try:
+            logging.info("Setting Uhr dial to position %d..." % uhr_position())
             self.dial.setValue(uhr_position())
         except ValueError:
-            pass
+            logging.info("No Uhr position, loading default...")
 
         self.dial.valueChanged.connect(self.refresh_indicator)
 

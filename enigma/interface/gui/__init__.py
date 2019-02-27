@@ -6,6 +6,8 @@ from enigma.utils.cfg_handler import save_config, load_config
 from enigma import contains
 from enigma.core.components import historical
 from json import JSONDecodeError
+import logging
+
 
 labels = [
     "A-01", "B-02", "C-03", "D-04", "E-05", "F-06", "G-07", "H-08", "I-09", "J-10",
@@ -224,9 +226,11 @@ class AbstractPlugboard(QDialog):
 
     def set_pairs(self, new_pairs=[]):
         if new_pairs:
+            logging.info('Settings wiring pairs to "%s"' % str(new_pairs))
             for pair in new_pairs:
                 self.connect_sockets(*pair)
         else:
+            logging.info("Clearing all wiring pairs...")
             for key in self.pairs:
                 self.pairs[key] = None
             for plug in self.plugs.values():
@@ -236,6 +240,7 @@ class AbstractPlugboard(QDialog):
         """
         Clears all selected pairs and closes the window
         """
+        logging.info("Cancelling changes to wiring...")
         self.pairs = {}
         self.close()
 
