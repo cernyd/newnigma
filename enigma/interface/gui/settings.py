@@ -313,7 +313,7 @@ class ViewSwitcher(QWidget):
         # STACKED MODEL VIEWS ==================================================
 
         self.stacked_wikis = QStackedWidget()
-        for i, model in enumerate(view_data.keys()):
+        for i, model in enumerate(view_data):
             self.model_list.insertItem(i, model)
             description = view_data[model]["description"]
             self.stacked_wikis.addWidget(

@@ -4,34 +4,12 @@ from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor, QDesktopServices
 from string import ascii_uppercase as alphabet
 from enigma.utils.cfg_handler import save_config, load_config
 from enigma import contains
+from enigma.core.components import historical
 
 labels = [
-    "A-01",
-    "B-02",
-    "C-03",
-    "D-04",
-    "E-05",
-    "F-06",
-    "G-07",
-    "H-08",
-    "I-09",
-    "J-10",
-    "K-11",
-    "L-12",
-    "M-13",
-    "N-14",
-    "O-15",
-    "P-16",
-    "Q-17",
-    "R-18",
-    "S-19",
-    "T-20",
-    "U-21",
-    "V-22",
-    "W-23",
-    "X-24",
-    "Y-25",
-    "Z-26",
+    "A-01", "B-02", "C-03", "D-04", "E-05", "F-06", "G-07", "H-08", "I-09", "J-10",
+    "K-11", "L-12", "M-13", "N-14", "O-15", "P-16", "Q-17", "R-18", "S-19", "T-20",
+    "U-21", "V-22", "W-23", "X-24", "Y-25", "Z-26"
 ]
 
 # For the GUI plug board
@@ -194,7 +172,11 @@ Rewired version of the Enigma K used by the Japanese army
 stylesheet = 'font-family: "Courier New", Courier, monospace'
 
 
-view_data = {
+models = historical.keys()
+view_data = {}
+
+
+resources = {
     "Enigma1": {"description": _enigma1, "img": base_dir + "enigma1.jpg"},
     "EnigmaM3": {"description": _enigmam3, "img": base_dir + "enigmam3.jpg"},
     "EnigmaM4": {"description": _enigmam4, "img": base_dir + "enigmam4.jpg"},
@@ -209,6 +191,10 @@ view_data = {
     "Railway": {"description": _railway, "img": base_dir + "enigmak.jpg"},
     "Tirpitz": {"description": _tirpitz, "img": base_dir + "tirpitz.jpg"},
 }
+
+for model in historical:
+    view_data[model] = resources.get(model, {"description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
+                                             "img": base_dir + "unknown.jpg"})
 
 
 class AbstractPlugboard(QDialog):

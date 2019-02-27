@@ -197,6 +197,31 @@ historical = {
     },
     "EnigmaD": ENIGMA_D_K,
     "EnigmaK": ENIGMA_D_K,
+    "EnigmaKD": {
+        "stator": ETW_QWERTZ,
+        "rotors": (
+            {"label": "I", "wiring": "VEZIOJCXKYDUNTWAPLQGBHSFMR", "turnover": "SUYAEHLNQ"},
+            {
+                "label": "II",
+                "wiring": "HGRBSJZETDLVPMQYCXAOKINFUW",
+                "turnover": "SUYAEHLNQ",
+            },
+            {
+                "label": "III",
+                "wiring": "NWLHXGRBYOJSAZDVTPKFQMEUIC",
+                "turnover": "SUYAEHLNQ",
+            },
+        ),
+        "rotor_n": 3,
+        "reflectors": (
+            {"label": "UKW", "wiring": "KOTVPNLMJIAGHFBEWYXCZDQSRU"},
+            UKW_D,
+        ),
+        "rotatable_ref": True,
+        "letter_group": 5,
+        "plugboard": False,
+        "numeric": False,
+    },
     "SwissK": {
         "stator": ETW_QWERTZ,
         "rotors": (
