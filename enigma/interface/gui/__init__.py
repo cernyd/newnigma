@@ -5,6 +5,7 @@ from string import ascii_uppercase as alphabet
 from enigma.utils.cfg_handler import save_config, load_config
 from enigma import contains
 from enigma.core.components import historical
+from json import JSONDecodeError
 
 labels = [
     "A-01", "B-02", "C-03", "D-04", "E-05", "F-06", "G-07", "H-08", "I-09", "J-10",

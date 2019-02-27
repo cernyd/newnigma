@@ -127,7 +127,11 @@ if __name__ == "__main__":
     # CONFIG LOAD ====================================================
 
     logging.info("Loading config...")
-    data = load_config("config.json")["default"]
+    data = None
+    try:
+        data = load_config("config.json")["default"]
+    except Exception:
+        exit(1)
 
     # APPLICATION INIT ====================================================
     # LOADS EITHER CLI OR GUI BASED ON COMMAND LINE ARG
@@ -136,8 +140,10 @@ if __name__ == "__main__":
     enigma_api = EnigmaAPI(data["model"], data["reflector"], data["rotors"])
 
     if args.cli:
+        logging.info("Loading in CLI mode with settings:\n%s..." % str(enigma_api))
         cli(enigma_api, args)
     elif args.preview:
+        logging.info("Printing preview...")
         print(
             "Copy the command below:\n\n./enigma.py --cli --model EnigmaI "
             "--rotors II I III --reflector UKW-A "

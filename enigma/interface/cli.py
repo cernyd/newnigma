@@ -9,18 +9,23 @@ def cli(enigma_api, args):
     :param enigma_api: {EnigmaAPI}
     :param args: Object containing parsed command line arguments
     """
-    logging.info("Launching Enigma in the command line...")
-    components = (args.model[0], args.reflector[0], args.rotors)
+    try:
+        components = (args.model[0], args.reflector[0], args.rotors)
+    except TypeError:
+        components = []
 
-    if any(components) and not all(components):
+    if len(components) > 0 and not all(components):
         print("Must supply --model, --rotors, --reflector!")
-        exit(-1)
-    elif all(components):
+        logging.error("model, rotor or reflector parameter not supplied, exiting with status code 1...")
+        exit(1)
+    elif len(components) > 0 and all(components):
+        logging.info("All parameters found, trying to find message...")
         enigma_api = EnigmaAPI(*components)
 
     if not args.message:
         print("Supply message with --message MESSAGE argument!")
-        exit(-1)
+        logging.error("No message to encrypt, quitting...")
+        exit(1)
 
     if args.positions:
         enigma_api.positions(args.positions)
@@ -40,4 +45,5 @@ def cli(enigma_api, args):
     print("Encrypted message: ", "")
     for letter in args.message[0].upper():
         print(enigma_api.encrypt(letter), end="")
+    logging.info("Successfully encrypted %d letters, quitting CLI mode..." % len(args.message[0]))
     print()

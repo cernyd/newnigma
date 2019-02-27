@@ -7,6 +7,7 @@ from textwrap import wrap
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import *
 from enigma.interface.gui.settings import *
+import logging
 
 
 class Runtime:
@@ -17,11 +18,13 @@ class Runtime:
         """
         from sys import argv
 
+        logging.info("Setting application icon and title...")
         self.app = QApplication(argv)
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
         self.app.setWindowIcon(QIcon(base_dir + "enigma_200px.png"))
         Root(api)
+        logging.info("Starting Qt runtime...")
         self.app.exec_()
 
 
@@ -44,6 +47,7 @@ class Root(QWidget):
         # SAVE ATTRIBUTES =====================================================
 
         self.enigma_api = enigma_api
+        logging.info("Qt GUI initialized with EnigmaAPI settings:\n%s" % str(enigma_api))
 
         # MENU BAR ============================================================
 
@@ -57,6 +61,7 @@ class Root(QWidget):
 
         # ROTORS INDICATOR ====================================================
 
+        logging.info("Generating rotor and reflector indicators...")
         self._rotors = _RotorsHandler(
             self,
             self.enigma_api.positions,
@@ -69,10 +74,12 @@ class Root(QWidget):
 
         # LIGHTBOARD FRAME ====================================================
 
+        logging.info("Adding Lightboard...")
         lightboard = Lightboard(self)
 
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ==============================
 
+        logging.info("Adding I/O textboxes...")
         self.o_textbox = _OutputTextBox(
             self, lightboard.light_up, enigma_api.letter_group
         )
@@ -88,12 +95,14 @@ class Root(QWidget):
 
         # PLUGBOARD BUTTONS ===================================================
 
+        logging.info("Adding Plugboard button")
         self.plug_button = QPushButton("Plugboard")
         self.plug_button.setToolTip("Edit plugboard letter pairs")
         self.plug_button.clicked.connect(self.get_pairs)
 
         # SHOW WIDGETS ========================================================
 
+        logging.info("Showing all widgets...")
         main_layout.addWidget(menu, alignment=Qt.AlignTop)
         main_layout.addWidget(self._rotors, alignment=Qt.AlignBottom)
         main_layout.addWidget(lightboard)
@@ -125,11 +134,14 @@ class Root(QWidget):
         """
         Refreshes main window GUI based on new EnigmaAPI settings
         """
+        logging.info("Refreshing GUI components...")
         self.setWindowTitle(self.enigma_api.model())
         self.i_textbox.clear()
         if self.enigma_api.data()["plugboard"]:
+            logging.info("Showing Plugboard button...")
             self.plug_button.show()
         else:
+            logging.info("Hiding Plugboard button...")
             self.plug_button.hide()
 
     def load_config(self):
@@ -145,19 +157,25 @@ class Root(QWidget):
             try:
                 data = load_config(filename)
                 self.enigma_api.load_from_config(data)
-            except KeyError:
+            except (FileNotFoundError, JSONDecodeError) as e:
                 QMessageBox.critical(
-                    self, "Load config", "Unable to load config from the selected file!"
+                    self, "Load config", "Unable to load config from the "
+                          "selected file!\nError message:\n\n %s" % repr(e)
                 )
+                logging.error('Failed to load config from file "%s"' % filename, exc_info=True)
                 return
 
+            logging.info('Successfully loaded config from file "%s"' % filename)
             self._rotors.generate_rotors()
 
             self.i_textbox.blockSignals(True)
             self.refresh_gui()
             self.i_textbox.blockSignals(False)
             self._rotors.set_positions()
+            logging.info('Checkpoint set to "%s"' % str(self.enigma_api.positions()))
             self.enigma_api.set_checkpoint()
+        else:
+            logging.info("No load file selected...")
 
     def save_config(self):
         """
@@ -171,6 +189,8 @@ class Root(QWidget):
         if filename:
             data = self.enigma_api.get_config()
             save_config(filename, data)
+        else:
+            logging.info("No save file selected...")
 
     def export_message(self):
         """
@@ -183,6 +203,7 @@ class Root(QWidget):
         )[0]
 
         if filename:
+            logging.info('Exporing message to "%s"...' % filename)
             with open(filename, "w") as f:
                 message = "\n".join(wrap(self.o_textbox.text(), 29))
                 f.write("%s\n%s\n" % (str(self.enigma_api), message))
@@ -347,9 +368,11 @@ class _RotorsHandler(QFrame):
         self._rotor_indicators = []
 
         if self.enigma_api.reflector() == "UKW-D":
+            logging.info("UKW-D reflector detected, showing indicator...")
             self._layout.addWidget(self.ukwd_indicator)
             self.ukwd_indicator.show()
         elif self.enigma_api.reflector_rotatable():
+            logging.info("Rotatable reflector detected, showing indicator...")
             self._layout.addWidget(self._reflector_indicator)
             self._reflector_indicator.show()
 
@@ -371,12 +394,18 @@ class _RotorsHandler(QFrame):
         """
         Opens settings and reloads indicators
         """
+        logging.info("Opening settings menu...")
+        old_cfg = self.enigma_api.get_config()
         settings = Settings(self, self.enigma_api)
         settings.exec()  # Exec gives focus to top window, unlike .show
-        self.set_positions()
-        del settings
-        self.generate_rotors()
-        self._label_plug()
+        if old_cfg != self.enigma_api.get_config():
+            logging.info("Settings changed, reloading GUI...")
+            self.set_positions()
+            del settings
+            self.generate_rotors()
+            self._label_plug()
+        else:
+            logging.info("No changes to settings made...")
 
     def set_positions(self):
         """
@@ -386,8 +415,10 @@ class _RotorsHandler(QFrame):
             self.enigma_api.reflector_rotatable()
             and self.enigma_api.reflector() != "UKW-D"
         ):
+            logging.info('Reflector indicator set to position "%s"' % self._reflector_pos_plug())
             self._reflector_indicator.set(self._reflector_pos_plug())
 
+        logging.info('Rotor indicators set to positions "%s"' % str(self._position_plug()))
         for rotor, position in zip(self._rotor_indicators, self._position_plug()):
             rotor.set(position)
 
@@ -551,18 +582,29 @@ class _InputTextBox(QPlainTextEdit):
         diff = self.last_len - new_len
         self.last_len = new_len
 
-        if diff < 0:  # If text longer than before
-            self.output_plug("".join(map(self.encrypt_plug, text[diff:])))
-        elif diff > 0:
-            self.sync_plug(new_len)
-            self._revert_pos(diff)
+        if diff != 0:
+            if diff < 0:  # If text longer than before
+                encrypted = "".join(map(self.encrypt_plug, text[diff:]))
+
+                if len(encrypted) <= 30:
+                    logging.info('Buffer longer by %d, new encrypted text "%s"' % (abs(diff), encrypted))
+                else:
+                    logging.info('Buffer longer by %d, new encrypted text "%s..."' % (abs(diff), encrypted[:30]))
+
+                self.output_plug(encrypted)
+            elif diff > 0:
+                logging.info("Buffer shorter by %d, trimming and reverting positions..." % abs(diff))
+                self.sync_plug(new_len)
+                self._revert_pos(diff)
+
+            self.refresh_plug()
+        else:
+            logging.info("No changes to buffer made...")
 
         self.blockSignals(True)  # Blocks programatical edits to the widget
         self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)
         self.blockSignals(False)
-
-        self.refresh_plug()
 
 
 class _OutputTextBox(QPlainTextEdit):
