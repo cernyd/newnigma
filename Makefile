@@ -1,5 +1,7 @@
 gui:
 	python3 enigma.py
+cli:
+	echo "Run the command 'python3 enigma.py --cli'"
 test:
 	python3 -m pytest -s
 install:

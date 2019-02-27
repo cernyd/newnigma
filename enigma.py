@@ -8,6 +8,7 @@ from enigma.api.enigma_api import EnigmaAPI
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
 from enigma.utils.cfg_handler import load_config
+from enigma.core.components import historical
 
 
 if __name__ == "__main__":
@@ -45,9 +46,7 @@ if __name__ == "__main__":
         (
             "--model",
             dict(
-                help="available Enigma models: Enigma1, EnigmaM3,"
-                "EnigmaM4,  Norenigma, EnigmaG, EnigmaD, "
-                "EnigmaK, SwissK, Railway, Tirpitz",
+                help="available Enigma models: %s" % ", ".join(historical.keys()),
                 nargs=1,
                 dest="model",
             ),
@@ -140,7 +139,7 @@ if __name__ == "__main__":
         cli(enigma_api, args)
     elif args.preview:
         print(
-            "Copy the command below:\n\n./enigma.py --cli --model Enigma1 "
+            "Copy the command below:\n\n./enigma.py --cli --model EnigmaI "
             "--rotors II I III --reflector UKW-A "
             "--message THISISANENIGMASAMPLEMESSAGE"
         )

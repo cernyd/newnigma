@@ -32,19 +32,9 @@ UKW_C = {"label": "UKW-C", "wiring": "FVPJIAOYEDRZXWGCTKUQSBNMHL"}
 UKW_D = {
     "label": "UKW-D",
     "wiring": [
-        "AB",
-        "CD",
-        "EF",
-        "GH",
-        "IK",
-        "LM",
-        "NO",
-        "PQ",
-        "RS",
-        "TU",
-        "VW",
-        "XZ",
-    ],
+        "AB", "CD", "EF", "GH", "IK", "LM",
+        "NO", "PQ", "RS", "TU", "VW", "XZ",
+    ]
 }
 
 
@@ -77,7 +67,7 @@ ENIGMA_D_K = {
 
 
 historical = {
-    "Enigma1": {
+    "EnigmaI": {
         "stator": ETW,
         "rotors": (I, II, III, IV, V),
         "rotor_n": 3,
@@ -166,7 +156,7 @@ historical = {
         "plugboard": True,
         "numeric": False,
     },
-    "EnigmaG": {
+    "EnigmaG": {  # Zählwerk A865
         "stator": ETW_QWERTZ,
         "rotors": (
             {
@@ -188,7 +178,6 @@ historical = {
         "rotor_n": 3,
         "reflectors": (
             {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-            UKW_D,
         ),
         "rotatable_ref": True,
         "letter_group": 5,

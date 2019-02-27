@@ -15,4 +15,4 @@ for n in range(7):
     for letter in repeat("A", 10**n):
         enigma.press_key(letter)
     end = time.time()
-    print("Total encryption time: %.5f seconds" % (end - start))
+    print("Total encryption time: %.5f seconds for %d letters..." % (end - start, 10**n))

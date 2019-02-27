@@ -1,11 +1,14 @@
 {
     "default": {
-        "model": "Enigma1",
+        "model": "EnigmaI",
         "rotors": [
             "I",
             "II",
             "III"
         ],
         "reflector": "UKW-A"
+    },
+    "custom": {
+
     }
 }

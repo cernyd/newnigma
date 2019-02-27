@@ -177,7 +177,7 @@ view_data = {}
 
 
 resources = {
-    "Enigma1": {"description": _enigma1, "img": base_dir + "enigma1.jpg"},
+    "EnigmaI": {"description": _enigma1, "img": base_dir + "enigma1.jpg"},
     "EnigmaM3": {"description": _enigmam3, "img": base_dir + "enigmam3.jpg"},
     "EnigmaM4": {"description": _enigmam4, "img": base_dir + "enigmam4.jpg"},
     "Norenigma": {"description": _norenigma, "img": base_dir + "enigma1.jpg"},

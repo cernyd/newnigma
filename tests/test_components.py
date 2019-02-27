@@ -9,7 +9,7 @@ from enigma import contains
 
 
 def test_single_encrypt():
-    enigma = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
+    enigma = EnigmaAPI.generate_component("EnigmaI", "rotors", "I")
 
     assert enigma.forward("A") == "E"
     enigma.rotate()
@@ -99,7 +99,7 @@ def test_routing():
     Tests if the forward routing is being routed correctly in the opposite direction (taking the
     relative rotor position into account)
     """
-    rotor = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
+    rotor = EnigmaAPI.generate_component("EnigmaI", "rotors", "I")
 
     for i in 1, 3, -2, 5, 7, 20:
         for letter in alphabet:
@@ -132,7 +132,7 @@ he implementation by encrypting each letter of the alphabet
     ((5, 6), (-1, 26), (26, 1), (15, 16), (50, 25), (-40, 13), (25, 26)),
 )
 def test_rotation(offset_by, result):
-    enigma = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
+    enigma = EnigmaAPI.generate_component("EnigmaI", "rotors", "I")
     enigma.rotate(offset_by)
     assert (
         enigma.offset() == result
@@ -140,7 +140,7 @@ def test_rotation(offset_by, result):
 
 
 def test_position():
-    rotor = EnigmaAPI.generate_component("Enigma1", "rotors", "I")
+    rotor = EnigmaAPI.generate_component("EnigmaI", "rotors", "I")
 
     rotor.rotate()
     assert rotor.position(True) == "02"
@@ -214,7 +214,7 @@ def test_plugboard():
     "model, rotors, reflector, positions, ring_settings, plug_pairs, message, correct_result",
     (
         (  # Enigma instruction manual message
-            "Enigma1",
+            "EnigmaI",
             ("II", "I", "III"),
             "UKW-A",
             "ABL",
@@ -291,7 +291,7 @@ def test_historical_messages(
 def test_cli():
     import subprocess
 
-    command = "./enigma.py --cli --model Enigma1 --rotors II I III --reflector UKW-A --positions A B L --ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ --message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
+    command = "./enigma.py --cli --model EnigmaI --rotors II I III --reflector UKW-A --positions A B L --ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ --message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
     output = subprocess.getstatusoutput(command)[1]
     assert (
         output.split("\n")[-1]
