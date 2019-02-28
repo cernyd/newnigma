@@ -26,6 +26,7 @@ class Runtime:
         Root(api)
         logging.info("Starting Qt runtime...")
         self.app.exec_()
+        logging.info("Program terminated...")
 
 
 class Root(QWidget):

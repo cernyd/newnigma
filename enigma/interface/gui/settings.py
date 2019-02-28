@@ -41,7 +41,7 @@ class Settings(QDialog):
 
         tab_widget = QTabWidget()
 
-        self.stacked_wikis = ViewSwitcher(self, self.enigma_api.model, self.regen_model)
+        self.stacked_wikis = ViewSwitcher(self, self.regen_model)
         tab_widget.addTab(self.stacked_wikis, "Enigma Model")
         tab_widget.addTab(self.settings_frame, "Component settings")
 
@@ -62,7 +62,8 @@ class Settings(QDialog):
 
         # SHOW WIDGETS =========================================================
 
-        self.regen_model(self.enigma_api.model(), True)
+        self.stacked_wikis.select_model(list(view_data.keys()).index(self.enigma_api.model()))
+        self.load_from_api()
         main_layout.addWidget(tab_widget)
         main_layout.addWidget(self.button_frame)
 
@@ -229,7 +230,7 @@ class Settings(QDialog):
             wgt.deleteLater()
             del wgt
 
-    def regen_model(self, new_model, from_api=False):
+    def regen_model(self, new_model):
         """
         Regenerates component settings
         :param new_model: {str} Enigma model
@@ -244,27 +245,35 @@ class Settings(QDialog):
 
         self.generate_components(reflectors, rotors[::], rotor_n)
 
-        if from_api:  # Loads from API
-            logging.info("Loading component settings from EnigmaAPI...")
-            reflector_i = reflectors.index(self.enigma_api.reflector())
-            self.reflector_group.button(reflector_i).setChecked(True)
+        for selected, i in zip([0, 0, 1, 2][-rotor_n:], range(rotor_n)):
+            self.rotor_selectors[i].button(selected).setChecked(True)
 
-            for i, rotor in enumerate(self.enigma_api.rotors()):
-                if "Beta" in rotors and self.enigma_api.reflector() != "UKW-D":
-                    if i == 0:
-                        rotor_i = ["Beta", "Gamma"].index(rotor)
-                else:
-                    rotor_i = rotors.index(rotor)
+    def load_from_api(self):
+        logging.info("Loading component settings from EnigmaAPI...")
 
-                self.rotor_selectors[i].button(rotor_i).setChecked(True)
+        model = self.enigma_api.model()
+        reflectors = self.enigma_api.model_labels()["reflectors"]
+        rotors = self.enigma_api.model_labels()["rotors"]
+        if "Beta" in rotors:
+            rotors.remove("Beta")
+            rotors.remove("Gamma")
+        rotor_n = self.enigma_api.rotor_n()
 
-            for i, ring in enumerate(self.enigma_api.ring_settings()):
-                self.ring_selectors[i].setCurrentIndex(ring - 1)
-        else:
-            for selected, i in zip([0, 0, 1, 2][-rotor_n:], range(rotor_n)):
-                self.rotor_selectors[i].button(selected).setChecked(True)
+        reflector_i = reflectors.index(self.enigma_api.reflector())
+        self.reflector_group.button(reflector_i).setChecked(True)
 
-        self.refresh_ukwd()
+
+        for i, rotor in enumerate(self.enigma_api.rotors()):
+            if model == "EnigmaM4" and self.enigma_api.reflector() != "UKW-D" and i == 0:
+                rotor_i = ["Beta", "Gamma"].index(rotor)
+            else:
+                rotor_i = rotors.index(rotor)
+
+            print("INDEX: " + str(rotor_i) + str(rotor))
+            self.rotor_selectors[i].button(rotor_i).setChecked(True)
+
+        for i, ring in enumerate(self.enigma_api.ring_settings()):
+            self.ring_selectors[i].setCurrentIndex(ring - 1)
 
     def collect(self):
         """
@@ -311,10 +320,9 @@ class Settings(QDialog):
 
 
 class ViewSwitcher(QWidget):
-    def __init__(self, master, model_plug, regen_plug):
+    def __init__(self, master, regen_plug):
         """
         :param master: Qt parent object
-        :param model_plug: {callable} Returns current Enigma model
         :param regen_plug: {callable} Regenerates settings view
         """
         super().__init__(master)
@@ -336,19 +344,14 @@ class ViewSwitcher(QWidget):
             self.model_list.insertItem(i, model)
             description = view_data[model]["description"]
             self.stacked_wikis.addWidget(
-                _EnigmaView(self, model, description, self.select_model)
+                _EnigmaView(self, model, description)
             )
 
         self.layout.addWidget(self.model_list)
         self.layout.addWidget(self.stacked_wikis)
 
         # Sets initially viewed
-        selected = list(view_data.keys()).index(model_plug())
-
-        self.stacked_wikis.setCurrentIndex(selected)
-        self.model_list.item(selected).setSelected(True)
-
-        self.currently_selected = model_plug()
+        self.currently_selected = None
 
     def select_model(self, i):
         """
@@ -359,15 +362,19 @@ class ViewSwitcher(QWidget):
         model = list(view_data.keys())[i]
         self.regen_plug(model)
         self.stacked_wikis.setCurrentIndex(i)
+
+        self.model_list.blockSignals(True)
+        self.model_list.setCurrentRow(i)
+        self.model_list.blockSignals(False)
+
         self.currently_selected = model
 
 
 class _EnigmaView(QWidget):
-    def __init__(self, master, model, description, select_plug):
+    def __init__(self, master, model, description):
         """
         :param master: Qt parent object
         :param model: {str} Enigma model
-        :param select_plug: {callable} Triggers regeneration of settings view
         """
         super().__init__(master)
 
