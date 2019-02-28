@@ -283,7 +283,7 @@ class _RotorsHandler(QFrame):
         label_plug,
         reflector_pos_plug,
     ):
-        """
+        """  # TODO: Missing comments
         :param master: {Qt} Master qt object
         :param position_plug: {callable} Callable method for getting rotor
                                          positions
@@ -587,14 +587,14 @@ class _InputTextBox(QPlainTextEdit):
         diff = self.last_len - new_len
 
 
-        if diff <= -10000:
+        if diff <= -10000:  # If insertion greater than 10 000 chars
             logging.warning('Blocked attempt to insert %d characters...' % abs(diff))
             QMessageBox.critical(
                 self, "Input too long", "Inserting more than 10000 characters at a time is disallowed!"
             )
             text = text[:self.last_len]
             self.sync_plug(self.last_len)
-        elif diff != 0:
+        elif diff != 0:  # If anything changed
             if diff < 0:  # If text longer than before
                 encrypted = "".join(map(self.encrypt_plug, text[diff:]))
 
@@ -607,7 +607,7 @@ class _InputTextBox(QPlainTextEdit):
 
                 if self.overflow_plug():
                     logging.warning("Position buffer is full, trimming...")
-            elif diff > 0:
+            elif diff > 0:  # If text shorter than before
                 logging.info("Buffer shorter by %d, trimming and reverting positions..." % abs(diff))
 
                 self.sync_plug(new_len)
