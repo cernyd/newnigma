@@ -129,8 +129,17 @@ class Root(QWidget):
         Opens the plugboard menu
         """
         logging.info("Opening Plugboard menu...")
+        old_pairs = self.enigma_api.plug_pairs()
         plugboard = PlugboardDialog(self, self.enigma_api)
         plugboard.exec()
+        logging.info("Closing plugboard...")
+
+        new_pairs = self.enigma_api.plug_pairs()
+        if old_pairs != new_pairs:
+            logging.info('New plug pairs set to "%s"' % str(new_pairs))
+        else:
+            logging.info("No changes to plug pairs...")
+
         del plugboard
 
     def refresh_gui(self):

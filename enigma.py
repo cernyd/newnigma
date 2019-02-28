@@ -119,7 +119,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(module)s:%(funcName)s: %(message)s")
     if args.run_tests:
         logging.info("Running pre-launch tests...")
         pytest.main(["tests"])
@@ -153,3 +153,5 @@ if __name__ == "__main__":
     else:
         logging.info("Launching Enigma Qt Application...")
         Runtime(enigma_api)
+
+    logging.shutdown()

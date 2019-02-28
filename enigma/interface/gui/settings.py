@@ -269,7 +269,6 @@ class Settings(QDialog):
             else:
                 rotor_i = rotors.index(rotor)
 
-            print("INDEX: " + str(rotor_i) + str(rotor))
             self.rotor_selectors[i].button(rotor_i).setChecked(True)
 
         for i, ring in enumerate(self.enigma_api.ring_settings()):
