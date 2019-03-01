@@ -24,6 +24,7 @@ class Settings(QDialog):
         self.settings_layout = QHBoxLayout(self.settings_frame)
         self.setWindowTitle("Settings")
         self.setLayout(main_layout)
+        self.setFixedHeight(620)
 
         # SAVE ATTRIBUTES ======================================================
 
@@ -332,6 +333,9 @@ class ViewSwitcher(QWidget):
         # LIST OF AVAILABLE MODELS =============================================
 
         self.model_list = QListWidget()
+        self.model_list.setMaximumWidth(100)
+        self.model_list.setMinimumWidth(100)
+        self.model_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.model_list.currentRowChanged.connect(self.select_model)
 
         self.regen_plug = regen_plug
@@ -382,32 +386,27 @@ class _EnigmaView(QWidget):
         self.model = model
         self.main_layout = QHBoxLayout()
         self.setLayout(self.main_layout)
+        self.main_layout.setMargin(0)
 
         # MODEL IMAGE ==========================================================
 
         self.description = description
         self.img = QLabel("")
-        pixmap = QPixmap(view_data[model]["img"]).scaled(300, 400)
+        pixmap = QPixmap(view_data[model]["img"]).scaled(400, 500)
         self.img.setPixmap(pixmap)
         self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
-        self.img.setLineWidth(5)
         self.img.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        # MODEL TITLE AND IMAGE ================================================
-
-        self.title_frame = QFrame(self)
-        self.title_layout = QVBoxLayout(self.title_frame)
-        self.title_layout.addWidget(self.img)
 
         # MODEL WIKI ===========================================================
 
         self.wiki_text = QTextBrowser()
         self.wiki_text.setHtml(self.description)  # setHtml sets html
         self.wiki_text.setStyleSheet(stylesheet)
+        self.wiki_text.setMinimumWidth(350)
 
         # SHOW WIDGETS =========================================================
 
-        self.main_layout.addWidget(self.title_frame)
+        self.main_layout.addWidget(self.img)
         self.main_layout.addWidget(self.wiki_text)
 
 

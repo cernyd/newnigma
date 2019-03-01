@@ -146,7 +146,7 @@ class UhrDialog(QDialog):
         self.setWindowTitle("Uhr")
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
-        # self.setFixedSize(280, 400)
+        self.setFixedSize(300, 400)
 
         # UHR POSITION DIAL ====================================================
 
@@ -167,7 +167,8 @@ class UhrDialog(QDialog):
         self.dial = QDial()
         self.dial.setWrapping(True)
         self.dial.setRange(0, 39)
-        self.dial.setFixedSize(300, 300)
+        self.dial.setFixedSize(280, 280)
+        self.dial.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         try:
             logging.info("Setting Uhr dial to position %d..." % uhr_position())
@@ -184,8 +185,8 @@ class UhrDialog(QDialog):
 
         # SHOW WIDGETS =========================================================
 
-        main_layout.addWidget(self.indicator, alignment=Qt.AlignCenter)
-        main_layout.addWidget(self.dial, alignment=Qt.AlignCenter)
+        main_layout.addWidget(self.indicator, alignment=Qt.AlignHCenter)
+        main_layout.addWidget(self.dial, alignment=Qt.AlignHCenter)
         main_layout.addWidget(apply_btn)
 
     def refresh_indicator(self):
