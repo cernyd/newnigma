@@ -62,7 +62,9 @@ class Settings(QDialog):
 
         # SHOW WIDGETS =========================================================
 
-        self.stacked_wikis.select_model(list(view_data.keys()).index(self.enigma_api.model()))
+        model_i = list(view_data.keys()).index(self.enigma_api.model())
+        self.stacked_wikis.select_model(model_i)
+        self.stacked_wikis.highlight(model_i)
         self.load_from_api()
         main_layout.addWidget(tab_widget)
         main_layout.addWidget(self.button_frame)
@@ -352,6 +354,7 @@ class ViewSwitcher(QWidget):
             self.stacked_wikis.addWidget(
                 _EnigmaView(self, model, description)
             )
+        self.total_models = len(view_data)
 
         self.layout.addWidget(self.model_list)
         self.layout.addWidget(self.stacked_wikis)
@@ -374,6 +377,20 @@ class ViewSwitcher(QWidget):
         self.model_list.blockSignals(False)
 
         self.currently_selected = model
+
+    def highlight(self, i):
+        """
+        Highlights an option with Blue color, indicating that it is currently selected in EnigmaAPI
+        :param i: {int} Index from list options
+        """
+        for index in range(self.total_models):
+            item = self.model_list.item(index)
+            item.setForeground(Qt.black)
+            item.setToolTip(None)
+
+        selected = self.model_list.item(i)
+        selected.setBackground(Qt.gray)#.setForeground(Qt.blue)
+        selected.setToolTip("Currently used Enigma model")
 
 
 class _EnigmaView(QWidget):

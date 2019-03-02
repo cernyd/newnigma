@@ -54,8 +54,6 @@ class Root(QWidget):
         save_load_menu.addAction("Save settings", self.save_config)
         save_load_menu.addAction("Load settings", self.load_config)
         menu.addAction("Export message", self.export_message)
-        url = QUrl("https://www.cryptomuseum.com/index.htm")
-        menu.addAction("About", lambda: QDesktopServices.openUrl(url))
 
         # ROTORS INDICATOR ====================================================
 
