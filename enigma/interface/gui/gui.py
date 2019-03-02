@@ -1,11 +1,11 @@
-from re import sub, findall
+import logging
+from re import findall, sub
 from string import ascii_uppercase as alphabet
 from textwrap import wrap
 
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import *
 from enigma.interface.gui.settings import *
-import logging
 
 
 class Runtime:
@@ -24,7 +24,6 @@ class Runtime:
         Root(api)
         logging.info("Starting Qt runtime...")
         self.app.exec_()
-        logging.info("Program terminated...")
 
 
 class Root(QWidget):

@@ -5,7 +5,9 @@ guiv:
 cli:
 	echo "Run the command 'python3 enigma.py --cli'"
 test:
-	python3 -m pytest -x
+	python3 enigma.py -T
+benchmark:
+	python3 enigma.py --benchmark 10000
 install:
 	sudo apt update
 	sudo apt install -y python3-pip pytest
@@ -13,5 +15,3 @@ install:
 	sudo -H pip3 install -r requirements.txt
 clean:
 	find . -name "*pyc*" -delete
-benchmark:
-	python3 benchmark.py

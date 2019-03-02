@@ -1,5 +1,6 @@
-from enigma.interface.gui import *
 import logging
+
+from enigma.interface.gui import *
 
 
 class PlugboardDialog(AbstractPlugboard):

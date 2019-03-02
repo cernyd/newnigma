@@ -1,14 +1,6 @@
-from enigma.core.components import (
-    UKW_D,
-    UKWD,
-    Enigma,
-    Reflector,
-    Rotor,
-    Stator,
-    alphabet,
-    historical,
-    format_position,
-)
+from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
+                                    Stator, alphabet, format_position,
+                                    historical)
 
 
 class EnigmaAPI:

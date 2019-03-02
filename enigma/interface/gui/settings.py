@@ -1,6 +1,7 @@
+import logging
+
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import Socket
-import logging
 
 selector_labels = ("THIN", "SLOW", "MEDIUM", "FAST")
 selector_tooltips = ("Does not rotate", None, None, "Rotates on every keypress")

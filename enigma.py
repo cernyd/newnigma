@@ -4,12 +4,13 @@ import argparse
 import logging
 
 import pytest
+
 from enigma.api.enigma_api import EnigmaAPI
+from enigma.core.components import historical
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
 from enigma.utils.cfg_handler import load_config
-from enigma.core.components import historical
-
+from benchmark import benchmark
 
 if __name__ == "__main__":
     # ====================================================
@@ -44,6 +45,9 @@ if __name__ == "__main__":
     )
     for arg in argument_data:
         parser.add_argument(*arg[0], **arg[1], action="store_true", default=False)
+
+    parser.add_argument("-b", "--benchmark", help="benchmarks encryption speed for N letters",
+                        nargs=1, dest="benchmark_n", metavar="N")
 
     # ====================================================
     # CLI GROUP
@@ -123,21 +127,49 @@ if __name__ == "__main__":
         cli_args.add_argument(*arg[0], **arg[1])
 
     # ARG PARSE ====================================================
+
     args = parser.parse_args()
 
     if args.verbose:
         logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(module)s:%(funcName)s: %(message)s")
+    else:
+        logging.basicConfig(level=logging.CRITICAL)
+
+    if args.run_tests and args.only_run_tests:
+        logging.error("Cannot run both --test and -T at once!")
+        logging.shutdown()
+        exit(1)
+
     if args.run_tests:
         logging.info("Running pre-launch tests...")
         exit_code = pytest.main(["tests", "-x", "--tb=no"])  # -x = stop at first failure
 
         if exit_code == 1:
             logging.error("Pre-launch tests failed! Aborting...")
+            logging.shutdown()
             exit(1)
         logging.info("All pre-launch tests succeeded...")
     elif args.only_run_tests:
         logging.info("Running tests with detailed feedback...")
+        logging.shutdown()
         exit(pytest.main(["tests", "--tb=long", "--durations=3"]))
+
+    if args.benchmark_n:
+        try:
+            n = int(args.benchmark_n[0])
+        except ValueError:
+            logging.error('Invalid number "%s" for benchmark, exiting...' % str(n))
+            print('Invalid number "%s", choose a valid number greater than 0!' % str(n))
+            exit(1)
+
+        if not n > 0:
+            logging.error('Benchmark letter count is not greater than 0, exiting...')
+            print('Benchmark letter count must be greater than 0!')
+            exit(1)
+
+        benchmark(n)
+        logging.shutdown()
+        exit()
 
     # CONFIG LOAD ====================================================
 
@@ -146,10 +178,12 @@ if __name__ == "__main__":
     try:
         data = load_config("config.json")["default"]
     except Exception:
+        logging.shutdown()
         exit(1)
 
     # APPLICATION INIT ====================================================
     # LOADS EITHER CLI OR GUI BASED ON COMMAND LINE ARG
+
     logging.info("Starting Enigma...")
 
     enigma_api = EnigmaAPI(data["model"], data["reflector"], data["rotors"])
@@ -164,9 +198,9 @@ if __name__ == "__main__":
             "--rotors II I III --reflector UKW-A "
             "--message THISISANENIGMASAMPLEMESSAGE"
         )
-        exit()
     else:
         logging.info("Launching Enigma Qt Application...")
         Runtime(enigma_api)
 
+    logging.info("Program terminated...")
     logging.shutdown()

@@ -1,7 +1,7 @@
 from string import ascii_uppercase as alphabet
 
-from enigma.core.extensions import Uhr
 from enigma import contains
+from enigma.core.extensions import Uhr
 
 # Stators
 ETW = {"wiring": alphabet}
