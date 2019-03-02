@@ -75,7 +75,6 @@ class Settings(QDialog):
         Opens UKWD wiring menu
         """
         logging.info("Opened UKW-D wiring menu...")
-        self.ukwd.refresh_pairs()
         self.ukwd.exec_()
         self.refresh_ukwd()
 
@@ -247,7 +246,15 @@ class Settings(QDialog):
         self.generate_components(reflectors, rotors[::], rotor_n)
 
         for selected, i in zip([0, 0, 1, 2][-rotor_n:], range(rotor_n)):
+            print("THIS I %d" % i)
             self.rotor_selectors[i].button(selected).setChecked(True)
+
+        self.ukwd.clear_pairs()
+        self.ukwd.old_pairs = {}
+        if new_model == self.enigma_api.model():
+            self.load_from_api()
+            self.ukwd.refresh_pairs()
+        self.refresh_ukwd()
 
     def load_from_api(self):
         logging.info("Loading component settings from EnigmaAPI...")
@@ -258,11 +265,10 @@ class Settings(QDialog):
         if "Beta" in rotors:
             rotors.remove("Beta")
             rotors.remove("Gamma")
-        rotor_n = self.enigma_api.rotor_n()
+        print(self.enigma_api.rotors())
 
         reflector_i = reflectors.index(self.enigma_api.reflector())
         self.reflector_group.button(reflector_i).setChecked(True)
-
 
         for i, rotor in enumerate(self.enigma_api.rotors()):
             if model == "EnigmaM4" and self.enigma_api.reflector() != "UKW-D" and i == 0:
@@ -439,10 +445,10 @@ class UKWD_Settings(AbstractPlugboard):
         btn_layout.setAlignment(Qt.AlignRight)
 
         self.reset_all = QPushButton("Clear pairs")
-        self.reset_all.clicked.connect(self.set_pairs)
+        self.reset_all.clicked.connect(self.clear_pairs)
 
         self.apply_btn = QPushButton("Apply")
-        self.apply_btn.clicked.connect(self.close)
+        self.apply_btn.clicked.connect(self.apply)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.storno)

@@ -210,6 +210,7 @@ class AbstractPlugboard(QDialog):
         self.enigma_api = enigma_api
 
         self.pairs = {}  # TODO: Duplicate
+        self.old_pairs = {}
         self.plugs = {}
         self.banned = []
 
@@ -225,23 +226,31 @@ class AbstractPlugboard(QDialog):
         return pairs
 
     def set_pairs(self, new_pairs=[]):
+        self.clear_pairs()
         if new_pairs:
             logging.info('Settings wiring pairs to "%s"' % str(new_pairs))
             for pair in new_pairs:
                 self.connect_sockets(*pair)
-        else:
-            logging.info("Clearing all wiring pairs...")
-            for key in self.pairs:
-                self.pairs[key] = None
-            for plug in self.plugs.values():
-                plug.set_text("")
+            self.old_pairs = self._pairs()
+
+    def apply(self):
+        self.old_pairs = self._pairs()
+        self.close()
+
+    def clear_pairs(self):
+        logging.info("Clearing all wiring pairs...")
+        for key in self.pairs:
+            self.pairs[key] = None
+        for plug in self.plugs.values():
+            plug.set_text("")
 
     def storno(self):
         """
         Clears all selected pairs and closes the window
         """
+        print("old pairs" + str(self.old_pairs))
         logging.info("Cancelling changes to wiring...")
-        self.pairs = {}
+        self.set_pairs(self.old_pairs)
         self.close()
 
     def connect_sockets(self, socket, other_socket):
@@ -318,10 +327,14 @@ class Socket(QFrame):
         """
         self.apply_plug()
 
-        text = self.entry.text().upper()
+        letter = self.entry.text().upper()
+        if letter not in alphabet:
+            self.entry.blockSignals(True)
+            self.set_text("")
+            self.entry.blockSignals(False)
         if self.entry.isModified():  # Prevents recursive event calls
-            if text:
-                self.connect_plug(self.letter, text)
+            if letter:
+                self.connect_plug(self.letter, letter)
             else:
                 self.connect_plug(self.letter, None)
 

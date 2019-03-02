@@ -36,7 +36,7 @@ class PlugboardDialog(AbstractPlugboard):
         self._button_layout = QHBoxLayout(self._button_frame)
 
         self.reset_all = QPushButton("Clear pairs")
-        self.reset_all.clicked.connect(self.set_pairs)
+        self.reset_all.clicked.connect(self.clear_pairs)
 
         self.apply_btn = QPushButton("Apply")
         self.apply_btn.clicked.connect(self.collect)

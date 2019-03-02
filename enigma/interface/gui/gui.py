@@ -336,7 +336,7 @@ class _RotorsHandler(QFrame):
         )
         self.ukwd_indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self.ukwd_indicator.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
-        self.ukwd_indicator.setLineWidth(3)
+        self.ukwd_indicator.setLineWidth(2)
         self.ukwd_indicator.setFixedSize(40, 40)
         self.ukwd_indicator.hide()
 
@@ -368,6 +368,7 @@ class _RotorsHandler(QFrame):
         self._layout.removeItem(self._right_spacer)
         self._layout.removeWidget(self.settings_button)
         self._layout.removeWidget(self.ukwd_indicator)
+        self.ukwd_indicator.hide()
         self._reflector_indicator.hide()
         self._layout.removeWidget(self._reflector_indicator)
         self._reflector_indicator.hide()
@@ -412,10 +413,10 @@ class _RotorsHandler(QFrame):
         settings.exec()  # Exec gives focus to top window, unlike .show
         if old_cfg != self.enigma_api.get_config():
             logging.info("Settings changed, reloading GUI...")
-            self.set_positions()
             del settings
             self.generate_rotors()
             self._label_plug()
+            self.set_positions()
         else:
             logging.info("No changes to settings made...")
 
