@@ -445,6 +445,7 @@ class UKWD_Settings(AbstractPlugboard):
         for group in "ABCDEF", "GHIKLM", "NOPQRS", "TUVWXZ":
             col_frame = QFrame(plug_frame)
             col_layout = QHBoxLayout(col_frame)
+            col_layout.setMargin(0)
 
             for letter in group:
                 socket = Socket(self, letter, self.connect_sockets, self.refresh_apply)
@@ -455,6 +456,7 @@ class UKWD_Settings(AbstractPlugboard):
             plug_layout.addWidget(col_frame)
 
         btn_frame = QFrame(self)
+        btn_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         btn_layout = QHBoxLayout(btn_frame)
         btn_layout.setAlignment(Qt.AlignRight)
 

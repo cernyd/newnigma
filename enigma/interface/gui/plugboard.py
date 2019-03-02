@@ -14,11 +14,13 @@ class PlugboardDialog(AbstractPlugboard):
         super().__init__(master, enigma_api, "Plugboard")
 
         # GENERATE PAIRS =======================================================
+
         frame = QFrame(self)
 
         for row in layout:
             row_frame = QFrame(frame)
             row_layout = QHBoxLayout(row_frame)
+            row_layout.setMargin(0)
 
             for letter in row:
                 letter = alphabet[letter]
@@ -34,6 +36,7 @@ class PlugboardDialog(AbstractPlugboard):
         # BUTTONS ==============================================================
 
         self._button_frame = QFrame(self)
+        self._button_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self._button_layout = QHBoxLayout(self._button_frame)
 
         self.reset_all = QPushButton("Clear pairs")
@@ -83,18 +86,16 @@ class PlugboardDialog(AbstractPlugboard):
         Enables "Apply" button either if Uhr is disabled or Uhr is enabled and
         10 pairs are set
         """
-        if self.enable_uhr.isChecked():
-            pair_n = len(self._pairs())
-            if pair_n != 10:
-                self.apply_btn.setDisabled(True)
-                self.apply_btn.setToolTip(
-                    "When using the Uhr, exactly 10 plug pairs "
-                    "must be connected!\n%d pairs left to connect..." % (10 - pair_n)
-                )
-            else:
-                self.apply_btn.setDisabled(False)
-                self.apply_btn.setToolTip(None)
+        pair_n = len(self._pairs())
+        if self.enable_uhr.isChecked() and pair_n != 10:
+            logging.info("Uhr pre-requisites not met, keeping button disabled...")
+            self.apply_btn.setDisabled(True)
+            self.apply_btn.setToolTip(
+                "When using the Uhr, exactly 10 plug pairs "
+                "must be connected!\n%d pairs left to connect..." % (10 - pair_n)
+            )
         else:
+            logging.info("Apply conditions met, Apply button enabled...")
             self.apply_btn.setDisabled(False)
             self.apply_btn.setToolTip(None)
 
@@ -153,11 +154,7 @@ class UhrDialog(QDialog):
 
         self._uhr_position = uhr_position
 
-        try:
-            self.indicator = QLabel(str(uhr_position()))
-        except ValueError:
-            self.indicator = QLabel("00")
-
+        self.indicator = QLabel("00")
         self.indicator.setStyleSheet(
             "font-size: 20px; text-align: center; background-color: white"
         )
@@ -171,24 +168,35 @@ class UhrDialog(QDialog):
         self.dial.setFixedSize(280, 280)
         self.dial.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
+        position = 0
         try:
-            logging.info("Setting Uhr dial to position %d..." % uhr_position())
-            self.dial.setValue(uhr_position())
+            position = uhr_position()
+            logging.info("Successfully loaded Uhr position %d from plug..." % position)
         except ValueError:
-            logging.info("No Uhr position, loading default...")
+            logging.info("Failed loading Uhr position from plug, setting to 0...")
 
+        self.dial.setValue(position)
+        self._old_position = position
+        self.indicator.setText("%02d" % position)
         self.dial.valueChanged.connect(self.refresh_indicator)
 
         # BUTTONS ==============================================================
 
         apply_btn = QPushButton("Apply")
-        apply_btn.clicked.connect(self.close)
+        apply_btn.clicked.connect(self.apply)
+        storno_btn = QPushButton("Storno")
+        storno_btn.clicked.connect(self.storno)
+        btn_frame = QFrame(self)
+        btn_layout = QHBoxLayout(btn_frame)
 
         # SHOW WIDGETS =========================================================
 
+        btn_layout.addWidget(storno_btn)
+        btn_layout.addWidget(apply_btn)
+        main_layout.addWidget(btn_frame)
         main_layout.addWidget(self.indicator, alignment=Qt.AlignHCenter)
         main_layout.addWidget(self.dial, alignment=Qt.AlignHCenter)
-        main_layout.addWidget(apply_btn)
+        main_layout.addWidget(btn_frame)
 
     def refresh_indicator(self):
         """
@@ -201,3 +209,13 @@ class UhrDialog(QDialog):
         Returns current Uhr dial setting
         """
         return self.dial.value()
+
+    def apply(self):
+        self._old_position = self.dial.value()
+        logging.info("New Uhr position %d applied, closing..." % self._old_position)
+        self.close()
+
+    def storno(self):
+        logging.info("Storno, reverting to old position %d..." % self._old_position)
+        self.dial.setValue(self._old_position)
+        self.close()

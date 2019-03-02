@@ -286,8 +286,9 @@ class AbstractPlugboard(QDialog):
                 self.plugs[socket].set_text("")
             else:
                 self.pairs[socket] = other_socket
-                self.pairs[other_socket] = socket
                 self.plugs[socket].set_text(other_socket)
+
+                self.pairs[other_socket] = socket
                 self.plugs[other_socket].set_text(socket)
 
 
@@ -306,7 +307,8 @@ class Socket(QFrame):
         # QT WINDOW SETTINGS ===================================================
 
         layout = QVBoxLayout(self)
-        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        # self.setStyleSheet("background-color: red;")
 
         # ATTRIBUTES ===========================================================
 
@@ -319,7 +321,6 @@ class Socket(QFrame):
 
         label = QLabel(letter)
         label.setStyleSheet("font-size: 30px; text-align: center;")
-        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.entry = QLineEdit()
         self.entry.setMaxLength(1)
         self.entry.textChanged.connect(self.entry_event)
@@ -339,21 +340,22 @@ class Socket(QFrame):
 
         letter = self.entry.text().upper()
         if letter not in alphabet:
-            self.entry.blockSignals(True)
             self.set_text("")
-            self.entry.blockSignals(False)
         if self.entry.isModified():  # Prevents recursive event calls
             if letter:
                 self.connect_plug(self.letter, letter)
             else:
                 self.connect_plug(self.letter, None)
 
-    def set_text(self, letter):
+    def set_text(self, letter, block_event=True):
         """
         Sets text to the plug entrybox and sets white (vacant) or black
         (occupied) background color
         :param letter: Sets text to the newly selected letter
         """
+        if block_event:
+            self.entry.blockSignals(True)
+
         if letter:
             self.entry.setStyleSheet("background-color: black; color: white;"
                                      "text-align: center;"
@@ -362,3 +364,6 @@ class Socket(QFrame):
             self.entry.setStyleSheet("background-color: white; color: black;"
                                      "text-align: center; font-size: 30px;")
         self.entry.setText(letter)
+
+        if block_event:
+            self.entry.blockSignals(False)
