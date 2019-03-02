@@ -259,7 +259,6 @@ class AbstractPlugboard(QDialog):
         """
         Clears all selected pairs and closes the window
         """
-        print("old pairs" + str(self.old_pairs))
         logging.info("Cancelling changes to wiring...")
         self.set_pairs(self.old_pairs)
         self.close()

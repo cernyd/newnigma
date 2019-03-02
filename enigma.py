@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     argument_data = (
         (
-            "--test",
+            ("-t", "--test"),
             dict(
                 help="runs tests before launching the simulator to"
                 "ensure it works correctly",
@@ -29,14 +29,21 @@ if __name__ == "__main__":
             ),
         ),
         (
-            "--cli",
+            ("-T", ),
+            dict(
+                help="runs tests with detailed stack traces and quits",
+                dest="only_run_tests"
+            ),
+        ),
+        (
+            ("-c", "--cli"),
             dict(help="launches the simulator in the command line mode", dest="cli"),
         ),
-        ("--preview", dict(help="Runs a sample cli command")),
-        ("--verbose", dict(help="Turns on verbose logging messages")),
+        (("-p", "--preview"), dict(help="Runs a sample cli command")),
+        (("-v", "--verbose"), dict(help="Turns on verbose logging messages")),
     )
     for arg in argument_data:
-        parser.add_argument(arg[0], **arg[1], action="store_true", default=False)
+        parser.add_argument(*arg[0], **arg[1], action="store_true", default=False)
 
     # ====================================================
     # CLI GROUP
@@ -44,16 +51,16 @@ if __name__ == "__main__":
     cli_args = parser.add_argument_group("arguments for cli mode")
     cli_data = (
         (
-            "--model",
+            ("--model", ),
             dict(
                 help="available Enigma models: %s" % ", ".join(historical.keys()),
                 nargs=1,
                 dest="model",
             ),
         ),
-        ("--rotors", dict(help="rotors that will be used", nargs="+", metavar="rotor")),
+        (("--rotors", ), dict(help="rotors that will be used", nargs="+", metavar="rotor")),
         (
-            "--positions",
+            ("--positions", ),
             dict(
                 help="starting rotor positions",
                 nargs="+",
@@ -62,7 +69,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            "--ring_settings",
+            ("--ring_settings", ),
             dict(
                 help="rotor ring settings",
                 nargs="+",
@@ -70,9 +77,9 @@ if __name__ == "__main__":
                 metavar="ring_setting",
             ),
         ),
-        ("--reflector", dict(help="reflector that will be used", nargs=1)),
+        (("--reflector", ), dict(help="reflector that will be used", nargs=1)),
         (
-            "--reflector_position",
+            ("--reflector_position", ),
             dict(
                 help="reflector position (only available in EnigmaD, EnigmaK,"
                 "SwissK, EnigmaG, Railway, Tirpitz)",
@@ -82,7 +89,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            "--reflector_pairs",
+            ("--reflector_pairs", ),
             dict(
                 help="reflector wiring pairs for UKW-D (pairs do not "
                 "correspond with real wiring!)",
@@ -92,7 +99,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            "--plug_pairs",
+            ("--plug_pairs", ),
             dict(
                 help="letter pairs to connect in the plugboard",
                 nargs="*",
@@ -101,7 +108,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            "--uhr",
+            ("--uhr", ),
             dict(
                 help="connects uhr to plugboard and sets position",
                 nargs=1,
@@ -109,11 +116,11 @@ if __name__ == "__main__":
                 metavar="position",
             ),
         ),
-        ("--message", dict(help="message to be encrypted", nargs=1, dest="message")),
+        (("-m", "--message"), dict(help="message to be encrypted", nargs=1, dest="message")),
     )
 
     for arg in cli_data:
-        cli_args.add_argument(arg[0], **arg[1])
+        cli_args.add_argument(*arg[0], **arg[1])
 
     # ARG PARSE ====================================================
     args = parser.parse_args()
@@ -122,12 +129,15 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(module)s:%(funcName)s: %(message)s")
     if args.run_tests:
         logging.info("Running pre-launch tests...")
-        exit_code = pytest.main(["tests", "-x", "--tb=no"])
+        exit_code = pytest.main(["tests", "-x", "--tb=no"])  # -x = stop at first failure
 
         if exit_code == 1:
             logging.error("Pre-launch tests failed! Aborting...")
             exit(1)
         logging.info("All pre-launch tests succeeded...")
+    elif args.only_run_tests:
+        logging.info("Running tests with detailed feedback...")
+        exit(pytest.main(["tests", "--tb=long", "--durations=3"]))
 
     # CONFIG LOAD ====================================================
 

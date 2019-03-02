@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from re import sub, findall
 from string import ascii_uppercase as alphabet
 from textwrap import wrap

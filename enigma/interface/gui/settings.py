@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import Socket
 import logging
@@ -246,7 +244,6 @@ class Settings(QDialog):
         self.generate_components(reflectors, rotors[::], rotor_n)
 
         for selected, i in zip([0, 0, 1, 2][-rotor_n:], range(rotor_n)):
-            print("THIS I %d" % i)
             self.rotor_selectors[i].button(selected).setChecked(True)
 
         self.ukwd.clear_pairs()
@@ -265,7 +262,6 @@ class Settings(QDialog):
         if "Beta" in rotors:
             rotors.remove("Beta")
             rotors.remove("Gamma")
-        print(self.enigma_api.rotors())
 
         reflector_i = reflectors.index(self.enigma_api.reflector())
         self.reflector_group.button(reflector_i).setChecked(True)

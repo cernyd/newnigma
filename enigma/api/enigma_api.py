@@ -1,5 +1,3 @@
-#! /usr/env python3
-
 from enigma.core.components import (
     UKW_D,
     UKWD,
