@@ -5,7 +5,7 @@ guiv:
 cli:
 	echo "Run the command 'python3 enigma.py --cli'"
 test:
-	python3 -m pytest -s
+	python3 -m pytest -x
 install:
 	sudo apt update
 	sudo apt install -y python3-pip pytest

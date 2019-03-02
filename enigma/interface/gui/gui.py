@@ -169,15 +169,19 @@ class Root(QWidget):
             try:
                 data = load_config(filename)
                 self.enigma_api.load_from_config(data)
+                logging.info('Successfully loaded config from file "%s"' % filename)
             except (FileNotFoundError, JSONDecodeError) as e:
                 QMessageBox.critical(
-                    self, "Load config", "Unable to load config from the "
+                    self, "Load config", "Error retrieving data from "
                           "selected file!\nError message:\n\n %s" % repr(e)
                 )
                 logging.error('Failed to load config from file "%s"' % filename, exc_info=True)
                 return
+            except Exception as e:
+                QMessageBox.critical(self, "Load config", "Following error occured during "
+                                           "applying loaded settings:\n%s" % repr(e))
+                logging.error("Unable to load config from file, keeping old settings...", exc_info=True)
 
-            logging.info('Successfully loaded config from file "%s"' % filename)
             self._rotors.generate_rotors()
 
             self.i_textbox.blockSignals(True)

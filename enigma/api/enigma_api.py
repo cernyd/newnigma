@@ -389,27 +389,33 @@ class EnigmaAPI:
         Generates components and sets their settings based on input data
         :param config: {dict} Dictionary of saved settings
         """
-        self.model(config["model"])
-        self.reflector(config["reflector"])
-        self.rotors(config["rotors"])
-        self.positions(config["rotor_positions"])
-        self.ring_settings(config["ring_settings"])
+        old_config = self.get_config()
 
         try:
-            self._enigma.reflector_position(config.get("reflector_position", None))
-        except (KeyError, ValueError):
-            pass
+            self.model(config["model"])
+            self.reflector(config["reflector"])
+            self.rotors(config["rotors"])
+            self.positions(config["rotor_positions"])
+            self.ring_settings(config["ring_settings"])
 
-        try:
-            self.reflector_pairs(config["reflector_wiring"])
-        except (KeyError, ValueError):
-            pass
+            try:
+                self._enigma.reflector_position(config.get("reflector_position", None))
+            except (KeyError, ValueError):
+                pass
 
-        if "uhr_position" in config:
-            self._enigma.uhr('connect')
-            self.uhr_position(config["uhr_position"])
+            try:
+                self.reflector_pairs(config["reflector_wiring"])
+            except (KeyError, ValueError):
+                pass
 
-        self.plug_pairs(config["plug_pairs"])
+            if "uhr_position" in config:
+                self._enigma.uhr('connect')
+                self.uhr_position(config["uhr_position"])
+
+            self.plug_pairs(config["plug_pairs"])
+        except Exception as e:
+            self.load_from_config(old_config)
+            raise
 
     def get_config(self):
         """

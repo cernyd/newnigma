@@ -175,16 +175,14 @@ Rewired version of the Enigma K used by the Japanese army
 stylesheet = 'font-family: "Courier New", Courier, monospace'
 
 
-models = historical.keys()
 view_data = {}
-
 
 resources = {
     "EnigmaI": {"description": _enigma1, "img": base_dir + "enigma1.jpg"},
     "EnigmaM3": {"description": _enigmam3, "img": base_dir + "enigmam3.jpg"},
     "EnigmaM4": {"description": _enigmam4, "img": base_dir + "enigmam4.jpg"},
     "Norenigma": {"description": _norenigma, "img": base_dir + "enigma1.jpg"},
-    "EnigmaG": {"description": _enigmag, "img": base_dir + "/enigmag.jpg"},
+    "EnigmaG": {"description": _enigmag, "img": base_dir + "enigmag.jpg"},
     "EnigmaD": {
         "description": _enigmad,
         "img": base_dir + "enigmad.jpg",
@@ -195,9 +193,22 @@ resources = {
     "Tirpitz": {"description": _tirpitz, "img": base_dir + "tirpitz.jpg"},
 }
 
+
 for model in historical:
-    view_data[model] = resources.get(model, {"description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
-                                             "img": base_dir + "unknown.jpg"})
+    view_data[model] = resources.get(model, {
+        "description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
+        "img": base_dir + "unknown.jpg"
+    })
+
+
+def load_mods(mod_cfg):  # TODO: Fully implement mod loader in the end
+    for mod in mod_cfg:
+        view_data = mod.get(['view_data'], {
+            "description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
+            "img": base_dir + "unknown.jpg"
+        })
+        # config = mod.
+
 
 
 class AbstractPlugboard(QDialog):

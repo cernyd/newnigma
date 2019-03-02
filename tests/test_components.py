@@ -121,7 +121,7 @@ he implementation by encrypting each letter of the alphabet
     enigma = EnigmaAPI.generate_enigma("EnigmaM3", "UKW-B", ["I", "II", "III"])
 
     for letter in alphabet:
-        for _ in range(4000):
+        for _ in range(1000):
             assert (
                 enigma.press_key(letter) != letter
             ), "Enigma implementation wrong!"

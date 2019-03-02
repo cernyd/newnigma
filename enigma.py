@@ -122,7 +122,12 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(module)s:%(funcName)s: %(message)s")
     if args.run_tests:
         logging.info("Running pre-launch tests...")
-        pytest.main(["tests"])
+        exit_code = pytest.main(["tests", "-x", "--tb=no"])
+
+        if exit_code == 1:
+            logging.error("Pre-launch tests failed! Aborting...")
+            exit(1)
+        logging.info("All pre-launch tests succeeded...")
 
     # CONFIG LOAD ====================================================
 
