@@ -268,25 +268,22 @@ class AbstractPlugboard(QDialog):
         Connects two sockets without unnecessary interaction of two sockets
         to avoid recursive event calls)
         """
-        if not other_socket:
+        plug = self.plugs[socket]
+        other_socket = other_socket if other_socket else ""
+
+        if not other_socket:  # Disconnect
             other = self.pairs[socket]
 
             self.pairs[other] = None
             self.pairs[socket] = None
-            self.plugs[socket].set_text("")
-            self.plugs[other].set_text("")
+            plug.set_text("")
+            self.plugs[other].set_text(None)
         else:
-            if other_socket in self.banned or not other_socket:
-                self.plugs[socket].set_text("")
-                return
-
-            if self.pairs[other_socket]:
-                self.plugs[socket].set_text("")
-            elif socket == other_socket:
-                self.plugs[socket].set_text("")
-            else:
+            if other_socket in self.banned + [socket] or self.pairs[other_socket]:  # Check if letter is valid
+                plug.set_text("")
+            else:  # Connects sockets
                 self.pairs[socket] = other_socket
-                self.plugs[socket].set_text(other_socket)
+                plug.set_text(other_socket)
 
                 self.pairs[other_socket] = socket
                 self.plugs[other_socket].set_text(socket)
@@ -308,7 +305,6 @@ class Socket(QFrame):
 
         layout = QVBoxLayout(self)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        # self.setStyleSheet("background-color: red;")
 
         # ATTRIBUTES ===========================================================
 
@@ -332,6 +328,12 @@ class Socket(QFrame):
         layout.addWidget(label, alignment=Qt.AlignCenter)
         layout.addWidget(self.entry, alignment=Qt.AlignCenter)
 
+    def pair(self):
+        """
+        Returns currently wired pair.
+        """
+        return self.entry.text().upper()
+
     def entry_event(self):
         """
         Responds to a event when something changes in the plug entry
@@ -340,14 +342,14 @@ class Socket(QFrame):
 
         letter = self.entry.text().upper()
         if letter not in alphabet:
-            self.set_text("")
-        if self.entry.isModified():  # Prevents recursive event calls
+            self.set_text("", True)
+        elif self.entry.isModified():  # Prevents recursive event calls
             if letter:
                 self.connect_plug(self.letter, letter)
             else:
                 self.connect_plug(self.letter, None)
 
-    def set_text(self, letter, block_event=True):
+    def set_text(self, letter, block_event=False):
         """
         Sets text to the plug entrybox and sets white (vacant) or black
         (occupied) background color

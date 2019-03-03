@@ -60,7 +60,11 @@ class PlugboardDialog(AbstractPlugboard):
         # CONNECTS SOCKETS =====================================================
 
         self.enigma_api = enigma_api
-        self.set_pairs(self.enigma_api.plug_pairs())
+        try:
+            self.set_pairs(self.enigma_api.plug_pairs())
+            self.refresh_apply()
+        except ValueError:
+            pass
 
         # SHOW WIDGETS =========================================================
 
@@ -74,12 +78,6 @@ class PlugboardDialog(AbstractPlugboard):
         self.main_layout.addWidget(self._button_frame)
 
         self.change_uhr_status()
-
-    def refresh_pairs(self):
-        try:
-            self.set_pairs(self.enigma_api.plug_pairs())
-        except ValueError:
-            pass
 
     def refresh_apply(self):
         """
