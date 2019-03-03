@@ -224,6 +224,7 @@ class AbstractPlugboard(QDialog):
         self.old_pairs = {}
         self.plugs = {}
         self.banned = []
+        self.uhr_enabled = False
 
     def _pairs(self):  # TODO: Duplicate
         """
@@ -283,10 +284,15 @@ class AbstractPlugboard(QDialog):
                 plug.set_text("")
             else:  # Connects sockets
                 self.pairs[socket] = other_socket
-                plug.set_text(other_socket)
-
+                plug_id = len(self._pairs())
                 self.pairs[other_socket] = socket
-                self.plugs[other_socket].set_text(socket)
+
+                if self.uhr_enabled:
+                    plug.set_text(other_socket, uhr_pair="%da" % plug_id)
+                    self.plugs[other_socket].set_text(socket, uhr_pair="%db" % plug_id)
+                else:
+                    plug.set_text(other_socket)
+                    self.plugs[other_socket].set_text(socket)
 
 
 class Socket(QFrame):
@@ -349,22 +355,34 @@ class Socket(QFrame):
             else:
                 self.connect_plug(self.letter, None)
 
-    def set_text(self, letter, block_event=False):
+    def set_text(self, letter, block_event=False, uhr_pair=None):
         """
         Sets text to the plug entrybox and sets white (vacant) or black
         (occupied) background color
         :param letter: Sets text to the newly selected letter
         """
+        stylesheet = "background-color: %s; color: %s; text-align: center; font-size: 30px;"
+
         if block_event:
             self.entry.blockSignals(True)
 
+        self.setToolTip(None)
+
         if letter:
-            self.entry.setStyleSheet("background-color: black; color: white;"
-                                     "text-align: center;"
-                                     "font-size: 30px;")
+            color = ("black", "white")
         else:
-            self.entry.setStyleSheet("background-color: white; color: black;"
-                                     "text-align: center; font-size: 30px;")
+            color = ("white", "black")
+
+        if uhr_pair:
+            if "a" in uhr_pair:
+                color = ("red", "white")
+            else:
+                color = ("gray", "white")
+
+            self.setToolTip(uhr_pair)
+
+        self.entry.setStyleSheet(stylesheet % color)
+
         self.entry.setText(letter)
 
         if block_event:

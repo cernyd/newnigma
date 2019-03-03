@@ -101,11 +101,12 @@ class PlugboardDialog(AbstractPlugboard):
         """
         Enables "Uhr" button if the checkmark is enabled
         """
+        self.clear_pairs()
         self.refresh_apply()
-        if self.enable_uhr.isChecked():
-            self.uhr.setEnabled(True)
-        else:
-            self.uhr.setEnabled(False)
+
+        self.uhr_enabled = self.enable_uhr.isChecked()
+        self.uhr.setEnabled(self.uhr_enabled)
+        if not self.uhr_enabled:
             self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
 
     def collect(self):
