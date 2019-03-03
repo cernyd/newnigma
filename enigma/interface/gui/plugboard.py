@@ -76,7 +76,6 @@ class PlugboardDialog(AbstractPlugboard):
 
         self.main_layout.addWidget(self._button_frame)
 
-
     def refresh_apply(self):
         """
         Enables "Apply" button either if Uhr is disabled or Uhr is enabled and

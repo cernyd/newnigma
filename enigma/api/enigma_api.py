@@ -419,8 +419,11 @@ class EnigmaAPI:
         data["rotor_positions"] = self._enigma.positions()
         data["ring_settings"] = self._enigma.ring_settings()
         data["plug_pairs"] = []
-        for plug in self._enigma.plug_pairs():
-            data["plug_pairs"].append("".join(plug))
+        try:
+            for plug in self._enigma.plug_pairs():
+                data["plug_pairs"].append("".join(plug))
+        except ValueError:
+            data["plug_pairs"] = None
 
         try:
             data["reflector_position"] = self._enigma.reflector_position()
@@ -462,7 +465,13 @@ class EnigmaAPI:
         except KeyError:
             pass
 
-        plug_pairs = "\nPlugboard pairs: %s" % " ".join(data["plug_pairs"])
+        plug_pairs = data["plug_pairs"]
+        plug_msg = "\nPlugboard pairs: %s"
+        if plug_pairs:
+            if plug_pairs:
+                plug_pairs = plug_msg % " ".join(plug_pairs)
+        else:
+            plug_pairs = plug_msg % "-"
         msg += plug_pairs
 
         if self.uhr():

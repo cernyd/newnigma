@@ -231,9 +231,9 @@ class AbstractPlugboard(QDialog):
         """
         pairs = []
         for plug in self.plugs.values():
-            pair = plug.pair()
-            if pair and "a" in plug.marking:
-                pairs.append((plug.marking[0], pair))
+            marking = plug.marking
+            if marking and "a" in marking:
+                pairs.append((marking[0], plug.pair()))
 
         return [pair[1] for pair in sorted(pairs, key=lambda pair: pair[0])]
 
@@ -280,7 +280,8 @@ class AbstractPlugboard(QDialog):
                 self.plugs[other].set_text(None)
         else:
             # Check if letter is valid
-            if other_socket in self.banned + [socket] or self.plugs[other_socket].pair():
+            if other_socket in self.banned + [socket] or self.plugs[other_socket].pair() \
+               or (len(self._pairs()) == 10 and self.uhr_enabled):
                 plug.set_text("")
             else:  # Connects sockets
                 plug_id = len(self._pairs()) + 1
@@ -292,7 +293,7 @@ class AbstractPlugboard(QDialog):
                     self.plugs[other_socket].set_text(socket, False, b_plug, True)
                 else:
                     plug.set_text(other_socket, False, a_plug)
-                    self.plugs[other_socket].set_text(socket, False, a_plug)
+                    self.plugs[other_socket].set_text(socket, False, b_plug)
 
         if refresh:
             self.apply_plug()

@@ -65,11 +65,8 @@ class Settings(QDialog):
         model_i = list(view_data.keys()).index(self.enigma_api.model())
         self.stacked_wikis.select_model(model_i)
         self.stacked_wikis.highlight(model_i)
-        self.load_from_api()
         main_layout.addWidget(tab_widget)
         main_layout.addWidget(self.button_frame)
-
-        self.refresh_ukwd()
 
     def open_ukwd_wiring(self):
         """
@@ -491,6 +488,8 @@ class UKWD_Settings(AbstractPlugboard):
         if len(self._pairs()) != 12:
             self.apply_btn.setDisabled(True)
             self.apply_btn.setToolTip("All 12 pairs must be connected!")
+            logging.info("Apply conditions met, Apply button enabled...")
         else:
             self.apply_btn.setDisabled(False)
             self.apply_btn.setToolTip(None)
+            logging.info("Apply conditions met, Apply button enabled...")

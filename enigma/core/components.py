@@ -737,7 +737,8 @@ class Enigma:
     def plug_pairs(self, new_plug_pairs=None):
         if self._plugboard is not None:
             return self._plugboard.pairs(new_plug_pairs)
-        return ""
+        else:
+            raise ValueError("This Enigma model doesn't have a plugboard!")
 
     def uhr(self, action=None):
         if not action:
