@@ -439,6 +439,7 @@ class UKWD_Settings(AbstractPlugboard):
         """
         super().__init__(master, enigma_api, "UKW-D Wiring")
         self.banned = ["J", "Y"]
+        self.apply_plug = self.refresh_apply
 
         plug_frame = QFrame(self)
         plug_layout = QVBoxLayout(plug_frame)
@@ -448,10 +449,9 @@ class UKWD_Settings(AbstractPlugboard):
             col_layout.setMargin(0)
 
             for letter in group:
-                socket = Socket(self, letter, self.connect_sockets, self.refresh_apply)
+                socket = Socket(self, letter, self.connect_sockets)
                 col_layout.addWidget(socket)
                 self.plugs[letter] = socket
-                self.pairs[letter] = None
 
             plug_layout.addWidget(col_frame)
 

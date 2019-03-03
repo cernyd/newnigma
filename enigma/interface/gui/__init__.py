@@ -220,19 +220,20 @@ class AbstractPlugboard(QDialog):
         self.setWindowTitle(title)
         self.enigma_api = enigma_api
 
-        self.pairs = {}  # TODO: Duplicate
         self.old_pairs = {}
         self.plugs = {}
         self.banned = []
         self.uhr_enabled = False
+        self.apply_plug = lambda: None
 
     def _pairs(self):  # TODO: Duplicate
         """
         Returns all selected wiring pairs
         """
         pairs = []
-        for pair in self.pairs.items():
-            if not contains(pairs, pair) and all(pair):
+        for plug in self.plugs.values():
+            pair = plug.pair()
+            if pair and not contains(pairs, pair):
                 pairs.append(pair)
 
         return pairs
@@ -240,10 +241,12 @@ class AbstractPlugboard(QDialog):
     def set_pairs(self, new_pairs=[]):
         self.clear_pairs()
         if new_pairs:
-            logging.info('Settings wiring pairs to "%s"' % str(new_pairs))
+            logging.info('Setting wiring pairs to "%s"' % str(new_pairs))
             for pair in new_pairs:
-                self.connect_sockets(*pair)
+                self.connect_sockets(*pair, False)
             self.old_pairs = self._pairs()
+
+        self.apply_plug()
 
     def apply(self):
         self.old_pairs = self._pairs()
@@ -251,10 +254,10 @@ class AbstractPlugboard(QDialog):
 
     def clear_pairs(self):
         logging.info("Clearing all wiring pairs...")
-        for key in self.pairs:
-            self.pairs[key] = None
         for plug in self.plugs.values():
-            plug.set_text("")
+            self.connect_sockets(plug.letter, None, False)
+
+        self.apply_plug()
 
     def storno(self):
         """
@@ -264,46 +267,43 @@ class AbstractPlugboard(QDialog):
         self.set_pairs(self.old_pairs)
         self.close()
 
-    def connect_sockets(self, socket, other_socket):
+    def connect_sockets(self, socket, other_socket, refresh=True):
         """
         Connects two sockets without unnecessary interaction of two sockets
         to avoid recursive event calls)
         """
         plug = self.plugs[socket]
-        other_socket = other_socket if other_socket else ""
 
         if not other_socket:  # Disconnect
-            other = self.pairs[socket]
-
-            self.pairs[other] = None
-            self.pairs[socket] = None
-            plug.set_text("")
-            self.plugs[other].set_text(None)
+            other = self.plugs[socket].connected_to
+            plug.set_text(None)
+            if other:
+                self.plugs[other].set_text(None)
         else:
-            if other_socket in self.banned + [socket] or self.pairs[other_socket]:  # Check if letter is valid
+            if other_socket in self.banned + [socket] or self.plugs[other_socket].pair():  # Check if letter is valid
                 plug.set_text("")
             else:  # Connects sockets
-                self.pairs[socket] = other_socket
                 plug_id = len(self._pairs())
-                self.pairs[other_socket] = socket
 
                 if self.uhr_enabled:
-                    plug.set_text(other_socket, uhr_pair="%da" % plug_id)
+                    plug.set_text(other_socket, False, uhr_pair="%da" % plug_id)
                     self.plugs[other_socket].set_text(socket, uhr_pair="%db" % plug_id)
                 else:
-                    plug.set_text(other_socket)
+                    plug.set_text(other_socket, False)
                     self.plugs[other_socket].set_text(socket)
+
+        if refresh:
+            self.apply_plug()
 
 
 class Socket(QFrame):
-    def __init__(self, master, letter, connect_plug, apply_plug):
+    def __init__(self, master, letter, connect_plug):
         """
         One sockets with label and text entry
         :param master: Qt parent object
         :param letter: Letter to serve as the label
         :param connect_plug: calls parent to connect with the letter typed in
                              the entry box
-        :param apply_plug: Refreshes the "Apply" button
         """
         super().__init__(master)
 
@@ -316,7 +316,6 @@ class Socket(QFrame):
 
         self.connect_plug = connect_plug
         self.letter = letter
-        self.apply_plug = apply_plug
         self.connected_to = None
 
         # ENTRY ================================================================
@@ -338,14 +337,15 @@ class Socket(QFrame):
         """
         Returns currently wired pair.
         """
-        return self.entry.text().upper()
+        if self.connected_to:
+            return self.letter + self.connected_to
+        else:
+            return None
 
     def entry_event(self):
         """
         Responds to a event when something changes in the plug entry
         """
-        self.apply_plug()
-
         letter = self.entry.text().upper()
         if letter not in alphabet:
             self.set_text("", True)
@@ -382,8 +382,8 @@ class Socket(QFrame):
             self.setToolTip(uhr_pair)
 
         self.entry.setStyleSheet(stylesheet % color)
-
         self.entry.setText(letter)
+        self.connected_to = letter
 
         if block_event:
             self.entry.blockSignals(False)

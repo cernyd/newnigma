@@ -13,6 +13,8 @@ class PlugboardDialog(AbstractPlugboard):
         """
         super().__init__(master, enigma_api, "Plugboard")
 
+        self.apply_plug = self.refresh_apply
+
         # GENERATE PAIRS =======================================================
 
         frame = QFrame(self)
@@ -24,11 +26,8 @@ class PlugboardDialog(AbstractPlugboard):
 
             for letter in row:
                 letter = alphabet[letter]
-                socket = Socket(
-                    row_frame, letter, self.connect_sockets, self.refresh_apply
-                )
+                socket = Socket(row_frame, letter, self.connect_sockets)
                 self.plugs[letter] = socket
-                self.pairs[letter] = None
                 row_layout.addWidget(socket)
 
             self.main_layout.addWidget(row_frame)
@@ -55,14 +54,13 @@ class PlugboardDialog(AbstractPlugboard):
             "Enable Uhr"
         )  # In that case all plugs must be occupied! (and red/white)
         self.enable_uhr.setChecked(enigma_api.uhr())
-        self.enable_uhr.stateChanged.connect(self.change_uhr_status)
+        self.enable_uhr.stateChanged.connect(lambda: self.change_uhr_status())
 
         # CONNECTS SOCKETS =====================================================
 
         self.enigma_api = enigma_api
         try:
             self.set_pairs(self.enigma_api.plug_pairs())
-            self.refresh_apply()
         except ValueError:
             pass
 
@@ -77,7 +75,7 @@ class PlugboardDialog(AbstractPlugboard):
 
         self.main_layout.addWidget(self._button_frame)
 
-        self.change_uhr_status()
+        self.change_uhr_status(False)
 
     def refresh_apply(self):
         """
@@ -97,14 +95,16 @@ class PlugboardDialog(AbstractPlugboard):
             self.apply_btn.setDisabled(False)
             self.apply_btn.setToolTip(None)
 
-    def change_uhr_status(self):
+    def change_uhr_status(self, clear=True):
         """
         Enables "Uhr" button if the checkmark is enabled
         """
-        self.clear_pairs()
+        if clear:
+            print("CLEAR")
+            self.clear_pairs()
         self.refresh_apply()
 
-        self.uhr_enabled = self.enable_uhr.isChecked()
+        self.uhr_enabled = bool(self.enable_uhr.isChecked())
         self.uhr.setEnabled(self.uhr_enabled)
         if not self.uhr_enabled:
             self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
