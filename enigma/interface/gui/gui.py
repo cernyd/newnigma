@@ -2,6 +2,7 @@ import logging
 from re import findall, sub
 from string import ascii_uppercase as alphabet
 from textwrap import wrap
+from copy import copy
 
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import *
@@ -83,7 +84,7 @@ class Root(QWidget):
             self,
             enigma_api.encrypt,
             self.o_textbox.insert,
-            self.o_textbox.sync_length,
+            self.o_textbox,
             self._rotors.set_positions,
             enigma_api.letter_group,
             enigma_api.revert_by,
@@ -536,7 +537,7 @@ class _InputTextBox(QPlainTextEdit):
         master,
         encrypt_plug,
         output_plug,
-        sync_plug,
+        output_textbox,
         refresh_plug,
         letter_group_plug,
         revert_pos,
@@ -549,8 +550,7 @@ class _InputTextBox(QPlainTextEdit):
                                         and returns one letter, should provide
                                         encryption
         :param output_plug: {callable} Accepts text that is to be displayed
-        :param sync_plug: {callable} Synchronizes length of this
-                                     widget with output widget
+        :param output_textbox: {callable} Output textbox object
         :param refresh_plug: {callable} Refreshes displayed rotor positions
                                         a rotor positions
         :param letter_group_plug: {callable} Formats input text into blocks of
@@ -576,16 +576,51 @@ class _InputTextBox(QPlainTextEdit):
 
         self.encrypt_plug = encrypt_plug
         self.output_plug = output_plug
-        self.sync_plug = sync_plug
+        self.sync_plug = output_textbox.sync_length
+        self.other_scrollbar = output_textbox.verticalScrollBar()
+        self.output_textbox = output_textbox
         self.refresh_plug = refresh_plug
         self.letter_group_plug = letter_group_plug
         self._revert_pos = revert_pos
         self.overflow_plug = overflow_plug
 
+        # SCROLLBAR SYNC ======================================================
+
+        self.verticalScrollBar().valueChanged.connect(self.sync_scroll)
+        self.other_scrollbar.valueChanged.connect(lambda new_val: self.sync_scroll(new_val, True))
+
+        # HIGHLIGHTER =========================================================
+
+        output_textbox.selectionChanged.connect(self.select_block)
+        self.selectionChanged.connect(lambda: self.select_block(True))
+
         # ATTRIBUTES ==========================================================
 
         self.last_len = 0
         self._revert_pos = revert_pos
+
+    def select_block(self, this=False):
+        """
+        Synchronizes selection blocks between two menus
+        """
+        if this:
+            cursor = self.textCursor()
+            start, end = cursor.selectionStart(), cursor.selectionEnd()
+            new_cursor = self.output_textbox.textCursor()
+            new_cursor.setPosition(start)
+            new_cursor.setPosition(end, QTextCursor.KeepAnchor)
+            self.output_textbox.blockSignals(True)
+            self.output_textbox.setTextCursor(new_cursor)
+            self.output_textbox.blockSignals(False)
+        else:
+            cursor = self.output_textbox.textCursor()
+            start, end = cursor.selectionStart(), cursor.selectionEnd()
+            new_cursor = self.textCursor()
+            new_cursor.setPosition(start)
+            new_cursor.setPosition(end, QTextCursor.KeepAnchor)
+            self.blockSignals(True)
+            self.setTextCursor(new_cursor)
+            self.blockSignals(False)
 
     def input_detected(self):
         """
@@ -628,10 +663,20 @@ class _InputTextBox(QPlainTextEdit):
         else:
             logging.info("No changes to buffer made...")
 
-
         if len(text) == 0:
             logging.info("Text buffer now empty...")
+
         self.set_text(text)
+
+    def sync_scroll(self, new_val, other=False):
+        if other:
+            self.other_scrollbar.blockSignals(True)
+            self.verticalScrollBar().setValue(new_val)
+            self.other_scrollbar.blockSignals(False)
+        else:
+            self.verticalScrollBar().blockSignals(True)
+            self.other_scrollbar.setValue(new_val)
+            self.verticalScrollBar().blockSignals(False)
 
     def set_text(self, text):
         self.blockSignals(True)  # Blocks programatical edits to the widget
