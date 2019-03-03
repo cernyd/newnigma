@@ -3,7 +3,6 @@ from PySide2.QtCore import QUrl, QSize, Qt, QDir
 from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor, QDesktopServices
 from string import ascii_uppercase as alphabet
 from enigma.utils.cfg_handler import save_config, load_config
-from enigma import contains
 from enigma.core.components import historical
 from json import JSONDecodeError
 import logging
@@ -233,10 +232,10 @@ class AbstractPlugboard(QDialog):
         pairs = []
         for plug in self.plugs.values():
             pair = plug.pair()
-            if pair and not contains(pairs, pair):
-                pairs.append(pair)
+            if pair and "a" in plug.marking:
+                pairs.append((plug.marking[0], pair))
 
-        return pairs
+        return [pair[1] for pair in sorted(pairs, key=lambda pair: pair[0])]
 
     def set_pairs(self, new_pairs=[]):
         self.clear_pairs()
@@ -280,17 +279,20 @@ class AbstractPlugboard(QDialog):
             if other:
                 self.plugs[other].set_text(None)
         else:
-            if other_socket in self.banned + [socket] or self.plugs[other_socket].pair():  # Check if letter is valid
+            # Check if letter is valid
+            if other_socket in self.banned + [socket] or self.plugs[other_socket].pair():
                 plug.set_text("")
             else:  # Connects sockets
-                plug_id = len(self._pairs())
+                plug_id = len(self._pairs()) + 1
+                a_plug = (plug_id, "a")
+                b_plug = (plug_id, "b")
 
                 if self.uhr_enabled:
-                    plug.set_text(other_socket, False, uhr_pair="%da" % plug_id)
-                    self.plugs[other_socket].set_text(socket, uhr_pair="%db" % plug_id)
+                    plug.set_text(other_socket, False, a_plug, True)
+                    self.plugs[other_socket].set_text(socket, False, b_plug, True)
                 else:
-                    plug.set_text(other_socket, False)
-                    self.plugs[other_socket].set_text(socket)
+                    plug.set_text(other_socket, False, a_plug)
+                    self.plugs[other_socket].set_text(socket, False, a_plug)
 
         if refresh:
             self.apply_plug()
@@ -317,6 +319,7 @@ class Socket(QFrame):
         self.connect_plug = connect_plug
         self.letter = letter
         self.connected_to = None
+        self.marking = None
 
         # ENTRY ================================================================
 
@@ -355,7 +358,7 @@ class Socket(QFrame):
             else:
                 self.connect_plug(self.letter, None)
 
-    def set_text(self, letter, block_event=False, uhr_pair=None):
+    def set_text(self, letter, block_event=False, marking=None, uhr=False):
         """
         Sets text to the plug entrybox and sets white (vacant) or black
         (occupied) background color
@@ -370,16 +373,18 @@ class Socket(QFrame):
 
         if letter:
             color = ("black", "white")
+            self.marking = marking
         else:
             color = ("white", "black")
+            self.marking = None
 
-        if uhr_pair:
-            if "a" in uhr_pair:
+        if uhr:
+            if "a" in marking:
                 color = ("red", "white")
             else:
                 color = ("gray", "white")
 
-            self.setToolTip(uhr_pair)
+            self.setToolTip(str(marking[0])+marking[1])
 
         self.entry.setStyleSheet(stylesheet % color)
         self.entry.setText(letter)

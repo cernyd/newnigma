@@ -59,6 +59,7 @@ class PlugboardDialog(AbstractPlugboard):
         # CONNECTS SOCKETS =====================================================
 
         self.enigma_api = enigma_api
+        self.change_uhr_status(False)
         try:
             self.set_pairs(self.enigma_api.plug_pairs())
         except ValueError:
@@ -75,7 +76,6 @@ class PlugboardDialog(AbstractPlugboard):
 
         self.main_layout.addWidget(self._button_frame)
 
-        self.change_uhr_status(False)
 
     def refresh_apply(self):
         """
@@ -100,7 +100,6 @@ class PlugboardDialog(AbstractPlugboard):
         Enables "Uhr" button if the checkmark is enabled
         """
         if clear:
-            print("CLEAR")
             self.clear_pairs()
         self.refresh_apply()
 
