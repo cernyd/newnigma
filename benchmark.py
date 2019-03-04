@@ -7,7 +7,7 @@ from enigma.api.enigma_api import EnigmaAPI
 
 def benchmark(char_n=None):
     enigma = EnigmaAPI.generate_enigma(
-        "EnigmaM4", "UKW-b", ["Beta", "I", "II", "III"]
+        "Enigma M4", "UKW-b", ["Beta", "I", "II", "III"]
     )
     enigma.uhr('connect')
     enigma.uhr_position(3)
@@ -15,7 +15,7 @@ def benchmark(char_n=None):
         ["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"]
     )
 
-    logging.info("Benchmarking encryption speed with EnigmaM4 and Uhr...")
+    logging.info("Benchmarking encryption speed with Enigma M4 and Uhr...")
     if type(char_n) == int:
         char_n = (char_n, )
     else:

@@ -177,7 +177,7 @@ class Settings(QDialog):
             final_rotors = rotors
 
             if "Beta" in rotors:
-                logging.info("EnigmaM4 rotors detected, adjusting radiobuttons...")
+                logging.info("Enigma M4 rotors detected, adjusting radiobuttons...")
                 if rotor == 0:
                     final_rotors = ["Beta", "Gamma"]
                 else:
@@ -267,7 +267,7 @@ class Settings(QDialog):
         self.reflector_group.button(reflector_i).setChecked(True)
 
         for i, rotor in enumerate(self.enigma_api.rotors()):
-            if model == "EnigmaM4" and self.enigma_api.reflector() != "UKW-D" and i == 0:
+            if model == "Enigma M4" and self.enigma_api.reflector() != "UKW-D" and i == 0:
                 rotor_i = ["Beta", "Gamma"].index(rotor)
             else:
                 rotor_i = rotors.index(rotor)
@@ -288,7 +288,7 @@ class Settings(QDialog):
         new_reflector = self.reflector_group.checkedButton().text()  # REFLECTOR CHOICES
         reflector_pairs = self.ukwd._pairs()
 
-        if new_reflector == "UKW-D" and new_model == "EnigmaM4":
+        if new_reflector == "UKW-D" and new_model == "Enigma M4":
             new_rotors = [
                 group.checkedButton().text() for group in self.rotor_selectors[1:]
             ]

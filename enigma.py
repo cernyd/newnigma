@@ -85,7 +85,7 @@ if __name__ == "__main__":
         (
             ("--reflector_position", ),
             dict(
-                help="reflector position (only available in EnigmaD, EnigmaK,"
+                help="reflector position (only available in EnigmaD, Enigma K,"
                 "SwissK, EnigmaG, Railway, Tirpitz)",
                 nargs=1,
                 default=None,
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     elif args.preview:
         logging.info("Printing preview...")
         print(
-            "Copy the command below:\n\n./enigma.py --cli --model EnigmaI "
+            "Copy the command below:\n\n./enigma.py --cli --model Enigma I "
             "--rotors II I III --reflector UKW-A "
             "--message THISISANENIGMASAMPLEMESSAGE"
         )

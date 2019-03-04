@@ -23,27 +23,27 @@ def generate_pairs(k):
 
 
 @pytest.mark.parametrize("settings, rotor_n", (
-    (("EnigmaM3", "UKW-B", ["I", "II", "III"]), 3),
-    (("EnigmaI", "UKW-A", ["I", "II", "V"]), 3),
-    (("EnigmaM4", "UKW-b", ["I", "II", "V", "VI"]), 4),
-    (("EnigmaM4", "UKW-D", ["I", "II", "V"]), 3),
+    (("Enigma M3", "UKW-B", ["I", "II", "III"]), 3),
+    (("Enigma I", "UKW-A", ["I", "II", "V"]), 3),
+    (("Enigma M4", "UKW-b", ["I", "II", "V", "VI"]), 4),
+    (("Enigma M4", "UKW-D", ["I", "II", "V"]), 3),
 ))
 def test_rotor_n(settings, rotor_n):
     enigma_api = EnigmaAPI(*settings)
     assert enigma_api.rotor_n() == rotor_n, "Incorrect rotor_n value!"
 
 def test_data():
-    enigma_api = EnigmaAPI("EnigmaM3", "UKW-B", ["I", "II", "III"])
-    assert enigma_api.data() == historical["EnigmaM3"]
-    enigma_api.model("EnigmaM4")
-    assert enigma_api.data() == historical["EnigmaM4"]
+    enigma_api = EnigmaAPI("Enigma M3", "UKW-B", ["I", "II", "III"])
+    assert enigma_api.data() == historical["Enigma M3"]
+    enigma_api.model("Enigma M4")
+    assert enigma_api.data() == historical["Enigma M4"]
 
 
 @pytest.mark.parametrize("model, letter_group", (
-    ("EnigmaM4", 4),
-    ("EnigmaM3", 5),
+    ("Enigma M4", 4),
+    ("Enigma M3", 5),
     ("Norenigma", 5),
-    ("EnigmaK", 5),
+    ("Enigma K", 5),
 ))
 def test_letter_group(model, letter_group):
     enigma_api = EnigmaAPI(model)
@@ -51,9 +51,9 @@ def test_letter_group(model, letter_group):
 
 
 @pytest.mark.parametrize("model, labels", (
-    ("EnigmaM4", {"rotors": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "Beta", "Gamma"],
+    ("Enigma M4", {"rotors": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "Beta", "Gamma"],
                   "reflectors": ["UKW-b", "UKW-c", "UKW-D"]}),
-    ("EnigmaI", {"rotors": ["I", "II", "III", "IV", "V"],
+    ("Enigma I", {"rotors": ["I", "II", "III", "IV", "V"],
                  "reflectors": ["UKW-A", "UKW-B", "UKW-C", "UKW-D"]})
 ))
 def test_model_labels(model, labels):
@@ -67,7 +67,7 @@ def test_reflector_rotatable():
 
 
 def test_model_set():
-    enigma_api = EnigmaAPI("EnigmaI")
+    enigma_api = EnigmaAPI("Enigma I")
     labels = list(historical.keys())
     for _ in range(100):
         new_model = choice(labels)
@@ -80,7 +80,7 @@ def test_model_set():
 
 
 def test_reflector_set():
-    enigma_api = EnigmaAPI("EnigmaI")
+    enigma_api = EnigmaAPI("Enigma I")
     for new_reflector in "UKW-B", "UKW-A", "UKW-D":
         enigma_api.reflector(new_reflector)
         assert enigma_api.reflector() == new_reflector
@@ -92,7 +92,7 @@ def test_reflector_set():
 
 
 def test_rotors_set():
-    enigma_api = EnigmaAPI("EnigmaI")
+    enigma_api = EnigmaAPI("Enigma I")
     rotors = ["I", "II", "III", "IV", "V"]
 
     for _ in range(100):
@@ -112,7 +112,7 @@ def test_rotors_set():
 
 
 def test_positions_set():
-    enigma_api = EnigmaAPI("EnigmaM4")
+    enigma_api = EnigmaAPI("Enigma M4")
     for _ in range(100):
         new_positions = [randint(-30, 30) for _ in range(4)]
 
@@ -125,7 +125,7 @@ def test_positions_set():
 
 
 def test_ring_settings_set():
-    enigma_api = EnigmaAPI("EnigmaM4")
+    enigma_api = EnigmaAPI("Enigma M4")
     for _ in range(100):
         new_ring_settings = [randint(-30, 30) for _ in range(4)]
 
@@ -139,13 +139,13 @@ def test_ring_settings_set():
 
 def test_plug_pairs():
     pairs = generate_pairs(randint(0, 13))
-    enigma_api = EnigmaAPI("EnigmaM3")
+    enigma_api = EnigmaAPI("Enigma M3")
     enigma_api.plug_pairs(pairs)
     assert enigma_api.plug_pairs() == pairs
 
 
 def test_reflector_position():
-    enigma_api = EnigmaAPI("EnigmaK", "UKW")
+    enigma_api = EnigmaAPI("Enigma K", "UKW")
 
     for _ in range(100):
         new_position = randint(-30, 30)
@@ -162,7 +162,7 @@ def test_reflector_pairs():  # TODO: Finish
 
 
 def test_uhr():
-    enigma_api = EnigmaAPI("EnigmaM3")
+    enigma_api = EnigmaAPI("Enigma M3")
     pairs = generate_pairs(10)
     enigma_api.uhr('connect')
     enigma_api.plug_pairs(pairs)
