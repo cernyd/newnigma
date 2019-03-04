@@ -335,8 +335,8 @@ class ViewSwitcher(QWidget):
         # LIST OF AVAILABLE MODELS =============================================
 
         self.model_list = QListWidget()
-        self.model_list.setMaximumWidth(100)
-        self.model_list.setMinimumWidth(100)
+        self.model_list.setMaximumWidth(150)
+        self.model_list.setMinimumWidth(150)
         self.model_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.model_list.currentRowChanged.connect(self.select_model)
 

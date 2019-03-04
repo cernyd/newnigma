@@ -1,6 +1,6 @@
 {
     "default": {
-        "model": "EnigmaI",
+        "model": "Enigma I",
         "rotors": [
             "I",
             "II",

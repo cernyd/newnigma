@@ -53,7 +53,8 @@ _enigmam3 = """
 </ul>
 <hr>
 Backward compatible with Enigma I, but featured different rotors for
-every part of the army
+every part of the army. Enigma M1, M2 and M3 variants are practically
+identical (aside from some minor manufacturing differences).
 """
 
 _enigmam4 = """
@@ -67,7 +68,8 @@ _enigmam4 = """
 <li>Features: Plugboard, thin reflectors</li>
 </ul>
 <hr>
-Naval version featuring 4 rotors, the last rotor is stationary.
+Naval version featuring 4 rotors, the last rotor is "thin" and stationary.
+Due to the increased number of rotors is more secure than 3 rotor variants.
 """
 
 _norenigma = """
@@ -81,7 +83,7 @@ _norenigma = """
 <li>Features: Plugboard</li>
 </ul>
 <hr>
-Enigma I machines captured and used by the norwegian secret service after 1945.
+Enigma I machines captured and used by the Norwegian secret service after 1945.
 Used custom rotor wiring.
 """
 
@@ -97,7 +99,8 @@ _enigmag = """
 </ul>
 <hr>
 A compact Enigma model that featured a different rotor turning mechanism,
-used commercially and by the police
+used commercially and by the police. Models A865, G111, G260 and G312 are
+examples of rewired Enigma G.
 """
 
 _enigmad = """
@@ -111,7 +114,8 @@ _enigmad = """
 <li>Features: Rotatable reflector</li>
 </ul>
 <hr>
-Commercially used Enigma model
+Commercially used Enigma model with rotatable reflector.
+Predecessor of Enigma K.
 """
 
 _enigmak = """
@@ -125,7 +129,8 @@ _enigmak = """
 <li>Features: Rotatable reflector</li>
 </ul>
 <hr>
-Improved Enigma D, 'K' probably stands for 'Komerziell'
+Improved Enigma D, 'K' probably stands for 'Komerziell'. It is
+the basis for Swiss K, Railway Enigma and Tirpitz.
 """
 
 _swissk = """
@@ -153,7 +158,8 @@ _railway = """
 <li>Features: Rotatable reflector</li>
 </ul>
 <hr>
-Rewired version of the Enigma K used by the german railway.
+Rewired version of the Enigma K used by the German railway. Turnover
+notches are swapped.
 """
 
 _tirpitz = """
@@ -167,27 +173,90 @@ _tirpitz = """
 <li>Features: Rotatable reflector</li>
 </ul>
 <hr>
-Rewired version of the Enigma K used by the Japanese army
+Version of the Enigma K used by the Japanese army, all rotors,
+reflectors and stator are rewired.
 """
 
+_enigmakd = """
+<h1>Enigma KD</h1>
+<hr>
+<ul>
+<li>Developed in: 1927</li>
+<li>Number produced: -</li>
+<li>Used by: Mil Amt (department of German intelligence service)</li>
+<li>Rotor count: 3</li>
+<li>Features: Rotatable reflector</li>
+</ul>
+<hr>
+Standard Enigma K but has differently wired wheels and rewirable reflector
+UKW-D, originally found wiring is included, but it was probably frequently
+rewired.
+"""
+
+_enigmag111 = """
+<h1>Enigma G (G-111)</h1>
+<hr>
+<ul>
+<li>Developed in: 1931</li>
+<li>Number produced: -</li>
+<li>Used by: Unknown</li>
+<li>Rotor count: 3</li>
+<li>Features: Rotatable reflector, cog driven rotors</li>
+</ul>
+<hr>
+Rewired Enigma G with serial number G-111. Surfaced in 2009 at an
+auction in Munich.
+"""
+
+_enigmag260 = """
+<h1>Enigma G (G-260)</h1>
+<hr>
+<ul>
+<li>Developed in: 1931</li>
+<li>Number produced: -</li>
+<li>Used by: Johann Siegfried Becker</li>
+<li>Rotor count: 3</li>
+<li>Features: Rotatable reflector, cog driven rotors</li>
+</ul>
+<hr>
+Enigma G machine with serial number G-260 found in possession of
+Johann Siegfried Becker, a German spy, when he was arrested in Argentine.
+"""
+
+_enigmag312 = """
+<h1>Enigma G (G-312)</h1>
+<hr>
+<ul>
+<li>Developed in: 1931</li>
+<li>Number produced: -</li>
+<li>Used by: Abwehr (?)</li>
+<li>Rotor count: 3</li>
+<li>Features: Rotatable reflector, cog driven rotors</li>
+</ul>
+<hr>
+Enigma G machine with serial number G-312, likely used by the Abwehr,
+completely rewired.
+"""
 
 stylesheet = 'font-family: "Courier New", Courier, monospace'
 
-
 view_data = {}
-
 resources = {
-    "EnigmaI": {"description": _enigma1, "img": base_dir + "enigma1.jpg"},
-    "EnigmaM3": {"description": _enigmam3, "img": base_dir + "enigmam3.jpg"},
-    "EnigmaM4": {"description": _enigmam4, "img": base_dir + "enigmam4.jpg"},
+    "Enigma I": {"description": _enigma1, "img": base_dir + "enigma1.jpg"},
+    "Enigma M3": {"description": _enigmam3, "img": base_dir + "enigmam3.jpg"},
+    "Enigma M4": {"description": _enigmam4, "img": base_dir + "enigmam4.jpg"},
     "Norenigma": {"description": _norenigma, "img": base_dir + "enigma1.jpg"},
-    "EnigmaG": {"description": _enigmag, "img": base_dir + "enigmag.jpg"},
-    "EnigmaD": {
+    "Enigma G (A865)": {"description": _enigmag, "img": base_dir + "enigmag.jpg"},
+    "Enigma G (G-111)": {"description": _enigmag111, "img": base_dir + "enigmag.jpg"},
+    "Enigma G (G-260)": {"description": _enigmag260, "img": base_dir + "enigmag.jpg"},
+    "Enigma G (G-312)": {"description": _enigmag312, "img": base_dir + "enigmag.jpg"},
+    "Enigma D": {
         "description": _enigmad,
         "img": base_dir + "enigmad.jpg",
-    },  # UKW CAN ROTATE
-    "EnigmaK": {"description": _enigmak, "img": base_dir + "enigmak.jpg"},
-    "SwissK": {"description": _swissk, "img": base_dir + "swissk.png"},
+    },
+    "Enigma K": {"description": _enigmak, "img": base_dir + "enigmak.jpg"},
+    "Enigma KD": {"description": _enigmakd, "img": base_dir + "enigmak.jpg"},
+    "Swiss K": {"description": _swissk, "img": base_dir + "swissk.png"},
     "Railway": {"description": _railway, "img": base_dir + "enigmak.jpg"},
     "Tirpitz": {"description": _tirpitz, "img": base_dir + "tirpitz.jpg"},
 }
@@ -207,7 +276,6 @@ def load_mods(mod_cfg):  # TODO: Fully implement mod loader in the end
             "img": base_dir + "unknown.jpg"
         })
         # config = mod.
-
 
 
 class AbstractPlugboard(QDialog):

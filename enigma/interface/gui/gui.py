@@ -194,9 +194,14 @@ class Root(QWidget):
         Collects data from EnigmaAPI and saves it to config
         """
         dialog = QFileDialog(self)
+        dialog.setDefaultSuffix("json")
         filename = dialog.getSaveFileName(
             self, "Save settings", QDir.homePath(), "Enigma config (*.json)"
         )[0]
+
+        if not findall("\.json$", filename):
+            filename += ".json"
+            logging.info(".json suffix for save file not found, adding...")
 
         if filename:
             data = self.enigma_api.get_config()
@@ -213,6 +218,10 @@ class Root(QWidget):
         filename = dialog.getSaveFileName(
             self, "Save enigma message", QDir.homePath(), "*.txt"
         )[0]
+
+        if not findall("\.txt$", filename):
+            filename += ".txt"
+            logging.info(".txt suffix for save file not found, adding...")
 
         if filename:
             logging.info('Exporing message to "%s"...' % filename)

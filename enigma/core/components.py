@@ -15,10 +15,7 @@ IV = {"label": "IV", "wiring": "ESOVPZJAYQUIRHXLNFTGKDCMWB", "turnover": "J"}
 V = {"label": "V", "wiring": "VZBRGITYUPSDNHLXAWMJQOFECK", "turnover": "Z"}
 VI = {"label": "VI", "wiring": "JPGVOUMFYQBENHZRDKASXLICTW", "turnover": "ZM"}
 VII = {"label": "VII", "wiring": "NZJHGRCXMYSWBOUFAIVLPEKQDT", "turnover": "ZM"}
-VIII = {
-    "label": "VIII",
-    "wiring": "FKQHTLXOCBJSPDZRAMEWNIUYGV",
-    "turnover": "ZM",
+VIII = {"label": "VIII", "wiring": "FKQHTLXOCBJSPDZRAMEWNIUYGV", "turnover": "ZM",
 }
 
 
@@ -41,16 +38,8 @@ ENIGMA_D_K = {
     "stator": ETW_QWERTZ,
     "rotors": (
         {"label": "I", "wiring": "LPGSZMHAEOQKVXRFYBUTNICJDW", "turnover": "Y"},
-        {
-            "label": "II",
-            "wiring": "SLVGBTFXJQOHEWIRZYAMKPCNDU",
-            "turnover": "E",
-        },
-        {
-            "label": "III",
-            "wiring": "CJGDPSHKTURAWZXFMYNQOBVLIE",
-            "turnover": "N",
-        },
+        {"label": "II", "wiring": "SLVGBTFXJQOHEWIRZYAMKPCNDU", "turnover": "E"},
+        {"label": "III", "wiring": "CJGDPSHKTURAWZXFMYNQOBVLIE", "turnover": "N"},
     ),
     "rotor_n": 3,
     "reflectors": (
@@ -65,7 +54,7 @@ ENIGMA_D_K = {
 
 
 historical = {
-    "EnigmaI": {
+    "Enigma I": {
         "stator": ETW,
         "rotors": (I, II, III, IV, V),
         "rotor_n": 3,
@@ -80,7 +69,7 @@ historical = {
         "plugboard": True,
         "numeric": True,
     },
-    "EnigmaM3": {
+    "Enigma M3": {
         "stator": ETW,
         "rotors": (I, II, III, IV, V, VI, VII, VIII),
         "rotor_n": 3,
@@ -90,7 +79,7 @@ historical = {
         "plugboard": True,
         "numeric": False,
     },
-    "EnigmaM4": {
+    "Enigma M4": {
         "stator": ETW,
         "rotors": (
             I,
@@ -154,7 +143,7 @@ historical = {
         "plugboard": True,
         "numeric": False,
     },
-    "EnigmaG": {  # Zählwerk A865
+    "Enigma G (A865)": {  # Zählwerk A865
         "stator": ETW_QWERTZ,
         "rotors": (
             {
@@ -182,9 +171,93 @@ historical = {
         "plugboard": False,
         "numeric": False,
     },
-    "EnigmaD": ENIGMA_D_K,
-    "EnigmaK": ENIGMA_D_K,
-    "EnigmaKD": {
+    "Enigma G (G-111)": {
+        "stator": ETW_QWERTZ,
+        "rotors": (
+            {
+                "label": "I",
+                "wiring": "WLRHBQUNDKJCZSEXOTMAGYFPVI",
+                "turnover": "SUVWZABCEFGIKLOPQ",
+            },
+            {
+                "label": "II",
+                "wiring": "TFJQAZWMHLCUIXRDYGOEVBNSKP",
+                "turnover": "STVYZACDFGHKMNQ",
+            },
+            {
+                "label": "III",
+                "wiring": "QTPIXWVDFRMUSLJOHCANEZKYBG",
+                "turnover": "SWZFHMQ",
+            },
+        ),
+        "rotor_n": 3,
+        "reflectors": (
+            {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+        ),
+        "rotatable_ref": True,
+        "letter_group": 5,
+        "plugboard": False,
+        "numeric": False,
+    },
+    "Enigma G (G-260)": {
+        "stator": ETW_QWERTZ,
+        "rotors": (
+            {
+                "label": "I",
+                "wiring": "RCSPBLKQAUMHWYTIFZVGOJNEXD",
+                "turnover": "SUVWZABCEFGIKLOPQ",
+            },
+            {
+                "label": "II",
+                "wiring": "WCMIBVPJXAROSGNDLZKEYHUFQT",
+                "turnover": "STVYZACDFGHKMNQ",
+            },
+            {
+                "label": "III",
+                "wiring": "FVDHZELSQMAXOKYIWPGCBUJTNR",
+                "turnover": "UWXAEFHKMNR",
+            },
+        ),
+        "rotor_n": 3,
+        "reflectors": (
+            {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
+        ),
+        "rotatable_ref": True,
+        "letter_group": 5,
+        "plugboard": False,
+        "numeric": False,
+    },
+    "Enigma G (G-312)": {
+        "stator": ETW_QWERTZ,
+        "rotors": (
+            {
+                "label": "I",
+                "wiring": "DMTWSILRUYQNKFEJCAZBPGXOHV",
+                "turnover": "SUVWZABCEFGIKLOPQ",
+            },
+            {
+                "label": "II",
+                "wiring": "HQZGPJTMOBLNCIFDYAWVEUSRKX",
+                "turnover": "STVYZACDFGHKMNQ",
+            },
+            {
+                "label": "III",
+                "wiring": "UQNTLSZFMREHDPXKIBVYGJCWOA",
+                "turnover": "UWXAEFHKMNR",
+            },
+        ),
+        "rotor_n": 3,
+        "reflectors": (
+            {"label": "UKW", "wiring": "RULQMZJSYGOCETKWDAHNBXPVIF"},
+        ),
+        "rotatable_ref": True,
+        "letter_group": 5,
+        "plugboard": False,
+        "numeric": False,
+    },
+    "Enigma D": ENIGMA_D_K,
+    "Enigma K": ENIGMA_D_K,
+    "Enigma KD": {
         "stator": ETW_QWERTZ,
         "rotors": (
             {"label": "I", "wiring": "VEZIOJCXKYDUNTWAPLQGBHSFMR", "turnover": "SUYAEHLNQ"},
@@ -202,14 +275,13 @@ historical = {
         "rotor_n": 3,
         "reflectors": (
             {"label": "UKW", "wiring": "KOTVPNLMJIAGHFBEWYXCZDQSRU"},
-            UKW_D,
         ),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
     },
-    "SwissK": {
+    "Swiss K": {
         "stator": ETW_QWERTZ,
         "rotors": (
             {
