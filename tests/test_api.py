@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from random import choice, choices, randint, sample, shuffle
-from string import ascii_uppercase as alphabet
 
 import pytest
 

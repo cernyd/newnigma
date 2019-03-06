@@ -25,7 +25,7 @@ class PlugboardDialog(AbstractPlugboard):
             row_layout.setMargin(0)
 
             for letter in row:
-                letter = alphabet[letter]
+                letter = enigma_api.charset()[letter]
                 socket = Socket(row_frame, letter, self.connect_sockets)
                 self.plugs[letter] = socket
                 row_layout.addWidget(socket)

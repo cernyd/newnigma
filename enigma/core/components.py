@@ -1,10 +1,8 @@
-from string import ascii_uppercase as alphabet
-
 from enigma import contains
 from enigma.core.extensions import Uhr
 
 # Stators
-ETW = {"wiring": alphabet}
+ETW = {"wiring": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
 ETW_QWERTZ = {"wiring": "QWERTZUIOASDFGHJKPYXCVBNML"}
 
 # Rotors
@@ -32,6 +30,11 @@ UKW_D = {
     ]
 }
 
+default_layout = [
+    [16, 22, 4, 17, 19, 25, 20, 8, 14],
+    [0, 18, 3, 5, 6, 7, 9, 10],
+    [15, 24, 23, 2, 21, 1, 13, 12, 11],
+]
 
 # Enigma D and K
 ENIGMA_D_K = {
@@ -50,6 +53,8 @@ ENIGMA_D_K = {
     "letter_group": 5,
     "plugboard": False,
     "numeric": False,
+    "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "layout": default_layout
 }
 
 
@@ -68,6 +73,8 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": True,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Enigma M3": {
         "stator": ETW,
@@ -78,6 +85,8 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Enigma M4": {
         "stator": ETW,
@@ -103,6 +112,8 @@ historical = {
         "letter_group": 4,
         "plugboard": True,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Norenigma": {
         "stator": ETW,
@@ -142,6 +153,8 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Enigma G (A865)": {  # Zählwerk A865
         "stator": ETW_QWERTZ,
@@ -170,6 +183,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Enigma G (G-111)": {
         "stator": ETW_QWERTZ,
@@ -198,6 +213,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Enigma G (G-260)": {
         "stator": ETW_QWERTZ,
@@ -226,6 +243,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Enigma G (G-312)": {
         "stator": ETW_QWERTZ,
@@ -254,6 +273,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Enigma D": ENIGMA_D_K,
     "Enigma K": ENIGMA_D_K,
@@ -280,6 +301,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Swiss K": {
         "stator": ETW_QWERTZ,
@@ -309,6 +332,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Railway": {
         "stator": ETW_QWERTZ,
@@ -337,7 +362,8 @@ historical = {
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
-        "numeric": False,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
     },
     "Tirpitz": {
         "stator": {"wiring": "KZROUQHYAIGBLWVSTDXFPNMCJE"},
@@ -391,13 +417,44 @@ historical = {
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
-        "numeric": False
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "layout": default_layout
+    },
+    "Enigma Z": {
+        "stator": {"wiring": "0123456789"},
+        "rotors": (
+            {
+                "label": "I",
+                "wiring": "6418270359",
+                "turnover": "9",
+            },
+            {
+                "label": "II",
+                "wiring": "5841097632",
+                "turnover": "9",
+            },
+            {
+                "label": "III",
+                "wiring": "3581620794",
+                "turnover": "9",
+            },
+        ),
+        "rotor_n": 3,
+        "reflectors": (
+            {"label": "UKW", "wiring": "5079183642"},
+        ),
+        "rotatable_ref": True,
+        "letter_group": 5,
+        "plugboard": False,
+        "numeric": False,
+        "charset": "1234567890",
+        "layout": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], []]
     },
 }
 
 
-def format_position(position, numeric=False):
-    return "%02d" % (position) if numeric else alphabet[position-1]
+def format_position(charset, position, numeric=False):
+    return "%02d" % (position) if numeric else charset[position-1]
 
 
 class Plugboard:
@@ -433,31 +490,33 @@ class Plugboard:
 
 
 class _Component:  # Base component
-    def __init__(self, label, wiring):
+    def __init__(self, label, wiring, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
         self._label = label
+        self._charset = charset
+        self._max_index = len(charset)
 
-        if len(wiring) != 26:
-            raise ValueError("Wiring must be of same length as the alphabet!")
+        if len(wiring) != self._max_index:
+            raise ValueError("Wiring must be the same length as the charset!")
 
         self._wiring = wiring
 
     def _forward(self, letter):
-        return self._wiring[alphabet.index(letter)]
+        return self._wiring[self._charset.index(letter)]
 
     def _backward(self, letter):
-        return alphabet[self._wiring.index(letter)]
+        return self._charset[self._wiring.index(letter)]
 
     def label(self):
         return self._label
 
 
 class Stator(_Component):
-    def __init__(self, wiring):
+    def __init__(self, wiring, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
         """
         :param wiring: {str} defines the way letters are routed
                              trough the rotor
         """
-        super().__init__("ETW", wiring)
+        super().__init__("ETW", wiring, charset=charset)
 
     def forward(self, letter):
         return super()._forward(letter)
@@ -467,8 +526,8 @@ class Stator(_Component):
 
 
 class _Rotatable(_Component):
-    def __init__(self, label, wiring):
-        super().__init__(label, wiring)
+    def __init__(self, label, wiring, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+        super().__init__(label, wiring, charset=charset)
 
         self._offset = 0
 
@@ -490,7 +549,7 @@ class _Rotatable(_Component):
         :param numeric: {bool} whether or not the position should be numeric (02) for a letter (B)
         :return:
         """
-        return format_position(self._offset + 1, numeric)
+        return format_position(self._charset, self._offset + 1, numeric)
 
     def rotate(self, offset_by=1):
         """
@@ -499,12 +558,12 @@ class _Rotatable(_Component):
         :param offset_by: {int} how many places the rotor should be offset
                           (offset_by > 0 = rotate forwards; offset_by < 0 = rotate backwards)
         """
-        self._offset = (self._offset + offset_by) % 26
+        self._offset = (self._offset + offset_by) % self._max_index
 
 
 class Reflector(_Rotatable):
-    def __init__(self, label, wiring, rotatable=False):
-        super().__init__(label, wiring)
+    def __init__(self, label, wiring, rotatable=False, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+        super().__init__(label, wiring, charset)
 
         self.__rotatable = rotatable
 
@@ -517,10 +576,10 @@ class Reflector(_Rotatable):
         :param letter: {char}
         :return: {char}
         """
-        rel_input = (alphabet.index(letter) + self._offset) % 26  # INT
-        rel_result = alphabet.index(self._wiring[rel_input])  # INT
-        abs_result = (rel_result - self._offset) % 26
-        return alphabet[abs_result]
+        rel_input = (self._charset.index(letter) + self._offset) % self._max_index  # INT
+        rel_result = self._charset.index(self._wiring[rel_input])  # INT
+        abs_result = (rel_result - self._offset) % self._max_index
+        return self._charset[abs_result]
 
     def offset(self, offset=None):
         if not self.__rotatable:
@@ -549,7 +608,7 @@ class UKWD(Reflector):
         :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
                       where each letter can only be used once
         """
-        super().__init__("UKW-D", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", False)
+        super().__init__("UKW-D", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", False, "ABCDEFGHIJKLMNOQRSTUVWXYZ")
 
         self._marking = " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
         self.wiring(pairs)
@@ -569,7 +628,7 @@ class UKWD(Reflector):
 
                 a_index, b_index = map(self._marking.index, pair)
 
-                wiring[a_index], wiring[b_index] = alphabet[b_index], alphabet[a_index]
+                wiring[a_index], wiring[b_index] = self._charset[b_index], self._charset[a_index]
 
             self._wiring = "".join(wiring)
         else:
@@ -578,7 +637,7 @@ class UKWD(Reflector):
                 if letter == "A" or letter == "N":
                     continue
 
-                pair = self._marking[i] + self._marking[alphabet.index(letter)]
+                pair = self._marking[i] + self._marking[self._charset.index(letter)]
                 if not contains(pairs, pair):
                     pairs.append(pair)
 
@@ -586,19 +645,19 @@ class UKWD(Reflector):
 
 
 class Rotor(_Rotatable):
-    def __init__(self, label, wiring, turnover=None):
+    def __init__(self, label, wiring, turnover=None, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
         """
         :param label: {str} rotor label (I, II, III, ...)
         :param wiring: {str} defines the way letters are routed trough the rotor
         """
-        super().__init__(label, wiring)
+        super().__init__(label, wiring, charset)
 
         self._turnover = turnover
         self._ring_offset = 0
         self._turnover = turnover
 
     def _adjusted_offset(self):
-        return (self._offset - self._ring_offset) % 26
+        return (self._offset - self._ring_offset) % self._max_index
 
     def forward(self, letter):
         """
@@ -607,10 +666,10 @@ class Rotor(_Rotatable):
         :return: {char}
         """
         rel_input = (
-            alphabet.index(letter) + self._adjusted_offset()
-        ) % 26  # INT
-        rel_result = alphabet.index(self._wiring[rel_input])  # INT
-        return alphabet[(rel_result - self._adjusted_offset()) % 26]
+            self._charset.index(letter) + self._adjusted_offset()
+        ) % self._max_index  # INT
+        rel_result = self._charset.index(self._wiring[rel_input])  # INT
+        return self._charset[(rel_result - self._adjusted_offset()) % self._max_index]
 
     def backward(self, letter):
         """
@@ -619,12 +678,12 @@ class Rotor(_Rotatable):
         :return: {char}
         """
         rel_input = (
-            alphabet.index(letter) + self._adjusted_offset()
-        ) % 26  # INT
+            self._charset.index(letter) + self._adjusted_offset()
+        ) % self._max_index  # INT
         rel_result = (
-            self._wiring.index(alphabet[rel_input]) - self._adjusted_offset()
-        ) % 26  # INT
-        return alphabet[rel_result]
+            self._wiring.index(self._charset[rel_input]) - self._adjusted_offset()
+        ) % self._max_index  # INT
+        return self._charset[rel_result]
 
     def ring_offset(self, offset=None):
         """
@@ -660,6 +719,7 @@ class Enigma:
         rotor_n=3,
         rotatable_ref=False,
         numeric=False,
+        charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     ):
         """
         :param reflector: {Reflector} Reflector object
@@ -669,6 +729,7 @@ class Enigma:
         """
         self._model = model
         self._rotor_n = rotor_n
+        self._charset = charset
 
         # COMPONENTS
         self._reflector = reflector
@@ -747,7 +808,7 @@ class Enigma:
     def reflector_position(self, new_position=None):
         if type(new_position) == int:
             if type(new_position) == str:
-                new_position = alphabet.index(new_position)
+                new_position = self._charset.index(new_position)
             self._reflector.offset(new_position)
         else:
             return self._reflector.position()
@@ -770,8 +831,8 @@ class Enigma:
         if new_positions:
             for position, rotor in zip(new_positions, self._rotors):
                 if type(position) == str:
-                    if position in alphabet:
-                        position = alphabet.index(position) + 1
+                    if position in self._charset:
+                        position = self._charset.index(position) + 1
                     else:
                         position = int(position)
                 elif type(position) != int:
@@ -835,3 +896,9 @@ class Enigma:
             self._plugboard.position(new_position)
         else:
             return self._plugboard.position()
+
+    def charset(self):
+        """
+        Returns charset of this Enigma machine
+        """
+        return self._charset

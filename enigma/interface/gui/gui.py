@@ -1,6 +1,5 @@
 import logging
 from re import findall, sub
-from string import ascii_uppercase as alphabet
 from textwrap import wrap
 from copy import copy
 
@@ -72,13 +71,13 @@ class Root(QWidget):
         # LIGHTBOARD FRAME ====================================================
 
         logging.info("Adding Lightboard...")
-        lightboard = Lightboard(self)
+        self.lightboard = Lightboard(self, self.enigma_api.charset)
 
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ==============================
 
         logging.info("Adding I/O textboxes...")
         self.o_textbox = _OutputTextBox(
-            self, lightboard.light_up, enigma_api.letter_group
+            self, self.lightboard.light_up, enigma_api.letter_group
         )
         self.i_textbox = _InputTextBox(
             self,
@@ -88,7 +87,8 @@ class Root(QWidget):
             self._rotors.set_positions,
             enigma_api.letter_group,
             enigma_api.revert_by,
-            enigma_api.buffer_full
+            enigma_api.buffer_full,
+            enigma_api.data()["charset"]
         )
 
         # PLUGBOARD BUTTONS ===================================================
@@ -103,7 +103,7 @@ class Root(QWidget):
         logging.info("Showing all widgets...")
         main_layout.addWidget(menu, alignment=Qt.AlignTop)
         main_layout.addWidget(self._rotors, alignment=Qt.AlignBottom)
-        main_layout.addWidget(lightboard)
+        main_layout.addWidget(self.lightboard)
         main_layout.addWidget(
             QLabel("INPUT", self, styleSheet="font-size: 20px"),
             alignment=Qt.AlignCenter,
@@ -145,12 +145,14 @@ class Root(QWidget):
         logging.info("Refreshing GUI components...")
         self.setWindowTitle(self.enigma_api.model())
         self.i_textbox.clear()
+        self.i_textbox.set_charset(self.enigma_api.data()["charset"])
         if self.enigma_api.data()["plugboard"]:
             logging.info("Showing Plugboard button...")
             self.plug_button.show()
         else:
             logging.info("Hiding Plugboard button...")
             self.plug_button.hide()
+        self.lightboard.regenerate_bulbs(self.enigma_api.data()["layout"])
 
     def load_config(self):
         """
@@ -230,8 +232,8 @@ class Root(QWidget):
                 f.write("%s\n%s\n" % (str(self.enigma_api), message))
 
 
-class Lightboard(QWidget):
-    def __init__(self, master):
+class Lightboard(QFrame):
+    def __init__(self, master, charset_plug):
         """
         Creates a "board" representing Enigma light bulbs and allows their
         control
@@ -240,11 +242,11 @@ class Lightboard(QWidget):
 
         # BASIC QT SETTINGS  ==================================================
 
-        lb_layout = QVBoxLayout(self)
-        frame = QFrame(self)
+        self.lb_layout = QVBoxLayout(self)
 
         # ATTRIBUTES ==========================================================
 
+        self._charset_plug = charset_plug
         self._lightbulbs = {}
         self._base_style = (
             "QLabel{background-color: black; color: %s; font-weight: bold;"
@@ -253,24 +255,43 @@ class Lightboard(QWidget):
 
         # CONSTRUCT LIGHTBOARD ================================================
 
+        self.rows = []
+
+        self.regenerate_bulbs(default_layout)
+
+    def regenerate_bulbs(self, layout):
+        self.clear_bulbs()
         for row in layout:
-            row_frame = QFrame(frame)
-            row_layout = QHBoxLayout(row_frame)
-            row_layout.setAlignment(Qt.AlignCenter)
-            row_layout.setSpacing(10)
+            if row:
+                row_frame = QFrame(self)
+                row_layout = QHBoxLayout(row_frame)
+                row_layout.setAlignment(Qt.AlignCenter)
+                row_layout.setSpacing(10)
+                self.rows.append(row_frame)
 
-            for letter in row:
-                ltr = alphabet[letter]
-                label = QLabel(ltr)
-                label.setFixedSize(40, 40)
-                label.setAlignment(Qt.AlignCenter)
+                for letter in row:
+                    ltr = self._charset_plug()[letter]
+                    label = QLabel(ltr)
+                    label.setFixedSize(40, 40)
+                    label.setAlignment(Qt.AlignCenter)
 
-                self._lightbulbs[ltr] = label
-                row_layout.addWidget(label, Qt.AlignCenter)
+                    self._lightbulbs[ltr] = label
+                    row_layout.addWidget(label, Qt.AlignCenter)
 
-            lb_layout.addWidget(row_frame)
+                self.lb_layout.addWidget(row_frame)
 
         self.power_off()
+
+    def clear_bulbs(self):
+        for bulb in self._lightbulbs.values():
+            bulb.deleteLater()
+            del bulb
+        self._lightbulbs = {}
+
+        while self.rows:
+            row = self.rows.pop() 
+            row.deleteLater()
+            del row
 
     def power_off(self):
         """
@@ -279,16 +300,16 @@ class Lightboard(QWidget):
         for bulb in self._lightbulbs.values():
             bulb.setStyleSheet(self._base_style % "gray")
 
-    def light_up(self, letter):
+    def light_up(self, character):
         """
-        Lights up letters on the lightboard, only powers off if letter isn't
+        Lights up character on the lightboard, only powers off if letter isn't
         not found
-        :param letter: {char} Letter to light up
+        :param character: {char} character to light up
         """
         self.power_off()
 
-        if letter in self._lightbulbs:
-            self._lightbulbs[letter].setStyleSheet(self._base_style % "yellow")
+        if character in self._lightbulbs:
+            self._lightbulbs[character].setStyleSheet(self._base_style % "yellow")
 
 
 class _RotorsHandler(QFrame):
@@ -550,7 +571,8 @@ class _InputTextBox(QPlainTextEdit):
         refresh_plug,
         letter_group_plug,
         revert_pos,
-        overflow_plug
+        overflow_plug,
+        charset
     ):
         """
         Handles user input and sends it to the output textbox
@@ -592,6 +614,7 @@ class _InputTextBox(QPlainTextEdit):
         self.letter_group_plug = letter_group_plug
         self._revert_pos = revert_pos
         self.overflow_plug = overflow_plug
+        self.charset = "[^%s]+" % charset
 
         # SCROLLBAR SYNC ======================================================
 
@@ -607,6 +630,9 @@ class _InputTextBox(QPlainTextEdit):
 
         self.last_len = 0
         self._revert_pos = revert_pos
+    
+    def set_charset(self, charset):
+        self.charset = "[^%s]+" % charset
 
     def select_block(self, this=False):
         """
@@ -635,7 +661,7 @@ class _InputTextBox(QPlainTextEdit):
         """
         Encrypts newly typed/inserted text and outputs it to the output textbox
         """
-        text = sub("[^A-Z]+", "", self.toPlainText().upper())
+        text = sub(self.charset, "", self.toPlainText().upper())
 
         new_len = len(text)
         diff = self.last_len - new_len

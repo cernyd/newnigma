@@ -1,7 +1,6 @@
 from PySide2.QtWidgets import *
 from PySide2.QtCore import QUrl, QSize, Qt, QDir
 from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor, QDesktopServices
-from string import ascii_uppercase as alphabet
 from enigma.utils.cfg_handler import save_config, load_config
 from enigma.core.components import historical
 from json import JSONDecodeError
@@ -15,7 +14,7 @@ labels = [
 ]
 
 # For the GUI plug board
-layout = [
+default_layout = [
     [16, 22, 4, 17, 19, 25, 20, 8, 14],
     [0, 18, 3, 5, 6, 7, 9, 10],
     [15, 24, 23, 2, 21, 1, 13, 12, 11],

@@ -1,5 +1,5 @@
 from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
-                                    Stator, alphabet, format_position,
+                                    Stator, format_position,
                                     historical)
 
 
@@ -91,7 +91,7 @@ class EnigmaAPI:
         """
         if new_reflector is not None:
             new_reflector = self.generate_component(
-                self.model(), "reflectors", new_reflector
+                self.model(), "reflectors", self.charset(), new_reflector
             )
             self._enigma.reflector(new_reflector)
         else:
@@ -103,7 +103,7 @@ class EnigmaAPI:
         :param new_rotors: {str}
         """
         if new_rotors is not None:
-            self._enigma.rotors(self.generate_rotors(self.model(), new_rotors))
+            self._enigma.rotors(self.generate_rotors(self.model(), self.charset(), new_rotors))
         else:
             return self._enigma.rotors()
 
@@ -198,8 +198,8 @@ class EnigmaAPI:
         serialized = ""
 
         for pos in self._enigma.positions():
-            if pos in alphabet:
-                serialized += "%02d" % alphabet.index(pos)
+            if pos in self.charset():
+                serialized += "%02d" % self.charset().index(pos)
             else:
                 serialized += "%02d" % (int(pos) - 1)
         return int(serialized)
@@ -292,14 +292,14 @@ class EnigmaAPI:
     # COMPONENT GENERATORS
 
     @classmethod
-    def generate_rotors(cls, model, rotor_labels):
+    def generate_rotors(cls, model, charset, rotor_labels):
         """
         Generates rotors from supplied labels
         :param rotor_labels: {[str, str, str]}
         """
         rotors = []
         for label in rotor_labels:
-            rotors.append(cls.generate_component(model, "rotors", label))
+            rotors.append(cls.generate_component(model, "rotors", charset, label))
         return rotors
 
     @classmethod
@@ -311,19 +311,21 @@ class EnigmaAPI:
         :param rotor_labels: {[str, str, str]} List of rotor labels
                                                like "I", "II", "III"
         """
+        charset = historical[model]["charset"]
+
         if not reflector_label:  # TODO: Could use model labels?
             reflector_label = historical[model]["reflectors"][0]["label"]
-        reflector = cls.generate_component(model, "reflectors", reflector_label)
+        reflector = cls.generate_component(model, "reflectors", charset, reflector_label)
 
         rotor_n = historical[model]["rotor_n"] if reflector_label != "UKW-D" else 3
         if not rotor_labels:  # Default config generation
             rotor_labels = [cfg['label'] for cfg in historical[model]["rotors"][:rotor_n]]
-        rotors = cls.generate_rotors(model, rotor_labels)
+        rotors = cls.generate_rotors(model, charset, rotor_labels)
 
         plugboard = historical[model]["plugboard"]
         rotatable_ref = historical[model]["rotatable_ref"]
         numeric = historical[model]["numeric"]
-        stator = cls.generate_component(model, "stator")
+        stator = cls.generate_component(model, "stator", charset)
 
         return Enigma(
             model,
@@ -334,10 +336,11 @@ class EnigmaAPI:
             rotor_n=rotor_n,
             rotatable_ref=rotatable_ref,
             numeric=numeric,
+            charset=charset
         )
 
     @classmethod
-    def generate_component(cls, model, comp_type, label=None):
+    def generate_component(cls, model, comp_type, charset, label=None):
         """
         Initializes a Stator, Rotor or Reflector.
         :param model: {str} Enigma machine model
@@ -353,6 +356,8 @@ class EnigmaAPI:
 
         final_data = None
         if comp_type == "stator":
+            final_data = data[comp_type] 
+            final_data["charset"] = charset
             return Stator(**data[comp_type])
         if type(label) == int:
             final_data = data[comp_type][label]
@@ -364,6 +369,7 @@ class EnigmaAPI:
 
         if not final_data:
             raise ValueError("No %s with label %s found!" % (comp_type, label))
+        final_data["charset"] = charset
 
         if comp_type == "rotors":
             return Rotor(**final_data)
@@ -402,7 +408,10 @@ class EnigmaAPI:
                 self._enigma.uhr('connect')
                 self.uhr_position(config["uhr_position"])
 
-            self.plug_pairs(config["plug_pairs"])
+            try:
+                self.plug_pairs(config["plug_pairs"])
+            except ValueError:
+                pass
         except Exception as e:
             self.load_from_config(old_config)
             raise
@@ -440,6 +449,9 @@ class EnigmaAPI:
 
         return data
 
+    def charset(self):
+        return self._enigma.charset()
+
     # STRING REPRESENTATION OF API DATA
 
     def __str__(self):
@@ -448,7 +460,7 @@ class EnigmaAPI:
         rotors = "\nRotors: %s" % " ".join(data["rotors"])
         pos = []
         for i in self.checkpoint():
-            pos.append(format_position(i, self._enigma._numeric))
+            pos.append(format_position(self._enigma._charset, i, self._enigma._numeric))
 
         positions = "\nRotor positions: %s" % " ".join(pos)
         rings = "\nRing settings: %s" % " ".join(map(str, data["ring_settings"]))

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from string import ascii_uppercase as alphabet
-
 import pytest
 
 from enigma import contains
