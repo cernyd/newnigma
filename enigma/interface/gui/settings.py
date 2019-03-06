@@ -34,7 +34,7 @@ class Settings(QDialog):
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
 
-        self.ukwd_button = QPushButton("UKW-D Wiring")
+        self.ukwd_button = QPushButton("UKW-D wiring")
         self.ukwd_button.clicked.connect(self.open_ukwd_wiring)
 
         # TAB WIDGET ===========================================================
@@ -42,7 +42,7 @@ class Settings(QDialog):
         tab_widget = QTabWidget()
 
         self.stacked_wikis = ViewSwitcher(self, self.regen_model)
-        tab_widget.addTab(self.stacked_wikis, "Enigma Model")
+        tab_widget.addTab(self.stacked_wikis, "Enigma model")
         tab_widget.addTab(self.settings_frame, "Component settings")
 
         # BUTTONS ==============================================================
@@ -446,7 +446,7 @@ class UKWD_Settings(AbstractPlugboard):
             col_layout.setMargin(0)
 
             for letter in group:
-                socket = Socket(self, letter, self.connect_sockets)
+                socket = Socket(self, letter, self.connect_sockets, self.enigma_api.charset())
                 col_layout.addWidget(socket)
                 self.plugs[letter] = socket
 

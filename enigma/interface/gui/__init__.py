@@ -367,7 +367,7 @@ class AbstractPlugboard(QDialog):
 
 
 class Socket(QFrame):
-    def __init__(self, master, letter, connect_plug):
+    def __init__(self, master, letter, connect_plug, charset):
         """
         One sockets with label and text entry
         :param master: Qt parent object
@@ -388,6 +388,7 @@ class Socket(QFrame):
         self.letter = letter
         self.connected_to = None
         self.marking = None
+        self.charset = charset
 
         # ENTRY ================================================================
 
@@ -418,7 +419,7 @@ class Socket(QFrame):
         Responds to a event when something changes in the plug entry
         """
         letter = self.entry.text().upper()
-        if letter not in alphabet:
+        if letter not in self.charset:
             self.set_text("", True)
         elif self.entry.isModified():  # Prevents recursive event calls
             if letter:

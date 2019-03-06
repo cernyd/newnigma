@@ -19,14 +19,14 @@ class PlugboardDialog(AbstractPlugboard):
 
         frame = QFrame(self)
 
-        for row in layout:
+        for row in enigma_api.data()["layout"]:
             row_frame = QFrame(frame)
             row_layout = QHBoxLayout(row_frame)
             row_layout.setMargin(0)
 
             for letter in row:
                 letter = enigma_api.charset()[letter]
-                socket = Socket(row_frame, letter, self.connect_sockets)
+                socket = Socket(row_frame, letter, self.connect_sockets, self.enigma_api.charset())
                 self.plugs[letter] = socket
                 row_layout.addWidget(socket)
 
