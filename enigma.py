@@ -12,6 +12,11 @@ from enigma.interface.gui.gui import Runtime
 from enigma.utils.cfg_handler import load_config
 from benchmark import benchmark
 
+
+def extract_settings(args):
+    pass
+
+
 if __name__ == "__main__":
     # ====================================================
     # MAIN PARSER GROUP
@@ -41,7 +46,7 @@ if __name__ == "__main__":
             dict(help="launches the simulator in the command line mode", dest="cli"),
         ),
         (("-p", "--preview"), dict(help="Runs a sample cli command")),
-        (("-v", "--verbose"), dict(help="Turns on verbose logging messages")),
+        (("-v", "--verbose"), dict(help="Turns on verbose logging messages"))
     )
     for arg in argument_data:
         parser.add_argument(*arg[0], **arg[1], action="store_true", default=False)
@@ -54,6 +59,14 @@ if __name__ == "__main__":
 
     cli_args = parser.add_argument_group("arguments for cli mode")
     cli_data = (
+        (
+            ("--from", ),
+            dict(
+                help="file to load Enigma settings from",
+                nargs=1,
+                dest="filename"
+            )
+        ),
         (
             ("--model", ),
             dict(
@@ -194,7 +207,7 @@ if __name__ == "__main__":
     elif args.preview:
         logging.info("Printing preview...")
         print(
-            "Copy the command below:\n\n./enigma.py --cli --model Enigma I "
+            "Copy the command below:\n\n./enigma.py --cli --model 'Enigma I' "
             "--rotors II I III --reflector UKW-A "
             "--message THISISANENIGMASAMPLEMESSAGE"
         )

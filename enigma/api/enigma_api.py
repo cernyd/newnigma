@@ -1,6 +1,7 @@
 from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
                                     Stator, format_position,
                                     historical)
+from enigma.utils.cfg_handler import load_config, save_config
 
 class EnigmaAPI:
     """
@@ -42,13 +43,13 @@ class EnigmaAPI:
         """
         return historical[self.model()]["letter_group"]
 
-    def model_labels(self, model=None):
+    @classmethod
+    def model_labels(cls, model):
         """
         Returns all available labels for rotors and reflectors for the select
         model
         :param model: {str} Enigma model
         """
-        model = model if model else self.model()
         labels = lambda component: [item["label"] for item in
                                     historical[model][component]]
 
@@ -56,6 +57,23 @@ class EnigmaAPI:
             "reflectors": labels("reflectors"),
             "rotors": labels("rotors")
         }
+
+    @classmethod
+    def default_cfg(cls, model, rotor_n, labels=False):
+        all_labels = cls.model_labels(model)
+        rotors = all_labels["rotors"]
+        reflectors = all_labels["reflectors"]
+        max_i = len(rotors)
+
+        if model == "Enigma M4" and rotor_n == 4:
+            if labels:
+                return ["UKW-b", ["Beta", "I", "II", "III"]]
+            return [0, [0, 0, 1, 2, 3]]
+
+        indexes = [0, [i % max_i for i in range(rotor_n)]]
+        if labels:
+            return [reflectors[0], [rotors[i] for i in indexes[1]]]
+        return indexes
 
     def reflector_rotatable(self):
         """
@@ -315,13 +333,16 @@ class EnigmaAPI:
         except KeyError:
             raise ValueError("Invalid enigma model %s!" % model)
 
+        rotor_n = data["rotor_n"] if reflector_label != "UKW-D" else 3
+        defaults = cls.default_cfg(model, rotor_n, True)
+
         if not reflector_label:  # TODO: Could use model labels?
-            reflector_label = data["reflectors"][0]["label"]
+            reflector_label = defaults[0]
+
         reflector = cls.generate_component(model, "reflectors", reflector_label)
 
-        rotor_n = data["rotor_n"] if reflector_label != "UKW-D" else 3
         if not rotor_labels:  # Default config generation
-            rotor_labels = [cfg['label'] for cfg in data["rotors"][:rotor_n]]
+            rotor_labels = defaults[1]
         rotors = cls.generate_rotors(model, rotor_labels)
 
         plugboard = data["plugboard"]
@@ -370,7 +391,7 @@ class EnigmaAPI:
                     break
 
         if not final_data:
-            raise ValueError("No %s with label %s found!" % (comp_type, label))
+            raise ValueError("No component of type %s with label %s found!" % (comp_type, label))
         final_data["charset"] = data["charset"]
 
         if comp_type == "rotors":
@@ -453,6 +474,15 @@ class EnigmaAPI:
 
     def charset(self):
         return self._enigma.charset()
+
+    # SAVE/LOAD
+
+    def save_to(self, filename):
+        save_config(filename, self.get_config())
+
+    def load_from(self, filename):
+        data = load_config(filename)
+        self.enigma_api.load_from_config(data)
 
     # STRING REPRESENTATION OF API DATA
 

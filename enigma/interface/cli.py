@@ -9,10 +9,7 @@ def cli(enigma_api, args):
     :param enigma_api: {EnigmaAPI}
     :param args: Object containing parsed command line arguments
     """
-    try:
-        components = (args.model[0], args.reflector[0], args.rotors)
-    except TypeError:
-        components = []
+    components = (args.model, args.reflector, args.rotors)
 
     if len(components) > 0 and not all(components):
         print("Must supply --model, --rotors, --reflector!")
@@ -27,6 +24,8 @@ def cli(enigma_api, args):
         logging.error("No message to encrypt, quitting...")
         exit(1)
 
+    if args.model:
+        enigma_api.model(args.model[0])
     if args.positions:
         enigma_api.positions(args.positions)
     if args.ring_settings:

@@ -165,8 +165,7 @@ class Root(QWidget):
 
         if filename:
             try:
-                data = load_config(filename)
-                self.enigma_api.load_from_config(data)
+                self.enigma_api.load_from(filename)
                 logging.info('Successfully loaded config from file "%s"' % filename)
             except (FileNotFoundError, JSONDecodeError) as e:
                 QMessageBox.critical(
@@ -206,8 +205,7 @@ class Root(QWidget):
             logging.info(".json suffix for save file not found, adding...")
 
         if filename:
-            data = self.enigma_api.get_config()
-            save_config(filename, data)
+            self.enigma_api.save_to(filename)
         else:
             logging.info("No save file selected...")
 

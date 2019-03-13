@@ -760,6 +760,9 @@ class Enigma:
         result)
         :param key: {char} letter to encrypt
         """
+        if key not in self.charset():
+            raise ValueError("This Enigma instance does not have a '%s' key!" % key)
+
         if self._rotors[-1].in_turnover():
             self._rotors[-2].rotate()
         if self._rotors[-2].in_turnover():

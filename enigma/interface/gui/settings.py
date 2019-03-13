@@ -243,7 +243,8 @@ class Settings(QDialog):
 
         self.generate_components(reflectors, rotors[::], rotor_n)
 
-        for selected, i in zip([0, 0, 1, 2][-rotor_n:], range(rotor_n)):
+        defaults = self.enigma_api.default_cfg(new_model, rotor_n)[1]
+        for selected, i in zip(defaults, range(rotor_n)):
             self.rotor_selectors[i].button(selected).setChecked(True)
 
         self.ukwd.clear_pairs()
@@ -257,8 +258,9 @@ class Settings(QDialog):
         logging.info("Loading component settings from EnigmaAPI...")
 
         model = self.enigma_api.model()
-        reflectors = self.enigma_api.model_labels()["reflectors"]
-        rotors = self.enigma_api.model_labels()["rotors"]
+        reflectors = self.enigma_api.model_labels(model)["reflectors"]
+        rotors = self.enigma_api.model_labels(model)["rotors"]
+
         if "Beta" in rotors:
             rotors.remove("Beta")
             rotors.remove("Gamma")
