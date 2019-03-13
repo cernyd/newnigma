@@ -363,7 +363,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "layout": default_layout
+        "layout": default_layout,
+        "numeric": False
     },
     "Tirpitz": {
         "stator": {"wiring": "KZROUQHYAIGBLWVSTDXFPNMCJE"},
@@ -418,7 +419,8 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "layout": default_layout
+        "layout": default_layout,
+        "numeric": False
     },
     "Enigma Z": {
         "stator": {"wiring": "0123456789"},
@@ -608,7 +610,7 @@ class UKWD(Reflector):
         :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
                       where each letter can only be used once
         """
-        super().__init__("UKW-D", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", False, "ABCDEFGHIJKLMNOQRSTUVWXYZ")
+        super().__init__("UKW-D", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", False, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
         self._marking = " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
         self.wiring(pairs)

@@ -5,6 +5,7 @@ import pytest
 from enigma import contains
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import UKWD, Enigma, Plugboard, Uhr
+from string import ascii_uppercase as alphabet
 
 
 def test_single_encrypt():
@@ -119,7 +120,7 @@ he implementation by encrypting each letter of the alphabet
     """
     enigma = EnigmaAPI.generate_enigma("Enigma M3", "UKW-B", ["I", "II", "III"])
 
-    for letter in alphabet:
+    for letter in enigma.charset():
         for _ in range(1000):
             assert (
                 enigma.press_key(letter) != letter

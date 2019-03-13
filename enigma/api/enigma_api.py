@@ -2,7 +2,6 @@ from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
                                     Stator, format_position,
                                     historical)
 
-
 class EnigmaAPI:
     """
     Interface object between client and Enigma instance
@@ -91,7 +90,7 @@ class EnigmaAPI:
         """
         if new_reflector is not None:
             new_reflector = self.generate_component(
-                self.model(), "reflectors", self.charset(), new_reflector
+                self.model(), "reflectors", new_reflector
             )
             self._enigma.reflector(new_reflector)
         else:
@@ -103,7 +102,7 @@ class EnigmaAPI:
         :param new_rotors: {str}
         """
         if new_rotors is not None:
-            self._enigma.rotors(self.generate_rotors(self.model(), self.charset(), new_rotors))
+            self._enigma.rotors(self.generate_rotors(self.model(), new_rotors))
         else:
             return self._enigma.rotors()
 
@@ -292,14 +291,14 @@ class EnigmaAPI:
     # COMPONENT GENERATORS
 
     @classmethod
-    def generate_rotors(cls, model, charset, rotor_labels):
+    def generate_rotors(cls, model, rotor_labels):
         """
         Generates rotors from supplied labels
         :param rotor_labels: {[str, str, str]}
         """
         rotors = []
         for label in rotor_labels:
-            rotors.append(cls.generate_component(model, "rotors", charset, label))
+            rotors.append(cls.generate_component(model, "rotors", label))
         return rotors
 
     @classmethod
@@ -311,21 +310,24 @@ class EnigmaAPI:
         :param rotor_labels: {[str, str, str]} List of rotor labels
                                                like "I", "II", "III"
         """
-        charset = historical[model]["charset"]
+        try:
+            data = historical[model]
+        except KeyError:
+            raise ValueError("Invalid enigma model %s!" % model)
 
         if not reflector_label:  # TODO: Could use model labels?
-            reflector_label = historical[model]["reflectors"][0]["label"]
-        reflector = cls.generate_component(model, "reflectors", charset, reflector_label)
+            reflector_label = data["reflectors"][0]["label"]
+        reflector = cls.generate_component(model, "reflectors", reflector_label)
 
-        rotor_n = historical[model]["rotor_n"] if reflector_label != "UKW-D" else 3
+        rotor_n = data["rotor_n"] if reflector_label != "UKW-D" else 3
         if not rotor_labels:  # Default config generation
-            rotor_labels = [cfg['label'] for cfg in historical[model]["rotors"][:rotor_n]]
-        rotors = cls.generate_rotors(model, charset, rotor_labels)
+            rotor_labels = [cfg['label'] for cfg in data["rotors"][:rotor_n]]
+        rotors = cls.generate_rotors(model, rotor_labels)
 
-        plugboard = historical[model]["plugboard"]
-        rotatable_ref = historical[model]["rotatable_ref"]
-        numeric = historical[model]["numeric"]
-        stator = cls.generate_component(model, "stator", charset)
+        plugboard = data["plugboard"]
+        rotatable_ref = data["rotatable_ref"]
+        numeric = data["numeric"]
+        stator = cls.generate_component(model, "stator")
 
         return Enigma(
             model,
@@ -336,11 +338,11 @@ class EnigmaAPI:
             rotor_n=rotor_n,
             rotatable_ref=rotatable_ref,
             numeric=numeric,
-            charset=charset
+            charset=data["charset"]
         )
 
     @classmethod
-    def generate_component(cls, model, comp_type, charset, label=None):
+    def generate_component(cls, model, comp_type, label=None):
         """
         Initializes a Stator, Rotor or Reflector.
         :param model: {str} Enigma machine model
@@ -357,7 +359,7 @@ class EnigmaAPI:
         final_data = None
         if comp_type == "stator":
             final_data = data[comp_type] 
-            final_data["charset"] = charset
+            final_data["charset"] = data["charset"]
             return Stator(**data[comp_type])
         if type(label) == int:
             final_data = data[comp_type][label]
@@ -369,7 +371,7 @@ class EnigmaAPI:
 
         if not final_data:
             raise ValueError("No %s with label %s found!" % (comp_type, label))
-        final_data["charset"] = charset
+        final_data["charset"] = data["charset"]
 
         if comp_type == "rotors":
             return Rotor(**final_data)
