@@ -20,7 +20,10 @@ default_init = {
 }
 
 
-def modify_api(args, api):
+def from_args(args):
+    """Attempts to create an EnigmaAPI object from
+    command line options.
+    """
     try:
         enigma_api = EnigmaAPI(args.model[0])
     except TypeError:
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     for arg in argument_data:
         parser.add_argument(*arg[0], **arg[1], action="store_true", default=False)
 
-    parser.add_argument("-b", "--benchmark", help="benchmarks encryption speed for N letters",
+    parser.add_argument("-b", "--benchmark", help="benchmarks encryption speed for N character",
                         nargs=1, dest="benchmark_n", metavar="N")
 
     # ====================================================
@@ -206,8 +209,8 @@ if __name__ == "__main__":
             exit(1)
 
         if not n > 0:
-            logging.error('Benchmark letter count is not greater than 0, exiting...')
-            print('Benchmark letter count must be greater than 0!')
+            logging.error('Benchmark character count is not greater than 0, exiting...')
+            print('Benchmark character count must be greater than 0!')
             exit(1)
 
         benchmark(n)
@@ -234,11 +237,9 @@ if __name__ == "__main__":
     if args.filename:
         enigma_api.load_from(args.filename[0])
 
-    mod = modify_api(args, enigma_api)
+    mod = from_args(args)
     if mod:
         enigma_api = mod
-
-    print(enigma_api)
 
     if args.cli:
         logging.info("Loading in CLI mode with settings:\n%s..." % str(enigma_api))

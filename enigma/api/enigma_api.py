@@ -4,15 +4,14 @@ from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
 from enigma.utils.cfg_handler import load_config, save_config
 
 class EnigmaAPI:
-    """
-    Interface object between client and Enigma instance
-    """
+    """Wrapper for easier management of Enigma objects and their components"""
 
     def __init__(self, model, reflector=None, rotors=None, position_buffer=10000):
         """
         :param model: {str} Enigma machine model label
         :param reflector: {str} Reflector label like "UKW-B"
         :param rotors: {[str, str, str]} Rotor labels
+        :param position_buffer: {int} Number of positions in the saved position buffer
         """
         self._enigma = self.generate_enigma(model, reflector, rotors)
 
@@ -23,31 +22,24 @@ class EnigmaAPI:
     # GETTERS
 
     def data(self):
-        """
-        Returns historical data for the current model
-        """
+        """Returns historical data for the current model"""
         return historical[self.model()]
 
     def rotor_n(self, model=None):
-        """
-        Returns rotor count of current model or other model
-        :param model: {str} Model to get rotor count for
+        """Returns rotor count of current model or other model
+        :param model: {str} Model to get rotor count for, current model by default
         """
         if not model:
             return self._enigma.rotor_n()
         return historical[model]["rotor_n"]
 
     def letter_group(self):
-        """
-        Returns the historical letter group for this Enigma model
-        """
+        """Returns the historical letter group for current Enigma model"""
         return historical[self.model()]["letter_group"]
 
     @classmethod
     def model_labels(cls, model):
-        """
-        Returns all available labels for rotors and reflectors for the select
-        model
+        """Returns all available labels for rotors and reflectors for the selected model
         :param model: {str} Enigma model
         """
         labels = lambda component: [item["label"] for item in
@@ -60,6 +52,11 @@ class EnigmaAPI:
 
     @classmethod
     def default_cfg(cls, model, rotor_n, labels=False):
+        """Generates default configuration choices
+        :param model: {str} Enigma model
+        :param rotor_n: {int} Rotor count
+        :param labels: {bool} Returns default labels if True, else returns indexes
+        """
         all_labels = cls.model_labels(model)
         rotors = all_labels["rotors"]
         reflectors = all_labels["reflectors"]
@@ -76,8 +73,7 @@ class EnigmaAPI:
         return indexes
 
     def reflector_rotatable(self):
-        """
-        Returns a value of is not None whether or not the current Enigma model
+        """Returns a value of is not None whether or not the current Enigma model
         supports reflector rotation
         """
         return self._enigma.reflector_rotatable()
@@ -85,8 +81,7 @@ class EnigmaAPI:
     # PLUGS
 
     def model(self, new_model=None):
-        """
-        Returns model or sets a new one if new_model is overridden
+        """Returns model or sets a new one if new_model is overridden
         :param new_model: {str}
         """
         if new_model is not None:
@@ -102,8 +97,7 @@ class EnigmaAPI:
             return self._enigma.model()
 
     def reflector(self, new_reflector=None):
-        """
-        Returns reflector or sets a new one if new_reflector is overridden
+        """Returns reflector or sets a new one if new_reflector is overridden
         :param new_reflector: {str}
         """
         if new_reflector is not None:
@@ -115,8 +109,7 @@ class EnigmaAPI:
             return self._enigma.reflector()
 
     def rotors(self, new_rotors=None):
-        """
-        Returns rotors or sets a new one if new_rotors is overridden
+        """Returns rotors or sets a new one if new_rotors is overridden
         :param new_rotors: {str}
         """
         if new_rotors is not None:
@@ -125,65 +118,61 @@ class EnigmaAPI:
             return self._enigma.rotors()
 
     def positions(self, new_positions=None):
-        """
-        Returns positions or sets a new one if new_positions is overridden
+        """Returns positions or sets a new one if new_positions is overridden
         :param new_positions: {str}
         """
         return self._enigma.positions(new_positions)
 
     def ring_settings(self, new_ring_settings=None):
-        """
-        Returns ring_settings or sets a new one if new_ring_settings
+        """Returns ring_settings or sets a new one if new_ring_settings
         is overridden
         :param ring_settings: {str}
         """
         return self._enigma.ring_settings(new_ring_settings)
 
     def plug_pairs(self, new_plug_pairs=None):
-        """
-        Returns plug_pairs or sets a new one if new_plug_pairs is overridden
+        """Returns plug_pairs or sets a new one if new_plug_pairs is overridden
         :param new_plug_pairs: {str}
         """
         return self._enigma.plug_pairs(new_plug_pairs)
 
     def reflector_position(self, new_position=None):
-        """
-        Returns current reflector position (if any)
+        """Returns current reflector position (if any)
         :param new_position: New position to set to the reflector
         """
         return self._enigma.reflector_position(new_position)
 
     def reflector_pairs(self, new_pairs=None):
-        """
-        Returns current reflector wiring pairs (if any)
+        """Returns current reflector wiring pairs (if any)
         :param new_pairs: New wiring pair to set to the reflector
         """
         return self._enigma.reflector_pairs(new_pairs)
 
     def uhr(self, action=None):
-        """
-        Modifies current Uhr status
+        """Modifies current Uhr status
         :param action: Will enable Uhr if True, disable if False and return
                        connection status if None
         """
         return self._enigma.uhr(action)
 
     def uhr_position(self, position=None):
-        """  TODO: Add
+        """Returns current Uhr position if position is None, else sets it
+        :param position: {int} Target Uhr position
         """
         return self._enigma.uhr_position(position)
 
     def generate_rotate_callback(self, rotor_id, by=1):
-        """
-        Generates a function that will rotate a select rotor by one position
-        in the select direction (used by gui)
+        """Generates a function callback that will rotate a select
+        rotor by one position in the select direction when called (used by gui).
         :param rotor_id: {int} Integer position of the rotor
                                (0 = first rotor, ...)
         :param by: {int} Positive or negative integer
-                         describing the number of spaces
+                         describing the number of places
         """
 
         def rotate_rotor(rotor_id, by=1):
+            """Callback function that rotates a single select rotor
+            """
             self.__clear_buffer()
             self._enigma.rotate_rotor(rotor_id, by)
             self.set_checkpoint()
@@ -191,8 +180,7 @@ class EnigmaAPI:
         return lambda: rotate_rotor(rotor_id, by)
 
     def rotate_reflector(self, by=1, callback=False):
-        """
-        Rotates reflector by select number of positions, generates a callback
+        """Rotates reflector by select number of positions, generates a callback
         if specified
         :param by: {int} n positions to rotate (negative number for
                          the opposite direction)
@@ -207,8 +195,7 @@ class EnigmaAPI:
     # BUFFER TOOLS
 
     def __serialized_position(self):
-        """
-        Serializes current rotor positions to a single integer
+        """Serializes current rotor positions to a single integer
         For example: [02, 13, 5, 22] -> 2130522
         This method saves space in memory
         """
@@ -222,28 +209,21 @@ class EnigmaAPI:
         return int(serialized)
 
     def set_checkpoint(self):
-        """
-        Sets the starting position of the currently typed message (this can
+        """Sets the starting position of the currently typed message (this can
         later be loaded)
         """
         self.__checkpoint = self.__serialized_position()
 
     def load_checkpoint(self):
-        """
-        Sets rotor positions to the checkpoint position
-        """
+        """Sets rotor positions to the checkpoint position"""
         self.positions(self.checkpoint())
 
     def checkpoint(self):
-        """
-        Returns current checkpoint positions
-        """
+        """Returns current checkpoint positions"""
         return self.__load_position(self.__checkpoint)
 
     def __clear_buffer(self):
-        """
-        Erases all saved positions in the position buffer
-        """
+        """Erases all saved positions in the position buffer"""
         self.__buffer = []
 
     def buffer_full(self):
@@ -251,16 +231,13 @@ class EnigmaAPI:
         return len(self.__buffer) == self.__buffer_size
 
     def __save_position(self):
-        """
-        Saves current Enigma rotor position to the position buffer
-        """
+        """Saves current Enigma rotor position to the position buffer"""
         if self.buffer_full():
             self.__buffer.pop(0)
         self.__buffer.append(self.__serialized_position())
 
     def __load_position(self, position):
-        """
-        Deserializes position from an integer to the original form (list of
+        """Deserializes position from an integer to the original form (list of
         rotor positions)
         :param position: {int} position to be loaded
         """
@@ -276,9 +253,9 @@ class EnigmaAPI:
         return positions
 
     def revert_by(self, by=1):
-        """
-        Reverts by "by" positions back (used when backspace is pressed
+        """Reverts by "by" positions back (used when backspace is pressed
         or text is deleted)
+        :param by: {int} By how many positions to revert
         """
         if not by >= 0:
             raise ValueError("Enigma can only be reverted by 1 or more positions")
@@ -295,8 +272,7 @@ class EnigmaAPI:
     # ENCRYPTION
 
     def encrypt(self, text):
-        """
-        Encrypts text using the current Enigma object, also saves position
+        """Encrypts text using the current Enigma object, also saves position
         to the position buffer
         :param text: {char} Text to encrypt
         """
@@ -310,8 +286,8 @@ class EnigmaAPI:
 
     @classmethod
     def generate_rotors(cls, model, rotor_labels):
-        """
-        Generates rotors from supplied labels
+        """Generates rotors from supplied labels
+        :param model: {str} Target Enigma model
         :param rotor_labels: {[str, str, str]}
         """
         rotors = []
@@ -321,8 +297,7 @@ class EnigmaAPI:
 
     @classmethod
     def generate_enigma(cls, model, reflector_label=None, rotor_labels=None):
-        """
-        Initializes a complete Enigma instance based on input parameters
+        """Initializes a complete Enigma instance based on input parameters
         :param model: {str} Enigma model
         :param reflector_label: {str} Reflector label like "UKW-B"
         :param rotor_labels: {[str, str, str]} List of rotor labels
@@ -364,8 +339,7 @@ class EnigmaAPI:
 
     @classmethod
     def generate_component(cls, model, comp_type, label=None):
-        """
-        Initializes a Stator, Rotor or Reflector.
+        """Initializes a Stator, Rotor or Reflector.
         :param model: {str} Enigma machine model
         :param comp_type: {str} "stator", "rotors" or "reflectors"
         :param label: {str} or {int} Component label like "I", "II", "UKW-B" or
@@ -404,8 +378,7 @@ class EnigmaAPI:
     # CONFIG SAVE/LOAD
 
     def load_from_config(self, config):
-        """
-        Generates components and sets their settings based on input data
+        """Generates components and sets their settings based on input data
         :param config: {dict} Dictionary of saved settings
         """
         old_config = self.get_config()
@@ -440,8 +413,7 @@ class EnigmaAPI:
             raise
 
     def get_config(self):
-        """
-        Converts enigma settings to a json serializable dict (but can be used
+        """Converts Enigma settings to a json serializable dict (but can be used
         for any purpose)
         """
         data = {}
@@ -473,14 +445,17 @@ class EnigmaAPI:
         return data
 
     def charset(self):
+        """Returns current Enigma charset"""
         return self._enigma.charset()
 
     # SAVE/LOAD
 
     def save_to(self, filename):
+        """Dumps API configuration to a file"""
         save_config(filename, self.get_config())
 
     def load_from(self, filename):
+        """Loads API configuration from a file"""
         data = load_config(filename)
         self.load_from_config(data)
 

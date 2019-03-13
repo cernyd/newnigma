@@ -1,4 +1,5 @@
 class Uhr:
+    """Uhr Plugboard extension device"""
     def __init__(self):
         # Way contacts 00 ... 39 are steckered with the A board
         self.contacts = [
@@ -17,10 +18,14 @@ class Uhr:
 
         self._offset = 0  # Scrambler disc offset
 
-    def rotate(self, offset_by=1):
-        self._offset = (self._offset + offset_by) % 40
+    def rotate(self, by=1):
+        """Rotates Uhr dial by select number of positions
+        :param by: {int} By how many positions
+        """
+        self._offset = (self._offset + by) % 40
 
     def position(self, new_position=None):
+        """Positions getter/setter, valid position range is 00 - 39"""
         if type(new_position) == int:
             if new_position not in range(0, 40):
                 raise ValueError("Positions can only be set to values 1 - 26!")
@@ -29,9 +34,7 @@ class Uhr:
             return self._offset
 
     def pairs(self, pairs=None):
-        """
-        Sets pairs
-        """
+        """Pairs getter/setter, only 10 letter pairs can be connected at a time!"""
         if pairs is not None:
             if len(pairs) != 0 and len(pairs) != 10:
                 raise ValueError("Uhr allows only exactly 10 pairs to be plugged in at a time!")
@@ -51,6 +54,10 @@ class Uhr:
             return self._pairs
 
     def route(self, letter, backwards=False):
+        """Routes letters trough the Uhr
+        :param letter: {str} Letter to route
+        :param backwards: {bool} Letters are wired differently if backwards is True (returning from rotor assembly)
+        """
         board = None
         for plug in self._real_coords['a'] + self._real_coords['b']:
             if plug[1] == letter:

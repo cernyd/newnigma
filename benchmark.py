@@ -6,6 +6,10 @@ from enigma.api.enigma_api import EnigmaAPI
 
 
 def benchmark(char_n=None):
+    """Benchmarks Enigma encryption speed with
+    the (theoretically) most performance heavy settings.
+    :param char_n: {int} Number of characters to benchmark on
+    """
     enigma = EnigmaAPI.generate_enigma(
         "Enigma M4", "UKW-b", ["Beta", "I", "II", "III"]
     )
