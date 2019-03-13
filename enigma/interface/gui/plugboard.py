@@ -4,12 +4,12 @@ from enigma.interface.gui import *
 
 
 class PlugboardDialog(AbstractPlugboard):
+    """Plugboard for setting Plugboard plug pairs in normal and Uhr mode"""
     def __init__(self, master, enigma_api):
         """
         Allows choosing and viewing current plugboard pairs
         :param master: Qt parent object
-        :param pairs_plug: {callable} Provides access to setting and viewing plug
-                                      pairs from api
+        :param enigma_api: {EnigmaAPI} Shared EnigmaAPI instance
         """
         super().__init__(master, enigma_api, "Plugboard")
 
@@ -77,10 +77,8 @@ class PlugboardDialog(AbstractPlugboard):
         self.main_layout.addWidget(self._button_frame)
 
     def refresh_apply(self):
-        """
-        Enables "Apply" button either if Uhr is disabled or Uhr is enabled and
-        10 pairs are set
-        """
+        """Enables "Apply" button either if Uhr is disabled or Uhr is enabled and
+        10 pairs are set"""
         pair_n = len(self._pairs())
         if self.enable_uhr.isChecked() and pair_n != 10:
             logging.info("Uhr pre-requisites not met, keeping button disabled...")
@@ -95,8 +93,8 @@ class PlugboardDialog(AbstractPlugboard):
             self.apply_btn.setToolTip(None)
 
     def change_uhr_status(self, clear=True):
-        """
-        Enables "Uhr" button if the checkmark is enabled
+        """Enables "Uhr" button if the checkmark is enabled
+        :param clear: {bool} Whether or not the connected pairs should be cleared
         """
         if clear:
             self.clear_pairs()
@@ -108,10 +106,7 @@ class PlugboardDialog(AbstractPlugboard):
             self.uhr.setToolTip('Check "Enable Uhr" to enter Uhr settings')
 
     def collect(self):
-        """
-        Collects all unique letter pairs, enables and sets up Uhr if it's also
-        checked
-        """
+        """Collects all unique letter pairs, enables and sets up Uhr if it's also checked"""
         pairs = self._pairs()
 
         if self.enable_uhr.isChecked():
@@ -131,6 +126,7 @@ class PlugboardDialog(AbstractPlugboard):
 
 
 class UhrDialog(QDialog):
+    """Uhr dialog menu with dial"""
     def __init__(self, master, uhr_position):
         """
         Uhr plugboard device
@@ -196,23 +192,21 @@ class UhrDialog(QDialog):
         main_layout.addWidget(btn_frame)
 
     def refresh_indicator(self):
-        """
-        Sets displayed indicator value to current dial value
-        """
+        """Sets displayed indicator value to current dial value"""
         self.indicator.setText("%02d" % self.dial.value())
 
     def position(self):
-        """
-        Returns current Uhr dial setting
-        """
+        """Returns current Uhr dial setting"""
         return self.dial.value()
 
     def apply(self):
+        """Sets currently selected position to be collected when applying settings"""
         self._old_position = self.dial.value()
         logging.info("New Uhr position %d applied, closing..." % self._old_position)
         self.close()
 
     def storno(self):
+        """Undoes current changes"""
         logging.info("Storno, reverting to old position %d..." % self._old_position)
         self.dial.setValue(self._old_position)
         self.close()

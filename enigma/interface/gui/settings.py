@@ -8,6 +8,7 @@ selector_tooltips = ("Does not rotate", None, None, "Rotates on every keypress")
 
 
 class Settings(QDialog):
+    """Settings menu with two tabs for settings models and components"""
     def __init__(self, master, enigma_api):
         """
         Submenu for setting Enigma model and component settings
@@ -69,18 +70,14 @@ class Settings(QDialog):
         main_layout.addWidget(self.button_frame)
 
     def open_ukwd_wiring(self):
-        """
-        Opens UKWD wiring menu
-        """
+        """Opens UKWD wiring menu"""
         logging.info("Opened UKW-D wiring menu...")
         self.ukwd.exec_()
         self.refresh_ukwd()
 
     def refresh_ukwd(self):
-        """
-        Refreshes Apply button according to criteria (UKW-D rotor must be
-        selected to edit its settings)
-        """
+        """Refreshes Apply button according to criteria (UKW-D rotor must be
+        selected to edit its settings)"""
         if self.reflector_group.checkedButton().text() == "UKW-D":
             logging.info("UKW-D reflector selected, enabling UKW-D button...")
 
@@ -108,8 +105,7 @@ class Settings(QDialog):
                 self.rotor_frames[0].setDisabled(False)
 
     def generate_components(self, reflectors, rotors, rotor_n):
-        """
-        Generates currently displayed components based on Enigma model
+        """Generates currently displayed components based on Enigma model
         :param reflectors: {str} Reflector labels
         :param rotors: {[str, str, str]} Rotor labels
         :param rotor_n: {int} Number of rotors the Enigma model has
@@ -217,9 +213,7 @@ class Settings(QDialog):
             self.rotor_frames.append(rotor_frame)
 
     def clear_components(self):
-        """
-        Deletes all components settings widgets
-        """
+        """Deletes all components settings widgets"""
         while True:
             child = self.settings_layout.takeAt(0)
             if not child:
@@ -229,10 +223,8 @@ class Settings(QDialog):
             del wgt
 
     def regen_model(self, new_model):
-        """
-        Regenerates component settings
+        """Regenerates component settings
         :param new_model: {str} Enigma model
-        :param from_api: {boo} Sets settings to current api settings if True
         """
         logging.info("Regenerating component settings...")
         self.clear_components()
@@ -255,6 +247,7 @@ class Settings(QDialog):
         self.refresh_ukwd()
 
     def load_from_api(self):
+        """Loads displayed settings from shared EnigmaAPI instance"""
         logging.info("Loading component settings from EnigmaAPI...")
 
         model = self.enigma_api.model()
@@ -280,10 +273,8 @@ class Settings(QDialog):
             self.ring_selectors[i].setCurrentIndex(ring - 1)
 
     def collect(self):
-        """
-        Collects all selected settings for rotors and other components,
-        applies them to the EnigmaAPI as new settings
-        """
+        """Collects all selected settings for rotors and other components,
+        applies them to the EnigmaAPI as new settings"""
         logging.info("Collecting new settings...")
 
         new_model = self.stacked_wikis.currently_selected
@@ -324,10 +315,11 @@ class Settings(QDialog):
 
 
 class ViewSwitcher(QWidget):
+    """Object that handles displaying of Enigma model wikis and images"""
     def __init__(self, master, regen_plug):
         """
         :param master: Qt parent object
-        :param regen_plug: {callable} Regenerates settings view
+        :param regen_plug: {callable} Regenerates settings view to new contents
         """
         super().__init__(master)
 
@@ -362,9 +354,8 @@ class ViewSwitcher(QWidget):
         self.currently_selected = None
 
     def select_model(self, i):
-        """
-        Called when the "Use this model" button is pressed
-        :param model: {str} Newly selected model
+        """Called when the "Use this model" button is pressed
+        :param i: {str} Newly selected model index
         """
         logging.info('Changing settings view to model "%s"' % list(view_data.keys())[i])
         model = list(view_data.keys())[i]
@@ -378,8 +369,8 @@ class ViewSwitcher(QWidget):
         self.currently_selected = model
 
     def highlight(self, i):
-        """
-        Highlights an option with Blue color, indicating that it is currently selected in EnigmaAPI
+        """Highlights an option with Blue color, indicating that
+        it is currently selected in EnigmaAPI
         :param i: {int} Index from list options
         """
         for index in range(self.total_models):
@@ -393,10 +384,12 @@ class ViewSwitcher(QWidget):
 
 
 class _EnigmaView(QWidget):
+    """A single Enigma wiki view with text and image"""
     def __init__(self, master, model, description):
         """
         :param master: Qt parent object
         :param model: {str} Enigma model
+        :param description: {str} Wiki text
         """
         super().__init__(master)
 
@@ -430,6 +423,7 @@ class _EnigmaView(QWidget):
 
 
 class UKWD_Settings(AbstractPlugboard):
+    """UKW-D wiring settings derived from the abstract plugboard"""
     def __init__(self, master, enigma_api):
         """
         Settings menu for settings UKW-D wiring pairs
@@ -478,15 +472,14 @@ class UKWD_Settings(AbstractPlugboard):
         self.refresh_apply()
 
     def refresh_pairs(self):
+        """Attempts to refresh visibly connected pairs from shared EnigmaAPI instance"""
         try:
             self.set_pairs(self.enigma_api.reflector_pairs())
         except ValueError:
             pass
 
     def refresh_apply(self):
-        """
-        Enables the "Apply" button only if all 12 pairs are connected
-        """
+        """Enables the "Apply" button only if all 12 pairs are connected"""
         if len(self._pairs()) != 12:
             self.apply_btn.setDisabled(True)
             self.apply_btn.setToolTip("All 12 pairs must be connected!")

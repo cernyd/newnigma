@@ -268,16 +268,8 @@ for model in historical:
     })
 
 
-def load_mods(mod_cfg):  # TODO: Fully implement mod loader in the end
-    for mod in mod_cfg:
-        view_data = mod.get(['view_data'], {
-            "description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
-            "img": base_dir + "unknown.jpg"
-        })
-        # config = mod.
-
-
 class AbstractPlugboard(QDialog):
+    """Abstract object with features shared by all 'pair connect' windows"""
     def __init__(self, master, enigma_api, title):
         super().__init__(master)
 
@@ -292,9 +284,8 @@ class AbstractPlugboard(QDialog):
         self.uhr_enabled = False
         self.apply_plug = lambda: None
 
-    def _pairs(self):  # TODO: Duplicate
-        """
-        Returns all selected wiring pairs
+    def _pairs(self):
+        """Returns all selected wiring pairs
         """
         pairs = []
         for plug in self.plugs.values():
@@ -305,6 +296,9 @@ class AbstractPlugboard(QDialog):
         return [pair[1] for pair in sorted(pairs, key=lambda pair: pair[0])]
 
     def set_pairs(self, new_pairs=[]):
+        """Sets pairs to new pairs and connects corresponding sockets
+        :param new_pairs: {[str, str, str, ...]}
+        """
         self.clear_pairs()
         if new_pairs:
             logging.info('Setting wiring pairs to "%s"' % str(new_pairs))
@@ -315,10 +309,13 @@ class AbstractPlugboard(QDialog):
         self.apply_plug()
 
     def apply(self):
+        """Sets current pairs to the ones that will be collected, closes window
+        """
         self.old_pairs = self._pairs()
         self.close()
 
-    def clear_pairs(self):
+    def clear_pairs(self): 
+        """Clears all pairs and sockets"""
         logging.info("Clearing all wiring pairs...")
         for plug in self.plugs.values():
             self.connect_sockets(plug.letter, None, False)
@@ -326,17 +323,17 @@ class AbstractPlugboard(QDialog):
         self.apply_plug()
 
     def storno(self):
-        """
-        Clears all selected pairs and closes the window
-        """
+        """Clears all selected pairs and closes the window"""
         logging.info("Cancelling changes to wiring...")
         self.set_pairs(self.old_pairs)
         self.close()
 
     def connect_sockets(self, socket, other_socket, refresh=True):
-        """
-        Connects two sockets without unnecessary interaction of two sockets
+        """Connects two sockets without unnecessary interaction of two sockets
         to avoid recursive event calls)
+        :param socket: {char} Letter for the calling sockets
+        :param other_socket: {char} letter for the other socket, disconnects the first parameter socket if None
+        :param refresh: {bool} Whether or not the GUI should be refreshed after making changes
         """
         plug = self.plugs[socket]
 
@@ -367,13 +364,14 @@ class AbstractPlugboard(QDialog):
 
 
 class Socket(QFrame):
+    """One socket with label and text entry"""
     def __init__(self, master, letter, connect_plug, charset):
         """
-        One sockets with label and text entry
         :param master: Qt parent object
         :param letter: Letter to serve as the label
         :param connect_plug: calls parent to connect with the letter typed in
                              the entry box
+        :param charset: {str} Allowed letters
         """
         super().__init__(master)
 
@@ -406,18 +404,14 @@ class Socket(QFrame):
         layout.addWidget(self.entry, alignment=Qt.AlignCenter)
 
     def pair(self):
-        """
-        Returns currently wired pair.
-        """
+        """Returns currently wired pair."""
         if self.connected_to:
             return self.letter + self.connected_to
         else:
             return None
 
     def entry_event(self):
-        """
-        Responds to a event when something changes in the plug entry
-        """
+        """Responds to a event when something changes in the plug entry"""
         letter = self.entry.text().upper()
         if letter not in self.charset:
             self.set_text("", True)
@@ -432,6 +426,9 @@ class Socket(QFrame):
         Sets text to the plug entrybox and sets white (vacant) or black
         (occupied) background color
         :param letter: Sets text to the newly selected letter
+        :param block_event: {bool} Starts blocking Qt signals if True
+        :param marking: {str} Uhr marking (like 1a, 3b, ...)
+        :param uhr: {bool} Colors sockets differently when True (when Uhr connected)
         """
         stylesheet = "background-color: %s; color: %s; text-align: center; font-size: 30px;"
 
