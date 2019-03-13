@@ -1,8 +1,10 @@
 from enigma import contains
 from enigma.core.extensions import Uhr
 
+alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 # Stators
-ETW = {"wiring": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+ETW = {"wiring": alphabet}
 ETW_QWERTZ = {"wiring": "QWERTZUIOASDFGHJKPYXCVBNML"}
 
 # Rotors
@@ -53,7 +55,7 @@ ENIGMA_D_K = {
     "letter_group": 5,
     "plugboard": False,
     "numeric": False,
-    "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "charset": alphabet,
     "layout": default_layout
 }
 
@@ -73,7 +75,7 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": True,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Enigma M3": {
@@ -85,7 +87,7 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Enigma M4": {
@@ -112,7 +114,7 @@ historical = {
         "letter_group": 4,
         "plugboard": True,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Norenigma": {
@@ -153,7 +155,7 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Enigma G (A865)": {  # Zählwerk A865
@@ -183,7 +185,7 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Enigma G (G-111)": {
@@ -213,7 +215,7 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Enigma G (G-260)": {
@@ -243,7 +245,7 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Enigma G (G-312)": {
@@ -273,7 +275,7 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Enigma D": ENIGMA_D_K,
@@ -301,7 +303,7 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Swiss K": {
@@ -332,7 +334,7 @@ historical = {
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout
     },
     "Railway": {
@@ -362,7 +364,7 @@ historical = {
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout,
         "numeric": False
     },
@@ -418,7 +420,7 @@ historical = {
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
-        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "charset": alphabet,
         "layout": default_layout,
         "numeric": False
     },
@@ -492,7 +494,7 @@ class Plugboard:
 
 
 class _Component:  # Base component
-    def __init__(self, label, wiring, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+    def __init__(self, label, wiring, charset=alphabet):
         self._label = label
         self._charset = charset
         self._max_index = len(charset)
@@ -513,7 +515,7 @@ class _Component:  # Base component
 
 
 class Stator(_Component):
-    def __init__(self, wiring, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+    def __init__(self, wiring, charset=alphabet):
         """
         :param wiring: {str} defines the way letters are routed
                              trough the rotor
@@ -528,7 +530,7 @@ class Stator(_Component):
 
 
 class _Rotatable(_Component):
-    def __init__(self, label, wiring, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+    def __init__(self, label, wiring, charset=alphabet):
         super().__init__(label, wiring, charset=charset)
 
         self._offset = 0
@@ -564,7 +566,7 @@ class _Rotatable(_Component):
 
 
 class Reflector(_Rotatable):
-    def __init__(self, label, wiring, rotatable=False, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+    def __init__(self, label, wiring, rotatable=False, charset=alphabet):
         super().__init__(label, wiring, charset)
 
         self.__rotatable = rotatable
@@ -610,7 +612,7 @@ class UKWD(Reflector):
         :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
                       where each letter can only be used once
         """
-        super().__init__("UKW-D", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", False, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        super().__init__("UKW-D", alphabet, False, alphabet)
 
         self._marking = " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
         self.wiring(pairs)
@@ -647,7 +649,7 @@ class UKWD(Reflector):
 
 
 class Rotor(_Rotatable):
-    def __init__(self, label, wiring, turnover=None, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+    def __init__(self, label, wiring, turnover=None, charset=alphabet):
         """
         :param label: {str} rotor label (I, II, III, ...)
         :param wiring: {str} defines the way letters are routed trough the rotor
@@ -721,7 +723,7 @@ class Enigma:
         rotor_n=3,
         rotatable_ref=False,
         numeric=False,
-        charset="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        charset=alphabet
     ):
         """
         :param reflector: {Reflector} Reflector object

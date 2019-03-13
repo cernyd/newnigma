@@ -482,7 +482,7 @@ class EnigmaAPI:
 
     def load_from(self, filename):
         data = load_config(filename)
-        self.enigma_api.load_from_config(data)
+        self.load_from_config(data)
 
     # STRING REPRESENTATION OF API DATA
 

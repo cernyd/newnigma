@@ -59,7 +59,7 @@ def test_letter_group(model, letter_group):
 ))
 def test_model_labels(model, labels):
     enigma_api = EnigmaAPI(model)
-    assert enigma_api.model_labels() == labels, "Incorrect (or incomplete) list of labels for selected model!"
+    assert enigma_api.model_labels(model) == labels, "Incorrect (or incomplete) list of labels for selected model!"
 
 
 def test_reflector_rotatable():

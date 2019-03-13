@@ -13,8 +13,38 @@ from enigma.utils.cfg_handler import load_config
 from benchmark import benchmark
 
 
-def extract_settings(args):
-    pass
+default_init = {
+    "model": "Enigma I",
+    "rotors": ["I", "II", "III"],
+    "reflector": "UKW-A"
+}
+
+
+def modify_api(args, api):
+    try:
+        enigma_api = EnigmaAPI(args.model[0])
+    except TypeError:
+        return
+
+    if args.reflector:
+        enigma_api.reflector(args.reflector[0])
+    if args.rotors:
+        enigma_api.rotors(args.rotors)
+    if args.positions:
+        enigma_api.positions(args.positions)
+    if args.ring_settings:
+        enigma_api.ring_settings(map(int, args.ring_settings))
+    if args.reflector_position:
+        enigma_api.reflector_position(int(args.reflector_position[0]))
+    if args.reflector_pairs:
+        enigma_api.reflector_pairs(args.reflector_pairs)
+    if args.uhr:
+        enigma_api.uhr('connect')
+        enigma_api.uhr_position(int(args.uhr[0]))
+    if args.plug_pairs:
+        enigma_api.plug_pairs(args.plug_pairs)
+
+    return enigma_api
 
 
 if __name__ == "__main__":
@@ -57,7 +87,7 @@ if __name__ == "__main__":
     # ====================================================
     # CLI GROUP
 
-    cli_args = parser.add_argument_group("arguments for cli mode")
+    cli_args = parser.add_argument_group("startup settings")
     cli_data = (
         (
             ("--from", ),
@@ -133,7 +163,7 @@ if __name__ == "__main__":
                 metavar="position",
             ),
         ),
-        (("-m", "--message"), dict(help="message to be encrypted", nargs=1, dest="message")),
+        (("-m", "--message"), dict(help="text for encryption in cli mode", nargs=1, dest="message")),
     )
 
     for arg in cli_data:
@@ -191,15 +221,24 @@ if __name__ == "__main__":
     try:
         data = load_config("config.json")["default"]
     except Exception:
-        logging.shutdown()
-        exit(1)
+        logging.info("Failed to load default config, using builtin defaults instead...")
+        data = default_init
 
     # APPLICATION INIT ====================================================
     # LOADS EITHER CLI OR GUI BASED ON COMMAND LINE ARG
 
     logging.info("Starting Enigma...")
 
-    enigma_api = EnigmaAPI(data["model"], data["reflector"], data["rotors"])
+    if data:
+        enigma_api = EnigmaAPI(data["model"], data["reflector"], data["rotors"])
+    if args.filename:
+        enigma_api.load_from(args.filename[0])
+
+    mod = modify_api(args, enigma_api)
+    if mod:
+        enigma_api = mod
+
+    print(enigma_api)
 
     if args.cli:
         logging.info("Loading in CLI mode with settings:\n%s..." % str(enigma_api))
