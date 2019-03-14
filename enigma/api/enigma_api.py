@@ -3,7 +3,6 @@ from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
 from enigma.utils.cfg_handler import load_config, save_config
 
 
-
 def check_iterable(values, name):
     """Checks if a values is iterable, raises a customized error if not
     :param values: {any} Any value to be checked
