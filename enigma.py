@@ -4,14 +4,12 @@ import argparse
 import logging
 
 import pytest
-
+from benchmark import benchmark
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import historical
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
 from enigma.utils.cfg_handler import load_config
-from benchmark import benchmark
-
 
 default_init = {
     "model": "Enigma I",

@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from random import choice, choices, randint, sample, shuffle
-
-import pytest
-
-from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import *
 from string import ascii_uppercase as alphabet
 
+import pytest
+from enigma.api.enigma_api import EnigmaAPI
+from enigma.core.components import *
 
 trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, None, -1332, "heaaafs", "",
               "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))

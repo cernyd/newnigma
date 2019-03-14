@@ -1,7 +1,7 @@
 import logging
+from copy import copy
 from re import findall, sub
 from textwrap import wrap
-from copy import copy
 
 from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import *

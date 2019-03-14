@@ -1,7 +1,7 @@
 from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
-                                    Stator, format_position,
-                                    historical)
+                                    Stator, format_position, historical)
 from enigma.utils.cfg_handler import load_config, save_config
+
 
 class EnigmaAPI:
     """Wrapper for easier management of Enigma objects and their components"""
