@@ -3,6 +3,7 @@
 import argparse
 import logging
 
+from sys import stdin
 import pytest
 from benchmark import benchmark
 from enigma.api.enigma_api import EnigmaAPI
@@ -77,7 +78,8 @@ if __name__ == "__main__":
             dict(help="launches the simulator in the command line mode", dest="cli"),
         ),
         (("-p", "--preview"), dict(help="Runs a sample cli command")),
-        (("-v", "--verbose"), dict(help="Turns on verbose logging messages"))
+        (("-v", "--verbose"), dict(help="Turns on verbose logging messages")),
+        (("-s", "--silent"), dict(help="Turns off all prints except cli output"))
     )
     for arg in argument_data:
         parser.add_argument(*arg[0], **arg[1], action="store_true", default=False)
@@ -241,7 +243,7 @@ if __name__ == "__main__":
 
     if args.cli:
         logging.info("Loading in CLI mode with settings:\n%s..." % str(enigma_api))
-        cli(enigma_api, args)
+        cli(enigma_api, args, str(stdin.read()).strip())
     elif args.preview:
         logging.info("Printing preview...")
         print(
