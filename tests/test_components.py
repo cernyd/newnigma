@@ -187,7 +187,7 @@ def test_enigma():
     ),
 )
 def test_enigma_models(model, n_rotors, should_fail):
-    rotors = range(n_rotors)
+    rotors = list(range(n_rotors))
     # Fake values instead of rotors because they are not needed in this test
 
     if should_fail:

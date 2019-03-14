@@ -7,7 +7,7 @@ import pytest
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import *
 
-trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, None, -1332, "heaaafs", "",
+trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, -1332, "heaaafs", "", Rotor,
               "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))
 
 
@@ -68,14 +68,15 @@ def test_reflector_rotatable():
 def test_model_set():
     enigma_api = EnigmaAPI("Enigma I")
     labels = list(historical.keys())
+
     for _ in range(100):
         new_model = choice(labels)
         enigma_api.model(new_model)
         assert enigma_api.model() == new_model
 
-    return  # TODO: Sanitize
     for trash in trash_data:
-        enigma_api.model(trash)
+        with pytest.raises(ValueError):
+            enigma_api.model(trash)
 
 
 def test_reflector_set():
@@ -84,7 +85,6 @@ def test_reflector_set():
         enigma_api.reflector(new_reflector)
         assert enigma_api.reflector() == new_reflector
 
-    return  # TODO: Sanitize
     for trash in trash_data:
         with pytest.raises(ValueError):
             enigma_api.reflector(trash)
@@ -104,7 +104,6 @@ def test_rotors_set():
         enigma_api.rotors(new_rotors)
         assert enigma_api.rotors() == [rotors[i] for i in new_rotors]
 
-    return  # TODO: Sanitize
     for trash in trash_data:
         with pytest.raises(ValueError):
             enigma_api.rotors(trash)
@@ -156,8 +155,25 @@ def test_reflector_position():
             assert enigma_api.reflector_position() == alphabet[new_position - 1]
 
 
-def test_reflector_pairs():  # TODO: Finish
-    pass
+@pytest.mark.parametrize("pairs, should_fail", (
+    (["AB", "CD", "EF", "GH", "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ"], False),
+    (["AB", "CD", "EF", "GH", "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ", "JY"], True),
+    (["", "CD", "EF", "GH", "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ", "JY"], True),
+    (["A", "CD", "EF", "GH", "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ", "JY"], True),
+    (["EF", "GH", "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ"], True),
+    ([132, "CD", "EF", EnigmaAPI, "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ"], True),
+    ([1], True),
+        
+))
+def test_reflector_pairs(pairs, should_fail):
+    enigma_api = EnigmaAPI("Enigma M4")
+    enigma_api.reflector("UKW-D")
+    if should_fail:
+        with pytest.raises(ValueError):
+            enigma_api.reflector_pairs(pairs)
+    else:
+        enigma_api.reflector_pairs(pairs)
+        assert type(enigma_api.encrypt("ABCD"))
 
 
 def test_uhr():
@@ -189,29 +205,12 @@ def test_uhr():
     assert with_uhr == without_uhr
 
 
-def test_generate_rotor_callback():  # TODO: Finish
-    pass
+def test_generate_rotor_callback():
+    enigma_api = EnigmaAPI("Enigma I")
 
-
-def test_rotate():  # TODO: Finish
-    pass
-
-
-def test_buffer():  # TODO: Finish
-    pass
-
-
-def test_encrypt():
-    pass
-
-
-def test_generate():
-    pass
-
-
-def test_config_save_load():
-    pass
-
-
-def test_str():
-    pass
+    for i in list(range(3))*10:
+        by = randint(0, 25)
+        callback = enigma_api.generate_rotate_callback(i, by)
+        callback()
+        assert int(enigma_api.positions()[i]) - 1 == by
+        enigma_api.positions([1, 1, 1])

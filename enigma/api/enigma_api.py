@@ -3,6 +3,16 @@ from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
 from enigma.utils.cfg_handler import load_config, save_config
 
 
+
+def check_iterable(values, name):
+    """Checks if a values is iterable, raises a customized error if not
+    :param values: {any} Any value to be checked
+    :param name: {str} Name of the tested part (for customizing error message)
+    """
+    if not type(values) in (tuple, list):
+        raise ValueError("%s must be iterable!" % name)
+
+
 class EnigmaAPI:
     """Wrapper for easier management of Enigma objects and their components"""
 
@@ -42,6 +52,10 @@ class EnigmaAPI:
         """Returns all available labels for rotors and reflectors for the selected model
         :param model: {str} Enigma model
         """
+        if type(model) != str or model not in historical:
+            print(model)
+            raise ValueError("Invalid enigma model '%s'" % str(model))
+
         labels = lambda component: [item["label"] for item in
                                     historical[model][component]]
 
@@ -101,6 +115,9 @@ class EnigmaAPI:
         :param new_reflector: {str}
         """
         if new_reflector is not None:
+            if type(new_reflector) != str:
+                raise ValueError("Invalid rotor '%s'" % str(new_reflector))
+
             new_reflector = self.generate_component(
                 self.model(), "reflectors", new_reflector
             )
@@ -134,6 +151,8 @@ class EnigmaAPI:
         """Returns plug_pairs or sets a new one if new_plug_pairs is overridden
         :param new_plug_pairs: {str}
         """
+        if new_plug_pairs is not None:
+            check_iterable(new_plug_pairs, "Plug pairs")
         return self._enigma.plug_pairs(new_plug_pairs)
 
     def reflector_position(self, new_position=None):
@@ -146,7 +165,12 @@ class EnigmaAPI:
         """Returns current reflector wiring pairs (if any)
         :param new_pairs: New wiring pair to set to the reflector
         """
-        return self._enigma.reflector_pairs(new_pairs)
+        if new_pairs is not None:
+            check_iterable(new_pairs, "Reflector pairs")
+        try:
+            return self._enigma.reflector_pairs(new_pairs)
+        except TypeError:
+            raise ValueError("Invalid reflector pairs values!")
 
     def uhr(self, action=None):
         """Modifies current Uhr status
@@ -291,6 +315,8 @@ class EnigmaAPI:
         :param rotor_labels: {[str, str, str]}
         """
         rotors = []
+        check_iterable(rotor_labels, "Rotor labels")
+
         for label in rotor_labels:
             rotors.append(cls.generate_component(model, "rotors", label))
         return rotors
@@ -306,12 +332,12 @@ class EnigmaAPI:
         try:
             data = historical[model]
         except KeyError:
-            raise ValueError("Invalid enigma model %s!" % model)
+            raise ValueError("Invalid Enigma model '%s'" % model)
 
         rotor_n = data["rotor_n"] if reflector_label != "UKW-D" else 3
         defaults = cls.default_cfg(model, rotor_n, True)
 
-        if not reflector_label:  # TODO: Could use model labels?
+        if not reflector_label:
             reflector_label = defaults[0]
 
         reflector = cls.generate_component(model, "reflectors", reflector_label)
