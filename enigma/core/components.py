@@ -494,6 +494,9 @@ class Plugboard:
                 return pair[0] if pair[0] != letter else pair[1]
         return letter
 
+    def __str__(self):
+        return "Plugboard\nPlugboard pairs: %s" + " ".join(self.pairs())
+
 
 class _Component:  # Base component
     """Base class for all components"""
@@ -543,6 +546,9 @@ class Stator(_Component):
 
     def backward(self, letter):
         return super()._backward(letter)
+
+    def __str__(self):
+        return "Stator with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
 
 
 class _Rotatable(_Component):
@@ -639,6 +645,13 @@ class Reflector(_Rotatable):
 
         return super().position(numeric)
 
+    def __str__(self):
+        msg = "Reflector with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
+        msg += "\nIs rotatable: " + str(self.__rotatable)
+
+        if self.__rotatable:
+            msg += "\nReflector position: " + str(self._offset)
+
 
 class UKWD(Reflector):
     """UKW-D is a field-rewirable Enigma machine reflector"""
@@ -685,6 +698,9 @@ class UKWD(Reflector):
                     pairs.append(pair)
 
             return pairs
+    
+    def __str__(self):
+        return "Reflector with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
 
 
 class Rotor(_Rotatable):
@@ -747,6 +763,12 @@ class Rotor(_Rotatable):
         :return: {bool} True if the rotor is in turnover position else False
         """
         return self.position() in self._turnover
+
+    def __str__(self):
+        msg = "Rotor with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
+        msg += "\nPosition: " + self.position() + "\nRing setting: " + str(self.ring_offset())
+        msg += "\nTurnover notch: " + self._turnover
+        return msg
 
 
 class Enigma:
