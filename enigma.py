@@ -243,7 +243,10 @@ if __name__ == "__main__":
 
     if args.cli:
         logging.info("Loading in CLI mode with settings:\n%s..." % str(enigma_api))
-        cli(enigma_api, args, str(stdin.read()).strip())
+        msg = None if stdin.isatty() else str(stdin.readline()).strip()
+        if msg is not None:
+            logging.info("Loaded input '%s' from stdin..." % msg)
+        cli(enigma_api, args, msg)
     elif args.preview:
         logging.info("Printing preview...")
         print(
