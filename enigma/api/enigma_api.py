@@ -434,7 +434,7 @@ class EnigmaAPI:
                 self.plug_pairs(config["plug_pairs"])
             except ValueError:
                 pass
-        except Exception as e:
+        except Exception:
             self.load_from_config(old_config)
             raise
 
