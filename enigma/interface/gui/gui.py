@@ -1,5 +1,4 @@
 import logging
-from copy import copy
 from re import findall, sub
 from textwrap import wrap
 
@@ -744,10 +743,8 @@ class _OutputTextBox(QPlainTextEdit):
         exactly the same length)
         :param length: {int} new length of the displayed text
         """
-        self.light_up_plug("")
-        text = letter_groups(
-            self.toPlainText().replace(" ", "")[:length], self.letter_group_plug()
-        )
+        text = letter_groups(self.toPlainText().replace(" ", "")[:length],
+                             self.letter_group_plug())
 
         self.setPlainText(text)
         self.moveCursor(QTextCursor.End)
@@ -755,7 +752,7 @@ class _OutputTextBox(QPlainTextEdit):
         try:  # Try to light up
             self.light_up_plug(self.toPlainText()[-1])
         except IndexError:
-            pass  # Ignore lightboard errors
+            self.light_up_plug("")
 
     def insert(self, text):
         """Sets text into the textbox
