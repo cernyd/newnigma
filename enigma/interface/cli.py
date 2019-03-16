@@ -4,10 +4,10 @@ from enigma.api.enigma_api import EnigmaAPI
 
 
 def cli(enigma_api, args, msg=None):
-    """
-    Starts command line interface that encrypts a message based on args
+    """Starts command line interface that encrypts a message based on args
     :param enigma_api: {EnigmaAPI}
     :param args: Object containing parsed command line arguments
+    :param msg: {str} Message from stdin, will avoid -m error if supplied
     """
     if not args.message and msg is None:
         if not args.silent:
@@ -15,10 +15,7 @@ def cli(enigma_api, args, msg=None):
         logging.error("No message to encrypt, quitting...")
         exit(1)
     else:
-        if msg is None:
-            msg = args.message[0].upper()
-        else:
-            msg = msg.upper()
+        msg = (args.message[0] if msg is None else msg).upper()
 
     if not args.silent:
         print(enigma_api)

@@ -10,17 +10,18 @@ from enigma.interface.gui.settings import *
 
 class Runtime:
     def __init__(self, api):
-        """
-        Runtime object wrapping the root window
+        """Runtime object wrapping the root window
         :param api: {EnigmaAPI}
         """
         from sys import argv
 
         logging.info("Setting application icon and title...")
+
         self.app = QApplication(argv)
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
         self.app.setWindowIcon(QIcon(base_dir + "enigma_200px.png"))
+
         Root(api)
         logging.info("Starting Qt runtime...")
         self.app.exec_()
@@ -30,8 +31,7 @@ class Root(QWidget):
     """Root window for Enigma Qt GUI"""
 
     def __init__(self, enigma_api):
-        """
-        Initializes Root QT window widgets
+        """Initializes Root QT window widgets
         :param enigma_api: {EnigmaAPI} Initialized EnigmaAPI object
         """
         super().__init__()
@@ -117,17 +117,16 @@ class Root(QWidget):
         main_layout.addWidget(self.plug_button)
 
         self.refresh_gui()
-
         self.show()
 
     def get_pairs(self):
-        """
-        Opens the plugboard menu
-        """
+        """Opens the plugboard menu"""
         logging.info("Opening Plugboard menu...")
         old_pairs = self.enigma_api.plug_pairs()
+
         plugboard = PlugboardDialog(self, self.enigma_api)
         plugboard.exec()
+
         logging.info("Closing plugboard...")
 
         new_pairs = self.enigma_api.plug_pairs()
@@ -139,25 +138,24 @@ class Root(QWidget):
         del plugboard
 
     def refresh_gui(self):
-        """
-        Refreshes main window GUI based on new EnigmaAPI settings
-        """
+        """Refreshes main window GUI based on new EnigmaAPI settings"""
         logging.info("Refreshing GUI components...")
         self.setWindowTitle(self.enigma_api.model())
         self.i_textbox.clear()
         self.i_textbox.set_charset(self.enigma_api.data()["charset"])
-        if self.enigma_api.data()["plugboard"]:
+
+        if self.enigma_api.data()["plugboard"]:  # If current model has a plugboard
             logging.info("Showing Plugboard button...")
             self.plug_button.show()
         else:
             logging.info("Hiding Plugboard button...")
             self.plug_button.hide()
+
+        # Arrange lightbulbs to new layout
         self.lightboard.regenerate_bulbs(self.enigma_api.data()["layout"])
 
     def load_config(self):
-        """
-        Loads EnigmaAPI settings from config file and refershes GUI
-        """
+        """Loads EnigmaAPI settings from config file and refershes GUI"""
         dialog = QFileDialog(self)
         filename = dialog.getOpenFileName(
             self, "Load settings", QDir.homePath(), "Enigma config (*.json)"
@@ -178,9 +176,10 @@ class Root(QWidget):
                 QMessageBox.critical(self, "Load config", "Following error occured during "
                                            "applying loaded settings:\n%s" % repr(e))
                 logging.error("Unable to load config from file, keeping old settings...", exc_info=True)
+                return
 
+            # Refresh gui after loading setings
             self._rotors.generate_rotors()
-
             self.i_textbox.blockSignals(True)
             self.refresh_gui()
             self.i_textbox.blockSignals(False)
@@ -191,18 +190,17 @@ class Root(QWidget):
             logging.info("No load file selected...")
 
     def save_config(self):
-        """
-        Collects data from EnigmaAPI and saves it to config
-        """
+        """Collects data from EnigmaAPI and saves it to config"""
         dialog = QFileDialog(self)
         dialog.setDefaultSuffix("json")
         filename = dialog.getSaveFileName(
             self, "Save settings", QDir.homePath(), "Enigma config (*.json)"
         )[0]
 
-        if not findall("\.json$", filename):
+        # To prevent from saving files without a file extension...
+        if not findall(r"\.json$", filename):
             filename += ".json"
-            logging.info(".json suffix for save file not found, adding...")
+            logging.info(".json file extension for save file not found, adding...")
 
         if filename:
             self.enigma_api.save_to(filename)
@@ -210,18 +208,16 @@ class Root(QWidget):
             logging.info("No save file selected...")
 
     def export_message(self):
-        """
-        Opens a dialog to get the save location, exports current Enigma
-        settings and encrypted message to the file
-        """
+        """Opens a dialog to get the save location, exports current Enigma
+        settings and encrypted message to the file"""
         dialog = QFileDialog(self)
         filename = dialog.getSaveFileName(
             self, "Save enigma message", QDir.homePath(), "*.txt"
         )[0]
 
-        if not findall("\.txt$", filename):
+        if not findall(r"\.txt$", filename):
             filename += ".txt"
-            logging.info(".txt suffix for save file not found, adding...")
+            logging.info(".txt file extension for save file not found, adding...")
 
         if filename:
             logging.info('Exporing message to "%s"...' % filename)
@@ -232,8 +228,7 @@ class Root(QWidget):
 
 class Lightboard(QFrame):
     def __init__(self, master, charset_plug):
-        """
-        Creates a "board" representing Enigma light bulbs and allows their
+        """Creates a "board" representing Enigma light bulbs and allows their
         control
         """
         super().__init__(master)
