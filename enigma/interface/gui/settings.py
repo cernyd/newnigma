@@ -1,14 +1,24 @@
 import logging
 
-from enigma.interface.gui import *
+# from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import Socket
+from enigma.interface.gui import (QFrame, QHBoxLayout,
+                                  QLabel,
+                                  QPushButton, QSizePolicy,
+                                  Qt, QVBoxLayout, QWidget,
+                                  QDialog,
+                                  AbstractPlugboard, QTabWidget, QListWidget,
+                                  QStackedWidget, VIEW_DATA, QTextBrowser, STYLESHEET,
+                                  QButtonGroup, QRadioButton, QComboBox, LABELS)
+from PySide2.QtGui import QPixmap
 
-selector_labels = ("THIN", "SLOW", "MEDIUM", "FAST")
-selector_tooltips = ("Does not rotate", None, None, "Rotates on every keypress")
+SELECTOR_LABELS = ("THIN", "SLOW", "MEDIUM", "FAST")
+SELECTOR_TOOLTIPS = ("Does not rotate", None, None, "Rotates on every keypress")
 
 
 class Settings(QDialog):
     """Settings menu with two tabs for settings models and components"""
+
     def __init__(self, master, enigma_api):
         """
         Submenu for setting Enigma model and component settings
@@ -63,7 +73,7 @@ class Settings(QDialog):
 
         # SHOW WIDGETS =========================================================
 
-        model_i = list(view_data.keys()).index(self.enigma_api.model())
+        model_i = list(VIEW_DATA.keys()).index(self.enigma_api.model())
         self.stacked_wikis.select_model(model_i)
         self.stacked_wikis.highlight(model_i)
         main_layout.addWidget(tab_widget)
@@ -121,7 +131,7 @@ class Settings(QDialog):
         reflector_layout.setSpacing(spacing)
         reflector_layout.addWidget(
             QLabel("REFLECTOR", reflector_frame, styleSheet=style),
-            alignment=Qt.AlignHCenter
+            alignment=Qt.AlignHCenter,
         )
 
         self.reflector_group = QButtonGroup(reflector_frame)
@@ -161,10 +171,9 @@ class Settings(QDialog):
             # ROTOR RADIOS =====================================================
 
             label = QLabel(
-                selector_labels[-rotor_n:][rotor], rotor_frame,
-                styleSheet=style
+                SELECTOR_LABELS[-rotor_n:][rotor], rotor_frame, styleSheet=style
             )
-            label.setToolTip(selector_tooltips[-rotor_n:][rotor])
+            label.setToolTip(SELECTOR_TOOLTIPS[-rotor_n:][rotor])
 
             rotor_layout.addWidget(label, alignment=Qt.AlignHCenter)
 
@@ -191,21 +200,21 @@ class Settings(QDialog):
             # RINGSTELLUNG =====================================================
 
             combobox = QComboBox(rotor_frame)
-            for i, label in enumerate(labels):
+            for i, label in enumerate(LABELS):
                 combobox.addItem(label, i)
 
-            hr = QFrame(rotor_frame)
-            hr.setFrameShape(QFrame.HLine)
-            hr.setFrameShadow(QFrame.Sunken)
+            h_rule = QFrame(rotor_frame)
+            h_rule.setFrameShape(QFrame.HLine)
+            h_rule.setFrameShadow(QFrame.Sunken)
 
             self.ring_selectors.append(combobox)
             self.rotor_selectors.append(button_group)
 
             rotor_layout.addStretch()
-            rotor_layout.addWidget(hr)
+            rotor_layout.addWidget(h_rule)
             rotor_layout.addWidget(
                 QLabel("RING SETTING", rotor_frame, styleSheet=style),
-                alignment=Qt.AlignHCenter
+                alignment=Qt.AlignHCenter,
             )
             rotor_layout.addWidget(combobox)
 
@@ -262,7 +271,11 @@ class Settings(QDialog):
         self.reflector_group.button(reflector_i).setChecked(True)
 
         for i, rotor in enumerate(self.enigma_api.rotors()):
-            if model == "Enigma M4" and self.enigma_api.reflector() != "UKW-D" and i == 0:
+            if (
+                model == "Enigma M4"
+                and self.enigma_api.reflector() != "UKW-D"
+                and i == 0
+            ):
                 rotor_i = ["Beta", "Gamma"].index(rotor)
             else:
                 rotor_i = rotors.index(rotor)
@@ -292,7 +305,9 @@ class Settings(QDialog):
 
         ring_settings = [ring.currentIndex() + 1 for ring in self.ring_selectors]
 
-        logging.info("EnigmaAPI state before applying settings:\n%s" % str(self.enigma_api))
+        logging.info(
+            "EnigmaAPI state before applying settings:\n%s", str(self.enigma_api)
+        )
 
         if new_model != self.enigma_api.model():
             self.enigma_api.model(new_model)
@@ -309,13 +324,16 @@ class Settings(QDialog):
         if ring_settings != self.enigma_api.ring_settings():
             self.enigma_api.ring_settings(ring_settings)
 
-        logging.info("EnigmaAPI state when closing settings:\n%s" % str(self.enigma_api))
+        logging.info(
+            "EnigmaAPI state when closing settings:\n%s", str(self.enigma_api)
+        )
 
         self.close()
 
 
 class ViewSwitcher(QWidget):
     """Object that handles displaying of Enigma model wikis and images"""
+
     def __init__(self, master, regen_plug):
         """
         :param master: Qt parent object
@@ -339,13 +357,11 @@ class ViewSwitcher(QWidget):
         # STACKED MODEL VIEWS ==================================================
 
         self.stacked_wikis = QStackedWidget()
-        for i, model in enumerate(view_data):
+        for i, model in enumerate(VIEW_DATA):
             self.model_list.insertItem(i, model)
-            description = view_data[model]["description"]
-            self.stacked_wikis.addWidget(
-                _EnigmaView(self, model, description)
-            )
-        self.total_models = len(view_data)
+            description = VIEW_DATA[model]["description"]
+            self.stacked_wikis.addWidget(_EnigmaView(self, model, description))
+        self.total_models = len(VIEW_DATA)
 
         self.layout.addWidget(self.model_list)
         self.layout.addWidget(self.stacked_wikis)
@@ -357,8 +373,8 @@ class ViewSwitcher(QWidget):
         """Called when the "Use this model" button is pressed
         :param i: {str} Newly selected model index
         """
-        logging.info('Changing settings view to model "%s"' % list(view_data.keys())[i])
-        model = list(view_data.keys())[i]
+        logging.info('Changing settings view to model "%s"' % list(VIEW_DATA.keys())[i])
+        model = list(VIEW_DATA.keys())[i]
         self.regen_plug(model)
         self.stacked_wikis.setCurrentIndex(i)
 
@@ -379,12 +395,13 @@ class ViewSwitcher(QWidget):
             item.setToolTip(None)
 
         selected = self.model_list.item(i)
-        selected.setBackground(Qt.gray)#.setForeground(Qt.blue)
+        selected.setBackground(Qt.gray)  # .setForeground(Qt.blue)
         selected.setToolTip("Currently used Enigma model")
 
 
 class _EnigmaView(QWidget):
     """A single Enigma wiki view with text and image"""
+
     def __init__(self, master, model, description):
         """
         :param master: Qt parent object
@@ -404,7 +421,7 @@ class _EnigmaView(QWidget):
 
         self.description = description
         self.img = QLabel("")
-        pixmap = QPixmap(view_data[model]["img"]).scaled(400, 500)
+        pixmap = QPixmap(VIEW_DATA[model]["img"]).scaled(400, 500)
         self.img.setPixmap(pixmap)
         self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
         self.img.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -413,7 +430,7 @@ class _EnigmaView(QWidget):
 
         self.wiki_text = QTextBrowser()
         self.wiki_text.setHtml(self.description)  # setHtml sets html
-        self.wiki_text.setStyleSheet(stylesheet)
+        self.wiki_text.setStyleSheet(STYLESHEET)
         self.wiki_text.setMinimumWidth(350)
 
         # SHOW WIDGETS =========================================================
@@ -424,6 +441,7 @@ class _EnigmaView(QWidget):
 
 class UKWD_Settings(AbstractPlugboard):
     """UKW-D wiring settings derived from the abstract plugboard"""
+
     def __init__(self, master, enigma_api):
         """
         Settings menu for settings UKW-D wiring pairs
@@ -442,7 +460,9 @@ class UKWD_Settings(AbstractPlugboard):
             col_layout.setMargin(0)
 
             for letter in group:
-                socket = Socket(self, letter, self.connect_sockets, self.enigma_api.charset())
+                socket = Socket(
+                    self, letter, self.connect_sockets, self.enigma_api.charset()
+                )
                 col_layout.addWidget(socket)
                 self.plugs[letter] = socket
 

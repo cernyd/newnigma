@@ -8,16 +8,12 @@ import pytest
 
 from benchmark import benchmark
 from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import historical
+from enigma.core.components import HISTORICAL
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
 from enigma.utils.cfg_handler import load_config
 
-default_init = {
-    "model": "Enigma I",
-    "rotors": ["I", "II", "III"],
-    "reflector": "UKW-A"
-}
+default_init = {"model": "Enigma I", "rotors": ["I", "II", "III"], "reflector": "UKW-A"}
 
 
 def config_from_args(args, load_to=None):
@@ -115,10 +111,10 @@ if __name__ == "__main__":
             ),
         ),
         (
-            ("-T", ),
+            ("-T",),
             dict(
                 help="runs tests with detailed stack traces and quits",
-                dest="only_run_tests"
+                dest="only_run_tests",
             ),
         ),
         (
@@ -127,37 +123,42 @@ if __name__ == "__main__":
         ),
         (("-p", "--preview"), dict(help="Runs a sample cli command")),
         (("-v", "--verbose"), dict(help="Turns on verbose logging messages")),
-        (("-s", "--silent"), dict(help="Turns off all prints except cli output"))
+        (("-s", "--silent"), dict(help="Turns off all prints except cli output")),
     )
     for arg in argument_data:
         parser.add_argument(*arg[0], **arg[1], action="store_true", default=False)
 
-    parser.add_argument("-b", "--benchmark", help="benchmarks encryption speed for N characters",
-                        nargs=1, dest="benchmark_n", metavar="N")
+    parser.add_argument(
+        "-b",
+        "--benchmark",
+        help="benchmarks encryption speed for N characters",
+        nargs=1,
+        dest="benchmark_n",
+        metavar="N",
+    )
 
     # SETTINGS ARGS ====================================================
 
     cli_args = parser.add_argument_group("startup settings")
     cli_data = (
         (
-            ("--from", ),
-            dict(
-                help="file to load Enigma settings from",
-                nargs=1,
-                dest="filename"
-            )
+            ("--from",),
+            dict(help="file to load Enigma settings from", nargs=1, dest="filename"),
         ),
         (
-            ("--model", ),
+            ("--model",),
             dict(
-                help="available Enigma models: %s" % ", ".join(historical.keys()),
+                help="available Enigma models: %s" % ", ".join(HISTORICAL.keys()),
                 nargs=1,
                 dest="model",
             ),
         ),
-        (("--rotors", ), dict(help="rotors that will be used", nargs="+", metavar="rotor")),
         (
-            ("--positions", ),
+            ("--rotors",),
+            dict(help="rotors that will be used", nargs="+", metavar="rotor"),
+        ),
+        (
+            ("--positions",),
             dict(
                 help="starting rotor positions",
                 nargs="+",
@@ -166,7 +167,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            ("--ring_settings", ),
+            ("--ring_settings",),
             dict(
                 help="rotor ring settings",
                 nargs="+",
@@ -174,9 +175,9 @@ if __name__ == "__main__":
                 metavar="ring_setting",
             ),
         ),
-        (("--reflector", ), dict(help="reflector that will be used", nargs=1)),
+        (("--reflector",), dict(help="reflector that will be used", nargs=1)),
         (
-            ("--reflector_position", ),
+            ("--reflector_position",),
             dict(
                 help="reflector position (only available in EnigmaD, Enigma K,"
                 "SwissK, EnigmaG, Railway, Tirpitz)",
@@ -186,7 +187,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            ("--reflector_pairs", ),
+            ("--reflector_pairs",),
             dict(
                 help="reflector wiring pairs for UKW-D (pairs do not "
                 "correspond with real wiring!)",
@@ -196,7 +197,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            ("--plug_pairs", ),
+            ("--plug_pairs",),
             dict(
                 help="letter pairs to connect in the plugboard",
                 nargs="*",
@@ -205,7 +206,7 @@ if __name__ == "__main__":
             ),
         ),
         (
-            ("--uhr", ),
+            ("--uhr",),
             dict(
                 help="connects uhr to plugboard and sets position",
                 nargs=1,
@@ -213,7 +214,10 @@ if __name__ == "__main__":
                 metavar="position",
             ),
         ),
-        (("-m", "--message"), dict(help="text for encryption in cli mode", nargs=1, dest="message")),
+        (
+            ("-m", "--message"),
+            dict(help="text for encryption in cli mode", nargs=1, dest="message"),
+        ),
     )
 
     for arg in cli_data:
@@ -226,8 +230,10 @@ if __name__ == "__main__":
     # PRE-LAUNCH ACTIONS ===========================================
 
     if args.verbose and not args.silent:  # Set verbose logs
-        logging.basicConfig(level=logging.INFO,
-                            format="%(levelname)s:%(module)s:%(funcName)s: %(message)s")
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(levelname)s:%(module)s:%(funcName)s: %(message)s",
+        )
     else:  # Disable logs (only show critical)
         logging.basicConfig(level=logging.CRITICAL)
 
@@ -262,8 +268,8 @@ if __name__ == "__main__":
             exit(1)
 
         if not n > 0:
-            logging.error('Benchmark character count is not greater than 0, exiting...')
-            print('Benchmark character count must be greater than 0!')
+            logging.error("Benchmark character count is not greater than 0, exiting...")
+            print("Benchmark character count must be greater than 0!")
             exit(1)
 
         benchmark(n)
@@ -294,12 +300,17 @@ if __name__ == "__main__":
         try:
             enigma_api.load_from(filename)
         except Exception:
-            logging.info('No valid configuration found in "%s", using defaults instead....' % filename)
+            logging.info(
+                'No valid configuration found in "%s", using defaults instead....'
+                % filename
+            )
     else:  # Load defalt config
         try:
             enigma_api = EnigmaAPI(**load_config("config.json")["default"])
         except Exception:
-            logging.info("Failed to load default config, using builtin defaults instead...")
+            logging.info(
+                "Failed to load default config, using builtin defaults instead..."
+            )
 
     # APPLICATION INIT ====================================================
 

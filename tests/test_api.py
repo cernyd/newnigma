@@ -6,7 +6,7 @@ from string import ascii_uppercase as alphabet
 import pytest
 
 from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import Rotor, historical
+from enigma.core.components import Rotor, HISTORICAL
 
 trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, -1332, "heaaafs", "", Rotor,
               "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))
@@ -22,29 +22,31 @@ def generate_pairs(k):
     return list(sample(pairs, k=k))
 
 
-@pytest.mark.parametrize("settings, rotor_n", (
-    (("Enigma M3", "UKW-B", ["I", "II", "III"]), 3),
-    (("Enigma I", "UKW-A", ["I", "II", "V"]), 3),
-    (("Enigma M4", "UKW-b", ["I", "II", "V", "VI"]), 4),
-    (("Enigma M4", "UKW-D", ["I", "II", "V"]), 3),
-))
+@pytest.mark.parametrize(
+    "settings, rotor_n",
+    (
+        (("Enigma M3", "UKW-B", ["I", "II", "III"]), 3),
+        (("Enigma I", "UKW-A", ["I", "II", "V"]), 3),
+        (("Enigma M4", "UKW-b", ["I", "II", "V", "VI"]), 4),
+        (("Enigma M4", "UKW-D", ["I", "II", "V"]), 3),
+    ),
+)
 def test_rotor_n(settings, rotor_n):
     enigma_api = EnigmaAPI(*settings)
     assert enigma_api.rotor_n() == rotor_n, "Incorrect rotor_n value!"
 
+
 def test_data():
     enigma_api = EnigmaAPI("Enigma M3", "UKW-B", ["I", "II", "III"])
-    assert enigma_api.data() == historical["Enigma M3"]
+    assert enigma_api.data() == HISTORICAL["Enigma M3"]
     enigma_api.model("Enigma M4")
-    assert enigma_api.data() == historical["Enigma M4"]
+    assert enigma_api.data() == HISTORICAL["Enigma M4"]
 
 
-@pytest.mark.parametrize("model, letter_group", (
-    ("Enigma M4", 4),
-    ("Enigma M3", 5),
-    ("Norenigma", 5),
-    ("Enigma K", 5),
-))
+@pytest.mark.parametrize(
+    "model, letter_group",
+    (("Enigma M4", 4), ("Enigma M3", 5), ("Norenigma", 5), ("Enigma K", 5)),
+)
 def test_letter_group(model, letter_group):
     enigma_api = EnigmaAPI(model)
     assert enigma_api.letter_group() == letter_group, "Incorrect letter group length!"
@@ -58,17 +60,19 @@ def test_letter_group(model, letter_group):
 ))
 def test_model_labels(model, labels):
     enigma_api = EnigmaAPI(model)
-    assert enigma_api.model_labels(model) == labels, "Incorrect (or incomplete) list of labels for selected model!"
+    assert (
+        enigma_api.model_labels(model) == labels
+    ), "Incorrect (or incomplete) list of labels for selected model!"
 
 
 def test_reflector_rotatable():
-    for model, data in historical.items():
-        assert EnigmaAPI(model).reflector_rotatable() == data['rotatable_ref']
+    for model, data in HISTORICAL.items():
+        assert EnigmaAPI(model).reflector_rotatable() == data["rotatable_ref"]
 
 
 def test_model_set():
     enigma_api = EnigmaAPI("Enigma I")
-    labels = list(historical.keys())
+    labels = list(HISTORICAL.keys())
 
     for _ in range(100):
         new_model = choice(labels)
@@ -120,7 +124,9 @@ def test_positions_set():
                 enigma_api.positions(new_positions)
         else:
             enigma_api.positions(new_positions)
-            assert enigma_api.positions() == tuple(map(lambda x: alphabet[x-1], new_positions))
+            assert enigma_api.positions() == tuple(
+                map(lambda x: alphabet[x - 1], new_positions)
+            )
 
 
 def test_ring_settings_set():
@@ -164,8 +170,8 @@ def test_reflector_position():
     (["EF", "GH", "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ"], True),
     ([132, "CD", "EF", EnigmaAPI, "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ"], True),
     ([1], True),
-        
-))
+    ),
+)
 def test_reflector_pairs(pairs, should_fail):
     enigma_api = EnigmaAPI("Enigma M4")
     enigma_api.reflector("UKW-D")
@@ -180,7 +186,7 @@ def test_reflector_pairs(pairs, should_fail):
 def test_uhr():
     enigma_api = EnigmaAPI("Enigma M3")
     pairs = generate_pairs(10)
-    enigma_api.uhr('connect')
+    enigma_api.uhr("connect")
     enigma_api.plug_pairs(pairs)
     correct, other = sample(range(0, 40), 2)
     enigma_api.uhr_position(correct)
@@ -199,7 +205,7 @@ def test_uhr():
     with_uhr = enigma_api.encrypt(message)
 
     enigma_api.load_checkpoint()
-    enigma_api.uhr('disconnect')
+    enigma_api.uhr("disconnect")
     enigma_api.plug_pairs(pairs)
     without_uhr = enigma_api.encrypt(message)
 
@@ -209,7 +215,7 @@ def test_uhr():
 def test_generate_rotor_callback():
     enigma_api = EnigmaAPI("Enigma I")
 
-    for i in list(range(3))*10:
+    for i in list(range(3)) * 10:
         by = randint(0, 25)
         callback = enigma_api.generate_rotate_callback(i, by)
         callback()

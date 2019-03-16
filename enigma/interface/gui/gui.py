@@ -2,13 +2,20 @@ import logging
 from re import findall, sub
 from textwrap import wrap
 
-from enigma.interface.gui import *
+from enigma.interface.gui import (
+    QApplication, QFont, QFrame, QHBoxLayout,
+    QIcon, QLabel, QMenuBar, QPlainTextEdit,
+    QPushButton, QSize, QSizePolicy, QSpacerItem,
+    Qt, QTextCursor, QVBoxLayout, QWidget,
+    BASE_DIR, letter_groups
+)
 from enigma.interface.gui.plugboard import PlugboardDialog
 from enigma.interface.gui.settings import Settings
 
 
 class Runtime:
     """Object initializing and handling the Qt runtime"""
+
     def __init__(self, api):
         """
         Runtime object wrapping the root window
@@ -21,7 +28,7 @@ class Runtime:
         self.app = QApplication(argv)
         self.app.setApplicationName("Enigma")
         self.app.setApplicationDisplayName("Enigma")
-        self.app.setWindowIcon(QIcon(base_dir + "enigma_200px.png"))
+        self.app.setWindowIcon(QIcon(BASE_DIR + "enigma_200px.png"))
 
         Root(api)
         logging.info("Starting Qt runtime...")
@@ -39,14 +46,14 @@ class Root(QWidget):
 
         # QT WINDOW SETTINGS ==================================================
 
-        self.setWindowIcon(QIcon(base_dir + "enigma_200px.png"))
+        self.setWindowIcon(QIcon(BASE_DIR + "enigma_200px.png"))
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
 
         # SAVE ATTRIBUTES =====================================================
 
         self.enigma_api = enigma_api
-        logging.info("Qt GUI initialized with EnigmaAPI settings:\n%s" % str(enigma_api))
+        logging.info("Qt GUI initialized with EnigmaAPI settings:\n%s", str(enigma_api))
 
         # MENU BAR ============================================================
 
@@ -89,7 +96,7 @@ class Root(QWidget):
             enigma_api.letter_group,
             enigma_api.revert_by,
             enigma_api.buffer_full,
-            enigma_api.data()["charset"]
+            enigma_api.data()["charset"],
         )
 
         # PLUGBOARD BUTTONS ===================================================
@@ -166,17 +173,28 @@ class Root(QWidget):
             try:
                 self.enigma_api.load_from(filename)
                 logging.info('Successfully loaded config from file "%s"' % filename)
-            except (FileNotFoundError, JSONDecodeError) as e:
+            except (FileNotFoundError, JSONDecodeError) as error:
                 QMessageBox.critical(
-                    self, "Load config", "Error retrieving data from "
-                          "selected file!\nError message:\n\n %s" % repr(e)
+                    self,
+                    "Load config",
+                    "Error retrieving data from "
+                    "selected file!\nError message:\n\n %s" % repr(error),
                 )
-                logging.error('Failed to load config from file "%s"' % filename, exc_info=True)
+                logging.error(
+                    'Failed to load config from file "%s"' % filename, exc_info=True
+                )
                 return
-            except Exception as e:
-                QMessageBox.critical(self, "Load config", "Following error occured during "
-                                           "applying loaded settings:\n%s" % repr(e))
-                logging.error("Unable to load config from file, keeping old settings...", exc_info=True)
+            except Exception as error:
+                QMessageBox.critical(
+                    self,
+                    "Load config",
+                    "Following error occured during "
+                    "applying loaded settings:\n%s" % repr(error),
+                )
+                logging.error(
+                    "Unable to load config from file, keeping old settings...",
+                    exc_info=True,
+                )
                 return
 
             # Refresh gui after loading setings
@@ -221,14 +239,15 @@ class Root(QWidget):
             logging.info(".txt file extension for save file not found, adding...")
 
         if filename:
-            logging.info('Exporing message to "%s"...' % filename)
-            with open(filename, "w") as f:
+            logging.info('Exporing message to "%s"...', filename)
+            with open(filename, "w") as file:
                 message = "\n".join(wrap(self.o_textbox.text(), 29))
-                f.write("%s\n%s\n" % (str(self.enigma_api), message))
+                file.write("%s\n%s\n" % (str(self.enigma_api), message))
 
 
 class Lightboard(QFrame):
     """Shows characters from charset on generated lightbulbs"""
+
     def __init__(self, master, charset_plug):
         """Creates a "board" representing Enigma light bulbs and allows their
         control.
@@ -253,7 +272,7 @@ class Lightboard(QFrame):
         # CONSTRUCT LIGHTBOARD ================================================
 
         self.rows = []
-        self.regenerate_bulbs(default_layout)
+        self.regenerate_bulbs(DEFAULT_LAYOUT)
 
     def regenerate_bulbs(self, layout):
         """Regenerates lightbulbs to a selected layout using new layout
@@ -292,7 +311,7 @@ class Lightboard(QFrame):
         self._lightbulbs = {}
 
         while self.rows:
-            row = self.rows.pop() 
+            row = self.rows.pop()
             row.deleteLater()
             del row
 
@@ -314,15 +333,16 @@ class Lightboard(QFrame):
 
 class _RotorsHandler(QFrame):
     """Coordinates all rotors and the settings button"""
+
     def __init__(
-        self,
-        master,
-        position_plug,
-        rotate_plug,
-        rotate_ref_plug,
-        enigma_api,
-        refresh_plug,
-        reflector_pos_plug,
+            self,
+            master,
+            position_plug,
+            rotate_plug,
+            rotate_ref_plug,
+            enigma_api,
+            refresh_plug,
+            reflector_pos_plug,
     ):
         """
         :param master: {Qt} Master qt object
@@ -356,7 +376,7 @@ class _RotorsHandler(QFrame):
 
         # SETTINGS ICON =======================================================
 
-        self.settings_button = QPushButton(QIcon(base_dir + "settings.png"), "", self)
+        self.settings_button = QPushButton(QIcon(BASE_DIR + "settings.png"), "", self)
         self.settings_button.setIconSize(QSize(50, 50))
         self.settings_button.setToolTip("Edit Enigma rotor and reflector settings")
         self.settings_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
@@ -459,10 +479,10 @@ class _RotorsHandler(QFrame):
             self.enigma_api.reflector_rotatable()
             and self.enigma_api.reflector() != "UKW-D"
         ):
-            logging.info('Reflector indicator set to position "%s"' % self._reflector_pos_plug())
+            logging.info('Reflector indicator set to position "%s"', self._reflector_pos_plug())
             self._reflector_indicator.set(self._reflector_pos_plug())
 
-        logging.info('Rotor indicators set to positions "%s"' % str(self._position_plug()))
+        logging.info('Rotor indicators set to positions "%s"', str(self._position_plug()))
         for rotor, position in zip(self._rotor_indicators, self._position_plug()):
             rotor.set(position)
 
@@ -504,8 +524,7 @@ class _RotorHandler(QFrame):
 
         self._indicator = QLabel("A", self)
         self._indicator.setStyleSheet(
-            "QLabel{font-size: 20px; text-align: center;"
-            "background-color: white}"
+            "QLabel{font-size: 20px; text-align: center;" "background-color: white}"
         )
         self._indicator.setFixedSize(40, 40)
         self._indicator.setFrameStyle(QFrame.Panel | QFrame.Sunken)
@@ -545,6 +564,7 @@ class _RotorHandler(QFrame):
 class _InputTextBox(QPlainTextEdit):
     """Textbox responsible for user input, text formatting and outputting
     encrypted text to output textbox"""
+
     def __init__(
         self,
         master,
@@ -555,7 +575,7 @@ class _InputTextBox(QPlainTextEdit):
         letter_group_plug,
         revert_pos,
         overflow_plug,
-        charset
+        charset,
     ):
         """Handles user input and sends it to the output textbox
         :param master: {QWidget} Parent Qt object
@@ -602,7 +622,9 @@ class _InputTextBox(QPlainTextEdit):
         # SCROLLBAR SYNC ======================================================
 
         self.verticalScrollBar().valueChanged.connect(self.sync_scroll)
-        self.other_scrollbar.valueChanged.connect(lambda new_val: self.sync_scroll(new_val, True))
+        self.other_scrollbar.valueChanged.connect(
+            lambda new_val: self.sync_scroll(new_val, True)
+        )
 
         # HIGHLIGHTER =========================================================
 
@@ -619,7 +641,7 @@ class _InputTextBox(QPlainTextEdit):
         :param charset: {str} all characters that can be typed (others are blocked)
         """
         self.charset = "[^%s]+" % charset
-        
+
     def select_block(self, this=False):
         """Synchronizes selection blocks between two menus
         :param this: {bool} True if input textbox scrollbar was moved, False if output textbox
@@ -656,11 +678,13 @@ class _InputTextBox(QPlainTextEdit):
         diff = self.last_len - new_len
 
         if diff <= -10000:  # If insertion greater than 10 000 chars
-            logging.warning('Blocked attempt to insert %d characters...' % abs(diff))
+            logging.warning("Blocked attempt to insert %d characters...", abs(diff))
             QMessageBox.critical(
-                self, "Input too long", "Inserting more than 10000 characters at a time is disallowed!"
+                self,
+                "Input too long",
+                "Inserting more than 10000 characters at a time is disallowed!",
             )
-            text = text[:self.last_len]
+            text = text[: self.last_len]
             self.sync_plug(self.last_len)
         elif diff != 0:  # If anything changed
             if diff < 0:  # If text longer than before
@@ -668,16 +692,22 @@ class _InputTextBox(QPlainTextEdit):
                 self.output_plug(encrypted)
 
                 if len(encrypted) <= 30:
-                    logging.info('Buffer longer by %d, new encrypted text "%s"' % (abs(diff), encrypted))
+                    logging.info(
+                        'Buffer longer by %d, new encrypted text "%s"', abs(diff), encrypted
+                    )
                 else:
-                    logging.info('Buffer longer by %d, new encrypted text "%s..."' % (abs(diff), encrypted[:30]))
+                    logging.info(
+                        'Buffer longer by %d, new encrypted text "%s..."', abs(diff), encrypted[:30]
+                    )
 
                 if self.overflow_plug():
                     logging.warning("Position buffer is full, trimming...")
             elif diff > 0:  # If text shorter than before
                 self.sync_plug(new_len)
                 self._revert_pos(diff)
-                logging.info("Buffer shorter by %d, trimming and reverting positions..." % abs(diff))
+                logging.info(
+                    "Buffer shorter by %d, trimming and reverting positions...", abs(diff)
+                )
 
             self.refresh_plug()
             self.last_len = new_len
@@ -686,7 +716,7 @@ class _InputTextBox(QPlainTextEdit):
             logging.info("No changes to buffer made...")
             self.set_text(text)
 
-        if len(text) == 0:
+        if not text:
             logging.info("Text buffer now empty...")
 
     def sync_scroll(self, new_val, other=False):
@@ -742,8 +772,9 @@ class _OutputTextBox(QPlainTextEdit):
         exactly the same length)
         :param length: {int} new length of the displayed text
         """
-        text = letter_groups(self.toPlainText().replace(" ", "")[:length],
-                             self.letter_group_plug())
+        text = letter_groups(
+            self.toPlainText().replace(" ", "")[:length], self.letter_group_plug()
+        )
 
         self.setPlainText(text)
         self.moveCursor(QTextCursor.End)

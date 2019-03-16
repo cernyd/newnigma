@@ -1,5 +1,5 @@
 from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
-                                    Stator, format_position, historical)
+                                    Stator, format_position, HISTORICAL)
 from enigma.utils.cfg_handler import load_config, save_config
 
 
@@ -8,7 +8,7 @@ def check_iterable(values, name):
     :param values: {any} Any value to be checked
     :param name: {str} Name of the tested part (for customizing error message)
     """
-    if not type(values) in (tuple, list):
+    if not isinstance(values, (tuple, list)):
         raise ValueError("%s must be iterable!" % name)
 
 
@@ -32,7 +32,7 @@ class EnigmaAPI:
 
     def data(self):
         """Returns historical data for the current model"""
-        return historical[self.model()]
+        return HISTORICAL[self.model()]
 
     def rotor_n(self, model=None):
         """Returns rotor count of current model or other model
@@ -40,27 +40,25 @@ class EnigmaAPI:
         """
         if not model:
             return self._enigma.rotor_n()
-        return historical[model]["rotor_n"]
+        return HISTORICAL[model]["rotor_n"]
 
     def letter_group(self):
         """Returns the historical letter group for current Enigma model"""
-        return historical[self.model()]["letter_group"]
+        return HISTORICAL[self.model()]["letter_group"]
 
     @classmethod
     def model_labels(cls, model):
         """Returns all available labels for rotors and reflectors for the selected model
         :param model: {str} Enigma model
         """
-        if type(model) != str or model not in historical:
+        if not isinstance(model, str) or model not in HISTORICAL:
             raise ValueError("Invalid enigma model '%s'" % str(model))
 
-        labels = lambda component: [item["label"] for item in
-                                    historical[model][component]]
+        labels = lambda component: [
+            item["label"] for item in HISTORICAL[model][component]
+        ]
 
-        return {
-            "reflectors": labels("reflectors"),
-            "rotors": labels("rotors")
-        }
+        return {"reflectors": labels("reflectors"), "rotors": labels("rotors")}
 
     @classmethod
     def default_cfg(cls, model, rotor_n, labels=False):
@@ -113,7 +111,7 @@ class EnigmaAPI:
         :param new_reflector: {str}
         """
         if new_reflector is not None:
-            if type(new_reflector) != str:
+            if not isinstance(new_reflector, str):
                 raise ValueError("Invalid rotor '%s'" % str(new_reflector))
 
             new_reflector = self.generate_component(
@@ -183,36 +181,35 @@ class EnigmaAPI:
         """
         return self._enigma.uhr_position(position)
 
-    def generate_rotate_callback(self, rotor_id, by=1):
+    def generate_rotate_callback(self, rotor_id, offset_by=1):
         """Generates a function callback that will rotate a select
         rotor by one position in the select direction when called (used by gui).
         :param rotor_id: {int} Integer position of the rotor
                                (0 = first rotor, ...)
-        :param by: {int} Positive or negative integer
+        :param offset_by: {int} Positive or negative integer
                          describing the number of places
         """
 
-        def rotate_rotor(rotor_id, by=1):
+        def rotate_rotor(rotor_id, offset_by=1):
             """Callback function that rotates a single select rotor
             """
             self.__clear_buffer()
-            self._enigma.rotate_rotor(rotor_id, by)
+            self._enigma.rotate_rotor(rotor_id, offset_by)
             self.set_checkpoint()
 
-        return lambda: rotate_rotor(rotor_id, by)
+        return lambda: rotate_rotor(rotor_id, offset_by)
 
-    def rotate_reflector(self, by=1, callback=False):
+    def rotate_reflector(self, offset_by=1, callback=False):
         """Rotates reflector by select number of positions, generates a callback
         if specified
-        :param by: {int} n positions to rotate (negative number for
+        :param offset_by: {int} n positions to rotate (negative number for
                          the opposite direction)
         :param callback: {bool} Will return a lambda that will call
                                 this function
         """
         if callback is True:
-            return lambda: self._enigma.rotate_reflector(by)
-        else:
-            self._enigma.rotate_reflector(by)
+            return lambda: self._enigma.rotate_reflector(offset_by)
+        self._enigma.rotate_reflector(offset_by)
 
     # BUFFER TOOLS
 
@@ -274,15 +271,15 @@ class EnigmaAPI:
 
         return positions
 
-    def revert_by(self, by=1):
+    def revert_by(self, revert_by=1):
         """Reverts by "by" positions back (used when backspace is pressed
         or text is deleted)
-        :param by: {int} By how many positions to revert
+        :param revert_by: {int} By how many positions to revert
         """
-        if not by >= 0:
+        if revert_by < 0:
             raise ValueError("Enigma can only be reverted by 1 or more positions")
 
-        self.__buffer = self.__buffer[:-by]
+        self.__buffer = self.__buffer[:-revert_by]
 
         if not self.__buffer:
             position = self.__checkpoint
@@ -298,7 +295,7 @@ class EnigmaAPI:
         to the position buffer
         :param text: {char} Text to encrypt
         """
-        output = ''
+        output = ""
         for letter in text:
             output += self._enigma.press_key(letter)
             self.__save_position()
@@ -328,7 +325,7 @@ class EnigmaAPI:
                                                like "I", "II", "III"
         """
         try:
-            data = historical[model]
+            data = HISTORICAL[model]
         except KeyError:
             raise ValueError("Invalid Enigma model '%s'" % model)
 
@@ -358,7 +355,7 @@ class EnigmaAPI:
             rotor_n=rotor_n,
             rotatable_ref=rotatable_ref,
             numeric=numeric,
-            charset=data["charset"]
+            charset=data["charset"],
         )
 
     @classmethod
@@ -371,7 +368,7 @@ class EnigmaAPI:
                                      historical data (0 = "I", 2 = "II", ...)
         """
         try:
-            data = historical[model]
+            data = HISTORICAL[model]
         except KeyError:
             raise ValueError("Invalid enigma model %s!" % model)
 
@@ -380,7 +377,7 @@ class EnigmaAPI:
             final_data = data[comp_type]
             final_data["charset"] = data["charset"]
             return Stator(**data[comp_type])
-        if type(label) == int:
+        if isinstance(label, int):
             final_data = data[comp_type][label]
         else:
             for comp_data in data[comp_type]:
@@ -389,12 +386,15 @@ class EnigmaAPI:
                     break
 
         if not final_data:
-            raise ValueError("No component of type %s with label %s found!" % (comp_type, label))
+            raise ValueError(
+                "No component of type %s with label %s found!" % (comp_type, label)
+            )
         final_data["charset"] = data["charset"]
 
         if comp_type == "rotors":
             return Rotor(**final_data)
-        elif comp_type == "reflectors":
+
+        if comp_type == "reflectors":
             if label == "UKW-D":
                 return UKWD(UKW_D["wiring"])
             return Reflector(**final_data, rotatable=data["rotatable_ref"])
@@ -425,7 +425,7 @@ class EnigmaAPI:
                 pass
 
             if "uhr_position" in config:
-                self._enigma.uhr('connect')
+                self._enigma.uhr("connect")
                 self.uhr_position(config["uhr_position"])
 
             try:
@@ -491,7 +491,7 @@ class EnigmaAPI:
         rotors = "\nRotors: %s" % " ".join(data["rotors"])
         pos = []
         for i in self.checkpoint():
-            pos.append(format_position(self._enigma._charset, i, self._enigma._numeric))
+            pos.append(format_position(self._enigma.charset(), i, self._enigma._numeric))
 
         positions = "\nRotor positions: %s" % " ".join(pos)
         rings = "\nRing settings: %s" % " ".join(map(str, data["ring_settings"]))

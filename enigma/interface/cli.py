@@ -1,7 +1,5 @@
 import logging
 
-from enigma.api.enigma_api import EnigmaAPI
-
 
 def cli(enigma_api, args, msg=None):
     """Starts command line interface that encrypts a message based on args
@@ -11,7 +9,9 @@ def cli(enigma_api, args, msg=None):
     """
     if not args.message and msg is None:
         if not args.silent:
-            print("Supply message with --message MESSAGE argument or provide input trough stdin!")
+            print(
+                "Supply message with --message MESSAGE argument or provide input trough stdin!"
+            )
         logging.error("No message to encrypt, quitting...")
         exit(1)
     else:
@@ -21,7 +21,7 @@ def cli(enigma_api, args, msg=None):
         print(enigma_api)
         print("Encrypted message: ", "")
 
-    print(enigma_api.encrypt(msg), end='')
+    print(enigma_api.encrypt(msg), end="")
     logging.info("Successfully encrypted %d letters, quitting CLI mode..." % len(msg))
 
     if not args.silent:

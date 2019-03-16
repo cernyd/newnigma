@@ -1,10 +1,13 @@
 import logging
 
-from enigma.interface.gui import *
+from enigma.interface.gui import (QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy,
+                                  Qt, QVBoxLayout, QDialog, AbstractPlugboard, QDial, Socket,
+                                  QCheckBox)
 
 
 class PlugboardDialog(AbstractPlugboard):
     """Plugboard for setting Plugboard plug pairs in normal and Uhr mode"""
+
     def __init__(self, master, enigma_api):
         """
         Allows choosing and viewing current plugboard pairs
@@ -26,7 +29,9 @@ class PlugboardDialog(AbstractPlugboard):
 
             for letter in row:
                 letter = enigma_api.charset()[letter]
-                socket = Socket(row_frame, letter, self.connect_sockets, self.enigma_api.charset())
+                socket = Socket(
+                    row_frame, letter, self.connect_sockets, self.enigma_api.charset()
+                )
                 self.plugs[letter] = socket
                 row_layout.addWidget(socket)
 
@@ -54,7 +59,7 @@ class PlugboardDialog(AbstractPlugboard):
             "Enable Uhr"
         )  # In that case all plugs must be occupied! (and red/white)
         self.enable_uhr.setChecked(enigma_api.uhr())
-        self.enable_uhr.stateChanged.connect(lambda: self.change_uhr_status())
+        self.enable_uhr.stateChanged.connect(self.change_uhr_status)
 
         # CONNECTS SOCKETS =====================================================
 
@@ -110,23 +115,28 @@ class PlugboardDialog(AbstractPlugboard):
         pairs = self._pairs()
 
         if self.enable_uhr.isChecked():
-            logging.info("Connecting Uhr, setting position to %d" % self.uhrmenu.position())
-            self.enigma_api.uhr('connect')
+            logging.info(
+                "Connecting Uhr, setting position to %d", self.uhrmenu.position()
+            )
+            self.enigma_api.uhr("connect")
             self.enigma_api.uhr_position(self.uhrmenu.position())
         else:
             try:
                 logging.info("Disconnecting Uhr...")
-                self.enigma_api.uhr('disconnect')
+                self.enigma_api.uhr("disconnect")
             except ValueError:
                 pass
 
-        logging.info('Setting plug pairs to "%s"' % str([''.join(pair) for pair in pairs]))
+        logging.info(
+            'Setting plug pairs to "%s"', str(["".join(pair) for pair in pairs])
+        )
         self.enigma_api.plug_pairs(pairs)
         self.close()
 
 
 class UhrDialog(QDialog):
     """Uhr dialog menu with dial"""
+
     def __init__(self, master, uhr_position):
         """
         Uhr plugboard device
@@ -162,7 +172,7 @@ class UhrDialog(QDialog):
         position = 0
         try:
             position = uhr_position()
-            logging.info("Successfully loaded Uhr position %d from plug..." % position)
+            logging.info("Successfully loaded Uhr position %d from plug...", position)
         except ValueError:
             logging.info("Failed loading Uhr position from plug, setting to 0...")
 
@@ -200,11 +210,11 @@ class UhrDialog(QDialog):
     def apply(self):
         """Sets currently selected position to be collected when applying settings"""
         self._old_position = self.dial.value()
-        logging.info("New Uhr position %d applied, closing..." % self._old_position)
+        logging.info("New Uhr position %d applied, closing...", self._old_position)
         self.close()
 
     def storno(self):
         """Undoes current changes"""
-        logging.info("Storno, reverting to old position %d..." % self._old_position)
+        logging.info("Storno, reverting to old position %d...", self._old_position)
         self.dial.setValue(self._old_position)
         self.close()

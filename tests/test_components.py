@@ -24,20 +24,7 @@ def test_single_encrypt():
 
 
 def test_ukwd():
-    pairs = [
-        "HK",
-        "GL",
-        "NQ",
-        "SV",
-        "UX",
-        "TZ",
-        "RW",
-        "AD",
-        "BF",
-        "CO",
-        "EP",
-        "IM",
-    ]
+    pairs = ["HK", "GL", "NQ", "SV", "UX", "TZ", "RW", "AD", "BF", "CO", "EP", "IM"]
     ukwd = UKWD(pairs)
 
     assert ukwd.reflect("T") == "P"
@@ -47,14 +34,10 @@ def test_ukwd():
 
 
 def test_uhr_addon():
-    enigma = EnigmaAPI.generate_enigma(
-        "Enigma M4", "UKW-b", ["Beta", "I", "II", "III"]
-    )
-    enigma.uhr('connect')
+    enigma = EnigmaAPI.generate_enigma("Enigma M4", "UKW-b", ["Beta", "I", "II", "III"])
+    enigma.uhr("connect")
     enigma.uhr_position(3)
-    enigma.plug_pairs(
-        ["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"]
-    )
+    enigma.plug_pairs(["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"])
     setting = [3, 1, 1, 1]
 
     enigma.positions(setting)
@@ -123,9 +106,7 @@ he implementation by encrypting each letter of the alphabet
 
     for letter in enigma.charset():
         for _ in range(1000):
-            assert (
-                enigma.press_key(letter) != letter
-            ), "Enigma implementation wrong!"
+            assert enigma.press_key(letter) != letter, "Enigma implementation wrong!"
 
 
 @pytest.mark.parametrize(
@@ -135,9 +116,7 @@ he implementation by encrypting each letter of the alphabet
 def test_rotation(offset_by, result):
     enigma = EnigmaAPI.generate_component("Enigma I", "rotors", "I")
     enigma.rotate(offset_by)
-    assert (
-        enigma.offset() == result
-    ), "Rotor offset is not being calculated correctly"
+    assert enigma.offset() == result, "Rotor offset is not being calculated correctly"
 
 
 def test_position():
@@ -292,8 +271,13 @@ def test_historical_messages(
 def test_cli():
     import subprocess
 
-    command = "./enigma.py -cs --model 'Enigma I' --rotors II I III --reflector UKW-A --positions A B L " \
-              "--ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ " \
-              "--message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
+    command = (
+        "./enigma.py -cs --model 'Enigma I' --rotors II I III --reflector UKW-A --positions A B L "
+        "--ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ "
+        "--message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
+    )
     output = subprocess.getoutput(command)
-    assert output == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
+    assert (
+        output
+        == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
+    )

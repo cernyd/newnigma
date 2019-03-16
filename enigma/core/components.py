@@ -1,10 +1,10 @@
 from enigma import contains
 from enigma.core.extensions import Uhr
 
-alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # Stators
-ETW = {"wiring": alphabet}
+ETW = {"wiring": ALPHABET}
 ETW_QWERTZ = {"wiring": "QWERTZUIOASDFGHJKPYXCVBNML"}
 
 # Rotors
@@ -15,8 +15,7 @@ IV = {"label": "IV", "wiring": "ESOVPZJAYQUIRHXLNFTGKDCMWB", "turnover": "J"}
 V = {"label": "V", "wiring": "VZBRGITYUPSDNHLXAWMJQOFECK", "turnover": "Z"}
 VI = {"label": "VI", "wiring": "JPGVOUMFYQBENHZRDKASXLICTW", "turnover": "ZM"}
 VII = {"label": "VII", "wiring": "NZJHGRCXMYSWBOUFAIVLPEKQDT", "turnover": "ZM"}
-VIII = {"label": "VIII", "wiring": "FKQHTLXOCBJSPDZRAMEWNIUYGV", "turnover": "ZM",
-}
+VIII = {"label": "VIII", "wiring": "FKQHTLXOCBJSPDZRAMEWNIUYGV", "turnover": "ZM"}
 
 
 # Reflectors
@@ -26,13 +25,10 @@ UKW_C = {"label": "UKW-C", "wiring": "FVPJIAOYEDRZXWGCTKUQSBNMHL"}
 # Special case, can be used with any Enigma
 UKW_D = {
     "label": "UKW-D",
-    "wiring": [
-        "AB", "CD", "EF", "GH", "IK", "LM",
-        "NO", "PQ", "RS", "TU", "VW", "XZ",
-    ]
+    "wiring": ["AB", "CD", "EF", "GH", "IK", "LM", "NO", "PQ", "RS", "TU", "VW", "XZ"],
 }
 
-default_layout = [
+DEFAULT_LAYOUT = [
     [16, 22, 4, 17, 19, 25, 20, 8, 14],
     [0, 18, 3, 5, 6, 7, 9, 10],
     [15, 24, 23, 2, 21, 1, 13, 12, 11],
@@ -47,20 +43,17 @@ ENIGMA_D_K = {
         {"label": "III", "wiring": "CJGDPSHKTURAWZXFMYNQOBVLIE", "turnover": "N"},
     ),
     "rotor_n": 3,
-    "reflectors": (
-        {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-        UKW_D,
-    ),
+    "reflectors": ({"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"}, UKW_D),
     "rotatable_ref": True,
     "letter_group": 5,
     "plugboard": False,
     "numeric": False,
-    "charset": alphabet,
-    "layout": default_layout
+    "charset": ALPHABET,
+    "layout": DEFAULT_LAYOUT,
 }
 
 
-historical = {
+HISTORICAL = {
     "Enigma I": {
         "stator": ETW,
         "rotors": (I, II, III, IV, V),
@@ -75,8 +68,8 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": True,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Enigma M3": {
         "stator": ETW,
@@ -87,8 +80,8 @@ historical = {
         "letter_group": 5,
         "plugboard": True,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Enigma M4": {
         "stator": ETW,
@@ -114,49 +107,26 @@ historical = {
         "letter_group": 4,
         "plugboard": True,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Norenigma": {
         "stator": ETW,
         "rotors": (
-            {
-                "label": "I",
-                "wiring": "WTOKASUYVRBXJHQCPZEFMDINLG",
-                "turnover": "Q",
-            },
-            {
-                "label": "II",
-                "wiring": "GJLPUBSWEMCTQVHXAOFZDRKYNI",
-                "turnover": "E",
-            },
-            {
-                "label": "III",
-                "wiring": "JWFMHNBPUSDYTIXVZGRQLAOEKC",
-                "turnover": "V",
-            },
-            {
-                "label": "IV",
-                "wiring": "ESOVPZJAYQUIRHXLNFTGKDCMWB",
-                "turnover": "J",
-            },
-            {
-                "label": "V",
-                "wiring": "HEJXQOTZBVFDASCILWPGYNMURK",
-                "turnover": "Z",
-            },
+            {"label": "I", "wiring": "WTOKASUYVRBXJHQCPZEFMDINLG", "turnover": "Q"},
+            {"label": "II", "wiring": "GJLPUBSWEMCTQVHXAOFZDRKYNI", "turnover": "E"},
+            {"label": "III", "wiring": "JWFMHNBPUSDYTIXVZGRQLAOEKC", "turnover": "V"},
+            {"label": "IV", "wiring": "ESOVPZJAYQUIRHXLNFTGKDCMWB", "turnover": "J"},
+            {"label": "V", "wiring": "HEJXQOTZBVFDASCILWPGYNMURK", "turnover": "Z"},
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "MOWJYPUXNDSRAIBFVLKZGQCHET"},
-            UKW_D,
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "MOWJYPUXNDSRAIBFVLKZGQCHET"}, UKW_D),
         "rotatable_ref": False,
         "letter_group": 5,
         "plugboard": True,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Enigma G (A865)": {  # Zählwerk A865
         "stator": ETW_QWERTZ,
@@ -178,15 +148,13 @@ historical = {
             },
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Enigma G (G-111)": {
         "stator": ETW_QWERTZ,
@@ -208,15 +176,13 @@ historical = {
             },
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Enigma G (G-260)": {
         "stator": ETW_QWERTZ,
@@ -238,15 +204,13 @@ historical = {
             },
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Enigma G (G-312)": {
         "stator": ETW_QWERTZ,
@@ -268,22 +232,24 @@ historical = {
             },
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "RULQMZJSYGOCETKWDAHNBXPVIF"},
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "RULQMZJSYGOCETKWDAHNBXPVIF"},),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Enigma D": ENIGMA_D_K,
     "Enigma K": ENIGMA_D_K,
     "Enigma KD": {
         "stator": ETW_QWERTZ,
         "rotors": (
-            {"label": "I", "wiring": "VEZIOJCXKYDUNTWAPLQGBHSFMR", "turnover": "SUYAEHLNQ"},
+            {
+                "label": "I",
+                "wiring": "VEZIOJCXKYDUNTWAPLQGBHSFMR",
+                "turnover": "SUYAEHLNQ",
+            },
             {
                 "label": "II",
                 "wiring": "HGRBSJZETDLVPMQYCXAOKINFUW",
@@ -296,86 +262,50 @@ historical = {
             },
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "KOTVPNLMJIAGHFBEWYXCZDQSRU"},
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "KOTVPNLMJIAGHFBEWYXCZDQSRU"},),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Swiss K": {
         "stator": ETW_QWERTZ,
         "rotors": (
-            {
-                "label": "I",
-                "wiring": "PEZUOHXSCVFMTBGLRINQJWAYDK",
-                "turnover": "Y",
-            },
-            {
-                "label": "II",
-                "wiring": "ZOUESYDKFWPCIQXHMVBLGNJRAT",
-                "turnover": "E",
-            },
-            {
-                "label": "III",
-                "wiring": "EHRVXGAOBQUSIMZFLYNWKTPDJC",
-                "turnover": "N",
-            },
+            {"label": "I", "wiring": "PEZUOHXSCVFMTBGLRINQJWAYDK", "turnover": "Y"},
+            {"label": "II", "wiring": "ZOUESYDKFWPCIQXHMVBLGNJRAT", "turnover": "E"},
+            {"label": "III", "wiring": "EHRVXGAOBQUSIMZFLYNWKTPDJC", "turnover": "N"},
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"},
-            UKW_D,
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"}, UKW_D),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
-        "charset": alphabet,
-        "layout": default_layout
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
     },
     "Railway": {
         "stator": ETW_QWERTZ,
         "rotors": (
-            {
-                "label": "I",
-                "wiring": "JGDQOXUSCAMIFRVTPNEWKBLZYH",
-                "turnover": "N",
-            },
-            {
-                "label": "II",
-                "wiring": "NTZPSFBOKMWRCJDIVLAEYUXHGQ",
-                "turnover": "E",
-            },
-            {
-                "label": "III",
-                "wiring": "JVIUBHTCDYAKEQZPOSGXNRMWFL",
-                "turnover": "Y",
-            },
+            {"label": "I", "wiring": "JGDQOXUSCAMIFRVTPNEWKBLZYH", "turnover": "N"},
+            {"label": "II", "wiring": "NTZPSFBOKMWRCJDIVLAEYUXHGQ", "turnover": "E"},
+            {"label": "III", "wiring": "JVIUBHTCDYAKEQZPOSGXNRMWFL", "turnover": "Y"},
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "QYHOGNECVPUZTFDJAXWMKISRBL"},
-            UKW_D,
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "QYHOGNECVPUZTFDJAXWMKISRBL"}, UKW_D),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
-        "charset": alphabet,
-        "layout": default_layout,
-        "numeric": False
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
+        "numeric": False,
     },
     "Tirpitz": {
         "stator": {"wiring": "KZROUQHYAIGBLWVSTDXFPNMCJE"},
         "rotors": (
-            {
-                "label": "I",
-                "wiring": "KPTYUELOCVGRFQDANJMBSWHZXI",
-                "turnover": "WZEKQ",
-            },
+            {"label": "I", "wiring": "KPTYUELOCVGRFQDANJMBSWHZXI", "turnover": "WZEKQ"},
             {
                 "label": "II",
                 "wiring": "UPHZLWEQMTDJXCAKSOIGVBYFNR",
@@ -391,11 +321,7 @@ historical = {
                 "wiring": "CIWTBKXNRESPFLYDAGVHQUOJZM",
                 "turnover": "WZFLR",
             },
-            {
-                "label": "V",
-                "wiring": "UAXGISNJBVERDYLFZWTPCKOHMQ",
-                "turnover": "YCFKR",
-            },
+            {"label": "V", "wiring": "UAXGISNJBVERDYLFZWTPCKOHMQ", "turnover": "YCFKR"},
             {
                 "label": "VI",
                 "wiring": "XFUZGALVHCNYSEWQTDMRBKPIOJ",
@@ -413,46 +339,29 @@ historical = {
             },
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "GEKPBTAUMOCNILJDXZYFHWVQSR"},
-            UKW_D,
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "GEKPBTAUMOCNILJDXZYFHWVQSR"}, UKW_D),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
-        "charset": alphabet,
-        "layout": default_layout,
-        "numeric": False
+        "charset": ALPHABET,
+        "layout": DEFAULT_LAYOUT,
+        "numeric": False,
     },
     "Enigma Z": {
         "stator": {"wiring": "0123456789"},
         "rotors": (
-            {
-                "label": "I",
-                "wiring": "6418270359",
-                "turnover": "9",
-            },
-            {
-                "label": "II",
-                "wiring": "5841097632",
-                "turnover": "9",
-            },
-            {
-                "label": "III",
-                "wiring": "3581620794",
-                "turnover": "9",
-            },
+            {"label": "I", "wiring": "6418270359", "turnover": "9"},
+            {"label": "II", "wiring": "5841097632", "turnover": "9"},
+            {"label": "III", "wiring": "3581620794", "turnover": "9"},
         ),
         "rotor_n": 3,
-        "reflectors": (
-            {"label": "UKW", "wiring": "5079183642"},
-        ),
+        "reflectors": ({"label": "UKW", "wiring": "5079183642"},),
         "rotatable_ref": True,
         "letter_group": 5,
         "plugboard": False,
         "numeric": False,
         "charset": "1234567890",
-        "layout": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], []]
+        "layout": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], []],
     },
 }
 
@@ -463,7 +372,7 @@ def format_position(charset, position, numeric=False):
     :param position: {char} character representing a position
     :param numeric: {bool} returns a numeric format if True
     """
-    return "%02d" % (position) if numeric else charset[position-1]
+    return "%02d" % (position) if numeric else charset[position - 1]
 
 
 class Plugboard:
@@ -507,7 +416,7 @@ class Plugboard:
 class _Component:  # Base component
     """Base class for all components"""
 
-    def __init__(self, label, wiring, charset=alphabet):
+    def __init__(self, label, wiring, charset=ALPHABET):
         """
         :param label: {str} Component label
         :param wiring: {str} Component wiring
@@ -541,7 +450,8 @@ class _Component:  # Base component
 
 class Stator(_Component):
     """Static entry point component to the rotor assembly"""
-    def __init__(self, wiring, charset=alphabet):
+
+    def __init__(self, wiring, charset=ALPHABET):
         """
         :param wiring: {str} defines the way letters are routed
                              trough the rotor
@@ -556,12 +466,20 @@ class Stator(_Component):
         return super()._backward(letter)
 
     def __str__(self):
-        return "Stator with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
+        return (
+            "Stator with label "
+            + self._label
+            + "\nWiring : "
+            + self._wiring
+            + "\nCharset: "
+            + self._charset
+        )
 
 
 class _Rotatable(_Component):
     """Adds the capability of rotation, turnovers and ring settings to the rotor"""
-    def __init__(self, label, wiring, charset=alphabet):
+
+    def __init__(self, label, wiring, charset=ALPHABET):
         """
         :param label: {str} Component label
         :param wiring: {str} Component wiring
@@ -575,7 +493,7 @@ class _Rotatable(_Component):
         """Sets offset of the rotor
         :param offset: {int} new rotor offset
         """
-        if type(offset) is int:
+        if isinstance(offset, int):
             if offset not in range(1, 27):
                 raise ValueError("Positions can only be set to values 1 - 26!")
             self._offset = offset - 1
@@ -600,7 +518,8 @@ class _Rotatable(_Component):
 
 class Reflector(_Rotatable):
     """Component that only has a single way of routing letters"""
-    def __init__(self, label, wiring, rotatable=False, charset=alphabet):
+
+    def __init__(self, label, wiring, rotatable=False, charset=ALPHABET):
         """
         :param label: {str} Component label
         :param wiring: {str} Component wiring
@@ -620,7 +539,9 @@ class Reflector(_Rotatable):
         :param letter: {char}
         :return: {char}
         """
-        rel_input = (self._charset.index(letter) + self._offset) % self._max_index  # INT
+        rel_input = (
+            self._charset.index(letter) + self._offset
+        ) % self._max_index  # INT
         rel_result = self._charset.index(self._wiring[rel_input])  # INT
         abs_result = (rel_result - self._offset) % self._max_index
         return self._charset[abs_result]
@@ -654,7 +575,14 @@ class Reflector(_Rotatable):
         return super().position(numeric)
 
     def __str__(self):
-        msg = "Reflector with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
+        msg = (
+            "Reflector with label "
+            + self._label
+            + "\nWiring : "
+            + self._wiring
+            + "\nCharset: "
+            + self._charset
+        )
         msg += "\nIs rotatable: " + str(self.__rotatable)
 
         if self.__rotatable:
@@ -666,10 +594,11 @@ class UKWD(Reflector):
 
     def __init__(self, pairs):
         """
-        :param pairs: {["AB", "CD", ...]} list of pairs of letters (either as strings or sublists with 2 chars)
+        :param pairs: {["AB", "CD", ...]} list of pairs of letters
+                      (either as strings or sublists with 2 chars)
                       where each letter can only be used once
         """
-        super().__init__("UKW-D", alphabet, False, alphabet)
+        super().__init__("UKW-D", ALPHABET, False, ALPHABET)
 
         self._marking = " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
         self.wiring(pairs)
@@ -680,9 +609,7 @@ class UKWD(Reflector):
         """
         if pairs:
             if len(pairs) != 12:
-                raise ValueError(
-                    "There must be exactly 12 pairs for correct wiring!"
-                )
+                raise ValueError("There must be exactly 12 pairs for correct wiring!")
 
             # The banned JY are just labels, the real banned letters are NA
             wiring = ["N"] + [""] * 12 + ["A"] + [""] * 12
@@ -693,7 +620,10 @@ class UKWD(Reflector):
 
                 a_index, b_index = map(self._marking.index, pair)
 
-                wiring[a_index], wiring[b_index] = self._charset[b_index], self._charset[a_index]
+                wiring[a_index], wiring[b_index] = (
+                    self._charset[b_index],
+                    self._charset[a_index],
+                )
 
             # Creates a wiring table just like a normal reflector has
             self._wiring = "".join(wiring)
@@ -701,7 +631,7 @@ class UKWD(Reflector):
             # Reconstructs the original pairs and returns them
             pairs = []
             for i, letter in enumerate(self._wiring):
-                if letter == "A" or letter == "N":
+                if letter in "AN":
                     continue
 
                 pair = self._marking[i] + self._marking[self._charset.index(letter)]
@@ -711,16 +641,25 @@ class UKWD(Reflector):
             return pairs
 
     def __str__(self):
-        return "Reflector with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
+        return (
+            "Reflector with label "
+            + self._label
+            + "\nWiring : "
+            + self._wiring
+            + "\nCharset: "
+            + self._charset
+        )
 
 
 class Rotor(_Rotatable):
     """Critical component, can rotate and route letters back and forth"""
-    def __init__(self, label, wiring, turnover=None, charset=alphabet):
+
+    def __init__(self, label, wiring, turnover=None, charset=ALPHABET):
         """
         :param label: {str} rotor label (I, II, III, ...)
         :param wiring: {str} defines the way letters are routed trough the rotor
-        :param turnover: {str} or {[char, char]} All positions on which the next rotor should be turned
+        :param turnover: {str} or {[char, char]} All positions on which the
+                         next rotor should be turned
         :param charset: {str} Rotor charset
         """
         super().__init__(label, wiring, charset)
@@ -760,7 +699,7 @@ class Rotor(_Rotatable):
         """Sets "Ringstellung" (ring settings) which can be misaligned with internal wiring
         :param setting: {int} new ring setting
         """
-        if type(offset) == int:
+        if isinstance(offset, int):
             if offset not in range(1, 27):
                 raise ValueError("Positions can only be set to values 1 - 26!")
             self._ring_offset = offset - 1
@@ -774,8 +713,20 @@ class Rotor(_Rotatable):
         return self.position() in self._turnover
 
     def __str__(self):
-        msg = "Rotor with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
-        msg += "\nPosition: " + self.position() + "\nRing setting: " + str(self.ring_offset())
+        msg = (
+            "Rotor with label "
+            + self._label
+            + "\nWiring : "
+            + self._wiring
+            + "\nCharset: "
+            + self._charset
+        )
+        msg += (
+            "\nPosition: "
+            + self.position()
+            + "\nRing setting: "
+            + str(self.ring_offset())
+        )
         msg += "\nTurnover notch: " + self._turnover
         return msg
 
@@ -784,17 +735,17 @@ class Enigma:
     """Universal Enigma object that supports every model except Enigma M4"""
 
     def __init__(
-        self,
-        model,
-        reflector,
-        rotors,
-        stator,
-        plugboard=True,
-        plug_pairs=None,
-        rotor_n=3,
-        rotatable_ref=False,
-        numeric=False,
-        charset=alphabet
+            self,
+            model,
+            reflector,
+            rotors,
+            stator,
+            plugboard=True,
+            plug_pairs=None,
+            rotor_n=3,
+            rotatable_ref=False,
+            numeric=False,
+            charset=ALPHABET,
     ):
         """
         :param reflector: {Reflector} Reflector object
@@ -892,16 +843,16 @@ class Enigma:
         """Returns whether or not the reflector is rotatable"""
         return self._rotatable_ref
 
-    def rotate_reflector(self, by=1):
+    def rotate_reflector(self, offset_by=1):
         """Rotates reflector by select number of positions
         :param by: {int} Positions to turn by
         """
-        self._reflector.rotate(by)
+        self._reflector.rotate(offset_by)
 
     def reflector_position(self, new_position=None):
         """Reflector position getter/setter"""
-        if type(new_position) == int:
-            if type(new_position) == str:
+        if isinstance(new_position, int):
+            if isinstance(new_position, str):
                 new_position = self._charset.index(new_position)
             self._reflector.offset(new_position)
         else:
@@ -909,11 +860,11 @@ class Enigma:
 
     # ROTOR
 
-    def rotate_rotor(self, index, by=1):
+    def rotate_rotor(self, index, rotate_by=1):
         """Rotates a single rotor by select number of positions
-        :param by: {int} Byt how many positions
+        :param rotate_by: {int} Byt how many positions
         """
-        self._rotors[index].rotate(by)
+        self._rotors[index].rotate(rotate_by)
 
     def positions(self, new_positions=None):
         """Sets positions of all rotors
@@ -926,19 +877,17 @@ class Enigma:
         """
         if new_positions:
             for position, rotor in zip(new_positions, self._rotors):
-                if type(position) == str:
+                if isinstance(position, str):
                     if position in self._charset:  # Is a letter from charset
                         position = self._charset.index(position) + 1
                     else:  # Is a number passed as string ("01" for example)
                         position = int(position)
-                elif type(position) != int:
+                elif not isinstance(position, int):
                     print("Invalid position type!")
 
                 rotor.offset(position)
         else:  # Returns current positions
-            return tuple(
-                [rotor.position(self._numeric) for rotor in self._rotors]
-            )
+            return tuple([rotor.position(self._numeric) for rotor in self._rotors])
 
     def ring_settings(self, new_ring_settings=None):
         """Returns rotor positions, internal ring settings are different than the
@@ -967,8 +916,7 @@ class Enigma:
         """Plug pairs getter/setter"""
         if self._plugboard is not None:
             return self._plugboard.pairs(new_plug_pairs)
-        else:
-            raise ValueError("This Enigma model doesn't have a plugboard!")
+        raise ValueError("This Enigma model doesn't have a plugboard!")
 
     def uhr(self, action=None):
         """Uhr interface
@@ -977,12 +925,13 @@ class Enigma:
         """
         if not action:
             return isinstance(self._plugboard, Uhr)
-        elif action == 'connect':
+        
+        if action == "connect":
             if isinstance(self._storage, Uhr):
                 self._storage, self._plugboard = self._plugboard, self._storage
                 self._plugboard.pairs([])
                 self._plugboard_route = self._plugboard.route
-        elif action == 'disconnect' and isinstance(self._plugboard, Uhr):
+        elif action == "disconnect" and isinstance(self._plugboard, Uhr):
             self._storage, self._plugboard = self._plugboard, self._storage
             self._plugboard.pairs([])
             self._plugboard_route = lambda letter, _=None: self._plugboard.route(letter)
@@ -994,7 +943,7 @@ class Enigma:
         if not isinstance(self._plugboard, Uhr):
             raise ValueError("Can't set uhr position - uhr not connected!")
 
-        if type(new_position) == int:
+        if isinstance(new_position, int):
             self._plugboard.position(new_position)
         else:
             return self._plugboard.position()

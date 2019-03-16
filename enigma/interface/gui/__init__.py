@@ -1,33 +1,46 @@
 import logging
-from json import JSONDecodeError
 
-from PySide2.QtCore import QDir, QSize, Qt
-from PySide2.QtGui import QFont, QIcon, QPixmap, QTextCursor
-from PySide2.QtWidgets import *
+from PySide2.QtCore import Qt
+# from PySide2.QtWidgets import
 
-from enigma.core.components import historical
-from enigma.utils.cfg_handler import load_config, save_config
+from enigma.core.components import HISTORICAL
 
-labels = [
-    "A-01", "B-02", "C-03", "D-04", "E-05", "F-06", "G-07", "H-08", "I-09", "J-10",
-    "K-11", "L-12", "M-13", "N-14", "O-15", "P-16", "Q-17", "R-18", "S-19", "T-20",
-    "U-21", "V-22", "W-23", "X-24", "Y-25", "Z-26"
-]
-
-# For the GUI plug board
-default_layout = [
-    [16, 22, 4, 17, 19, 25, 20, 8, 14],
-    [0, 18, 3, 5, 6, 7, 9, 10],
-    [15, 24, 23, 2, 21, 1, 13, 12, 11],
+LABELS = [
+    "A-01",
+    "B-02",
+    "C-03",
+    "D-04",
+    "E-05",
+    "F-06",
+    "G-07",
+    "H-08",
+    "I-09",
+    "J-10",
+    "K-11",
+    "L-12",
+    "M-13",
+    "N-14",
+    "O-15",
+    "P-16",
+    "Q-17",
+    "R-18",
+    "S-19",
+    "T-20",
+    "U-21",
+    "V-22",
+    "W-23",
+    "X-24",
+    "Y-25",
+    "Z-26",
 ]
 
 # Data for enigma settings model wiki
 
 
-base_dir = "enigma/interface/gui/assets/icons/"
+BASE_DIR = "enigma/interface/gui/assets/icons/"
 
 
-_enigma1 = """
+_ENIGMA1 = """
 <h1>Enigma I</h1>
 <hr>
 <ul>
@@ -41,7 +54,7 @@ _enigma1 = """
 The Enigma M1 model was used primarily before the second world war
 """
 
-_enigmam3 = """
+_ENIGMAM3 = """
 <h1>Enigma M3 (M1, M2, M3)</h1>
 <hr>
 <ul>
@@ -57,7 +70,7 @@ every part of the army. Enigma M1, M2 and M3 variants are practically
 identical (aside from some minor manufacturing differences).
 """
 
-_enigmam4 = """
+_ENIGMAM4 = """
 <h1>Enigma M4</h1>
 <hr>
 <ul>
@@ -72,7 +85,7 @@ Naval version featuring 4 rotors, the last rotor is "thin" and stationary.
 Due to the increased number of rotors is more secure than 3 rotor variants.
 """
 
-_norenigma = """
+_NORENIGMA = """
 <h1>Norenigma/Norway Enigma</h1>
 <hr>
 <ul>
@@ -87,7 +100,7 @@ Enigma I machines captured and used by the Norwegian secret service after 1945.
 Used custom rotor wiring.
 """
 
-_enigmag = """
+_ENIGMAG = """
 <h1>Enigma G</h1>
 <hr>
 <ul>
@@ -103,7 +116,7 @@ used commercially and by the police. Models A865, G111, G260 and G312 are
 examples of rewired Enigma G.
 """
 
-_enigmad = """
+_ENIGMAD = """
 <h1>Enigma D</h1>
 <hr>
 <ul>
@@ -118,7 +131,7 @@ Commercially used Enigma model with rotatable reflector.
 Predecessor of Enigma K.
 """
 
-_enigmak = """
+_ENIGMAK = """
 <h1>Enigma K</h1>
 <hr>
 <ul>
@@ -133,7 +146,7 @@ Improved Enigma D, 'K' probably stands for 'Komerziell'. It is
 the basis for Swiss K, Railway Enigma and Tirpitz.
 """
 
-_swissk = """
+_SWISSK = """
 <h1>Swiss Enigma K</h1>
 <hr>
 <ul>
@@ -147,7 +160,7 @@ _swissk = """
 Used by the Swiss army, the extra lamp panel was used by a person who wrote down the letters.
 """
 
-_railway = """
+_RAILWAY = """
 <h1>Railway</h1>
 <hr>
 <ul>
@@ -162,7 +175,7 @@ Rewired version of the Enigma K used by the German railway. Turnover
 notches are swapped.
 """
 
-_tirpitz = """
+_TIRPITZ = """
 <h1>Tirpitz</h1>
 <hr>
 <ul>
@@ -177,7 +190,7 @@ Version of the Enigma K used by the Japanese army, all rotors,
 reflectors and stator are rewired.
 """
 
-_enigmakd = """
+_ENIGMAKD = """
 <h1>Enigma KD</h1>
 <hr>
 <ul>
@@ -193,7 +206,7 @@ UKW-D, originally found wiring is included, but it was probably frequently
 rewired.
 """
 
-_enigmag111 = """
+_ENIGMA111 = """
 <h1>Enigma G (G-111)</h1>
 <hr>
 <ul>
@@ -208,7 +221,7 @@ Rewired Enigma G with serial number G-111. Surfaced in 2009 at an
 auction in Munich.
 """
 
-_enigmag260 = """
+_ENIGMAG260 = """
 <h1>Enigma G (G-260)</h1>
 <hr>
 <ul>
@@ -223,7 +236,7 @@ Enigma G machine with serial number G-260 found in possession of
 Johann Siegfried Becker, a German spy, when he was arrested in Argentine.
 """
 
-_enigmag312 = """
+_ENIGMAG312 = """
 <h1>Enigma G (G-312)</h1>
 <hr>
 <ul>
@@ -238,36 +251,35 @@ Enigma G machine with serial number G-312, likely used by the Abwehr,
 completely rewired.
 """
 
-stylesheet = 'font-family: "Courier New", Courier, monospace'
+STYLESHEET = 'font-family: "Courier New", Courier, monospace'
 
-view_data = {}
-resources = {
-    "Enigma I": {"description": _enigma1, "img": base_dir + "enigma1.jpg"},
-    "Enigma M3": {"description": _enigmam3, "img": base_dir + "enigmam3.jpg"},
-    "Enigma M4": {"description": _enigmam4, "img": base_dir + "enigmam4.jpg"},
-    "Norenigma": {"description": _norenigma, "img": base_dir + "enigma1.jpg"},
-    "Enigma G (A865)": {"description": _enigmag, "img": base_dir + "enigmag.jpg"},
-    "Enigma G (G-111)": {"description": _enigmag111, "img": base_dir + "enigmag.jpg"},
-    "Enigma G (G-260)": {"description": _enigmag260, "img": base_dir + "enigmag.jpg"},
-    "Enigma G (G-312)": {"description": _enigmag312, "img": base_dir + "enigmag.jpg"},
-    "Enigma D": {
-        "description": _enigmad,
-        "img": base_dir + "enigmad.jpg",
-    },
-    "Enigma K": {"description": _enigmak, "img": base_dir + "enigmak.jpg"},
-    "Enigma KD": {"description": _enigmakd, "img": base_dir + "enigmak.jpg"},
-    "Swiss K": {"description": _swissk, "img": base_dir + "swissk.png"},
-    "Railway": {"description": _railway, "img": base_dir + "enigmak.jpg"},
-    "Tirpitz": {"description": _tirpitz, "img": base_dir + "tirpitz.jpg"},
+VIEW_DATA = {}
+RESOURCES = {
+    "Enigma I": {"description": _ENIGMA1, "img": BASE_DIR + "enigma1.jpg"},
+    "Enigma M3": {"description": _ENIGMAM3, "img": BASE_DIR + "enigmam3.jpg"},
+    "Enigma M4": {"description": _ENIGMAM4, "img": BASE_DIR + "enigmam4.jpg"},
+    "Norenigma": {"description": _NORENIGMA, "img": BASE_DIR + "enigma1.jpg"},
+    "Enigma G (A865)": {"description": _ENIGMAG, "img": BASE_DIR + "enigmag.jpg"},
+    "Enigma G (G-111)": {"description": _ENIGMA111, "img": BASE_DIR + "enigmag.jpg"},
+    "Enigma G (G-260)": {"description": _ENIGMAG260, "img": BASE_DIR + "enigmag.jpg"},
+    "Enigma G (G-312)": {"description": _ENIGMAG312, "img": BASE_DIR + "enigmag.jpg"},
+    "Enigma D": {"description": _ENIGMAD, "img": BASE_DIR + "enigmad.jpg"},
+    "Enigma K": {"description": _ENIGMAK, "img": BASE_DIR + "enigmak.jpg"},
+    "Enigma KD": {"description": _ENIGMAKD, "img": BASE_DIR + "enigmak.jpg"},
+    "Swiss K": {"description": _SWISSK, "img": BASE_DIR + "swissk.png"},
+    "Railway": {"description": _RAILWAY, "img": BASE_DIR + "enigmak.jpg"},
+    "Tirpitz": {"description": _TIRPITZ, "img": BASE_DIR + "tirpitz.jpg"},
 }
 
 
-for model in historical:
-    view_data[model] = resources.get(model, {
-        "description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
-        "img": base_dir + "unknown.jpg"
-    })
-
+for model in HISTORICAL:
+    VIEW_DATA[model] = RESOURCES.get(
+        model,
+        {
+            "description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
+            "img": BASE_DIR + "unknown.jpg",
+        },
+    )
 
 
 def letter_groups(text, group_size=5):
@@ -287,10 +299,9 @@ def letter_groups(text, group_size=5):
     return output
 
 
-
-
 class AbstractPlugboard(QDialog):
     """Abstract object with features shared by all 'pair connect' windows"""
+
     def __init__(self, master, enigma_api, title):
         super().__init__(master)
 
@@ -316,13 +327,13 @@ class AbstractPlugboard(QDialog):
 
         return [pair[1] for pair in sorted(pairs, key=lambda pair: pair[0])]
 
-    def set_pairs(self, new_pairs=[]):
+    def set_pairs(self, new_pairs=None):
         """Sets pairs to new pairs and connects corresponding sockets
         :param new_pairs: {[str, str, str, ...]}
         """
         self.clear_pairs()
         if new_pairs:
-            logging.info('Setting wiring pairs to "%s"' % str(new_pairs))
+            logging.info('Setting wiring pairs to "%s"', str(new_pairs))
             for pair in new_pairs:
                 self.connect_sockets(*pair, False)
             self.old_pairs = self._pairs()
@@ -365,8 +376,11 @@ class AbstractPlugboard(QDialog):
                 self.plugs[other].set_text(None)
         else:
             # Check if letter is valid
-            if other_socket in self.banned + [socket] or self.plugs[other_socket].pair() \
-               or (len(self._pairs()) == 10 and self.uhr_enabled):
+            if (
+                other_socket in self.banned + [socket]
+                or self.plugs[other_socket].pair()
+                or (len(self._pairs()) == 10 and self.uhr_enabled)
+            ):
                 plug.set_text("")
             else:  # Connects sockets
                 plug_id = len(self._pairs()) + 1
@@ -386,6 +400,7 @@ class AbstractPlugboard(QDialog):
 
 class Socket(QFrame):
     """One socket with label and text entry"""
+
     def __init__(self, master, letter, connect_plug, charset):
         """
         :param master: Qt parent object
@@ -428,8 +443,7 @@ class Socket(QFrame):
         """Returns currently wired pair."""
         if self.connected_to:
             return self.letter + self.connected_to
-        else:
-            return None
+        return None
 
     def entry_event(self):
         """Responds to a event when something changes in the plug entry"""
@@ -451,7 +465,9 @@ class Socket(QFrame):
         :param marking: {str} Uhr marking (like 1a, 3b, ...)
         :param uhr: {bool} Colors sockets differently when True (when Uhr connected)
         """
-        stylesheet = "background-color: %s; color: %s; text-align: center; font-size: 30px;"
+        stylesheet = (
+            "background-color: %s; color: %s; text-align: center; font-size: 30px;"
+        )
 
         if block_event:
             self.entry.blockSignals(True)
@@ -471,7 +487,7 @@ class Socket(QFrame):
             else:
                 color = ("gray", "white")
 
-            self.setToolTip(str(marking[0])+marking[1])
+            self.setToolTip(str(marking[0]) + marking[1])
 
         self.entry.setStyleSheet(stylesheet % color)
         self.entry.setText(letter)
