@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=no-name-in-module,missing-docstring,line-too-long
 
+import subprocess
 from string import ascii_uppercase as alphabet
 
 import pytest
@@ -269,15 +270,10 @@ def test_historical_messages(
 
 
 def test_cli():
-    import subprocess
-
     command = (
-        "enigma.py -cs --model 'Enigma I' --rotors II I III --reflector UKW-A --positions A B L "
+        "./enigma.py -cs --model 'Enigma I' --rotors II I III --reflector UKW-A --positions A B L "
         "--ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ "
         "--message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
     )
-    output = subprocess.getoutput(command)
-    assert (
-        output
-        == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
-    )
+    assert subprocess.getoutput(command) == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUE" \
+                                            "DAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"

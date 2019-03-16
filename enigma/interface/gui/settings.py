@@ -4,11 +4,12 @@ import logging
 
 from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
 from PySide2.QtGui import QPixmap  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import QComboBox  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,  # pylint: disable=no-name-in-module
-                               QLabel, QListWidget, QPushButton,  # pylint: disable=no-name-in-module
-                               QRadioButton, QSizePolicy, QStackedWidget,  # pylint: disable=no-name-in-module
-                               QTabWidget, QTextBrowser, QVBoxLayout, QWidget)  # pylint: disable=no-name-in-module
+from PySide2.QtWidgets import \
+    QComboBox  # pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module
+from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,
+                               QLabel, QListWidget, QPushButton, QRadioButton,
+                               QSizePolicy, QStackedWidget, QTabWidget,
+                               QTextBrowser, QVBoxLayout, QWidget)
 
 from enigma.interface.gui import LABELS, STYLESHEET, VIEW_DATA
 from enigma.interface.gui.plugboard import AbstractPlugboard, Socket

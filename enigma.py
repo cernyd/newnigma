@@ -249,7 +249,7 @@ if __name__ == "__main__":
     if ARGS.run_tests:
         logging.info("Running pre-launch tests...")
         # -x = stop at first failure
-        EXIT_CODE = pytest_main(["tests", "-x", "--tb=no"])
+        EXIT_CODE = pytest_main(["tests", "-x", "--tb=no", "-s"])
 
         if EXIT_CODE != 1:
             logging.error("Pre-launch tests failed! Aborting...")
@@ -260,7 +260,7 @@ if __name__ == "__main__":
     elif ARGS.only_run_tests:
         logging.info("Running tests with detailed feedback...")
         logging.shutdown()
-        exit(pytest_main(["tests", "--tb=long", "--durations=3"]))
+        exit(pytest_main(["tests", "--tb=long", "--durations=3", "-s"]))
 
     # BENCHMARK ===========================================================
 

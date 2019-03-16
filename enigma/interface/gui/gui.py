@@ -9,15 +9,17 @@ from textwrap import wrap
 from PySide2.QtCore import QDir, QSize, Qt  # pylint: disable=no-name-in-module
 from PySide2.QtGui import (QFont, QIcon,  # pylint: disable=no-name-in-module
                            QTextCursor)
-from PySide2.QtWidgets import (  # pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module
-    QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QMenuBar,
-    QMessageBox, QPlainTextEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
 
 from enigma.core.components import DEFAULT_LAYOUT
 from enigma.interface.gui import BASE_DIR, letter_groups
 from enigma.interface.gui.plugboard import PlugboardDialog
 from enigma.interface.gui.settings import Settings
+
+from PySide2.QtWidgets import (  # pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module
+    QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QMenuBar,
+    QMessageBox, QPlainTextEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
+
 
 
 class Runtime:
