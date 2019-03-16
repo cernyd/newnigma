@@ -1,7 +1,7 @@
+#!/usr/bin/env python3
 """Entrypoint into the Enigma simulation, processes command line arguments
 and evaluates launch mode based upon them. Can launch in cli or gui mode.
 Can read message data from stdin pipes."""
-#!/usr/bin/env python3
 
 import argparse
 import logging

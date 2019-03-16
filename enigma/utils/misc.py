@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Other miscellaneous assets"""
 
 def contains(pairs, pair):

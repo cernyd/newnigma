@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+# pylint: disable=inconsistent-return-statements
+
 """Enigma simulation core. Contains all historical data, components and the Enigma
 machine simulation class."""
+
 from enigma.core.extensions import Uhr
-# pylint: disable=inconsistent-return-statements
 from enigma.utils.misc import contains
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

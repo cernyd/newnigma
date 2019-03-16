@@ -1,5 +1,7 @@
-"""EnigmaAPI class that simplifies interaction with Enigma objects and their."""
+#!/usr/bin/env python3
 # pylint: disable=inconsistent-return-statements
+"""EnigmaAPI class that simplifies interaction with Enigma objects and their."""
+
 from enigma.core.components import (HISTORICAL, UKW_D, UKWD, Enigma, Reflector,
                                     Rotor, Stator, format_position)
 from enigma.utils.cfg_handler import load_config, save_config

@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 """Main window of the Qt interface and associated objects."""
+
 import logging
 from json import JSONDecodeError
 from re import findall, sub

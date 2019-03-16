@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 """Benchmarks EnigmaAPI encryption speed with the theoretically
 most heavy model and components."""
+
 import logging
 import time
 from itertools import repeat

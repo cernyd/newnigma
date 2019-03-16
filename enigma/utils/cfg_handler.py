@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 """Functions for loading from and saving to JSON files."""
+
 import json
 import logging
 

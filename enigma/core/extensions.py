@@ -1,5 +1,6 @@
-"""Uhr extension device that attaches to the Enigmas plugboard"""
+#!/usr/bin/env python3
 # pylint: disable=inconsistent-return-statements
+"""Uhr extension device that attaches to the Enigmas plugboard"""
 
 
 class Uhr:

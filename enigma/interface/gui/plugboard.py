@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 """Plugboard device, associated objects and Uhr menu."""
+
 import logging
 
 from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module

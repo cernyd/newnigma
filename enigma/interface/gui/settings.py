@@ -1,14 +1,14 @@
+#!/usr/bin/env python3
 """Settings menu with tabs and associated objects, UKW_D menu."""
 import logging
 
 from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
 from PySide2.QtGui import QPixmap  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import \
-    QComboBox  # pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module
-from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,
-                               QLabel, QListWidget, QPushButton,
-                               QRadioButton, QSizePolicy, QStackedWidget,
-                               QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
+from PySide2.QtWidgets import QComboBox  # pylint: disable=no-name-in-module
+from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,  # pylint: disable=no-name-in-module
+                               QLabel, QListWidget, QPushButton,  # pylint: disable=no-name-in-module
+                               QRadioButton, QSizePolicy, QStackedWidget,  # pylint: disable=no-name-in-module
+                               QTabWidget, QTextBrowser, QVBoxLayout, QWidget)  # pylint: disable=no-name-in-module
 
 from enigma.interface.gui import LABELS, STYLESHEET, VIEW_DATA
 from enigma.interface.gui.plugboard import AbstractPlugboard, Socket
@@ -94,7 +94,7 @@ class Settings(QDialog):
         if self.reflector_group.checkedButton().text() == "UKW-D":
             logging.info("UKW-D reflector selected, enabling UKW-D button...")
 
-            if len(self.ukwd._pairs()) != 12:
+            if len(self.ukwd.pairs()) != 12:
                 self.apply_btn.setDisabled(True)
                 self.apply_btn.setToolTip("Connect all 12 pairs in UKW-D wiring!")
             else:
