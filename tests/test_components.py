@@ -293,7 +293,4 @@ def test_cli():
 
     command = "./enigma.py -cs --model 'Enigma I' --rotors II I III --reflector UKW-A --positions A B L --ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ --message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
     output = subprocess.getstatusoutput(command)[1]
-    assert (
-        output.split("\n")[-1]
-        == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
-    )
+    assert output == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUEDAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"

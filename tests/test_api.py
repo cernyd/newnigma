@@ -5,7 +5,7 @@ from string import ascii_uppercase as alphabet
 
 import pytest
 from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import *
+from enigma.core.components import historical, Rotor
 
 trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, -1332, "heaaafs", "", Rotor,
               "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))

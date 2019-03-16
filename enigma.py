@@ -2,8 +2,8 @@
 
 import argparse
 import logging
-
 from sys import stdin
+
 import pytest
 from benchmark import benchmark
 from enigma.api.enigma_api import EnigmaAPI
