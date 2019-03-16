@@ -1,16 +1,14 @@
 import logging
 
-# from enigma.interface.gui import *
-from enigma.interface.gui.plugboard import Socket
-from enigma.interface.gui import (QFrame, QHBoxLayout,
-                                  QLabel,
-                                  QPushButton, QSizePolicy,
-                                  Qt, QVBoxLayout, QWidget,
-                                  QDialog,
-                                  AbstractPlugboard, QTabWidget, QListWidget,
-                                  QStackedWidget, VIEW_DATA, QTextBrowser, STYLESHEET,
-                                  QButtonGroup, QRadioButton, QComboBox, LABELS)
-from PySide2.QtGui import QPixmap
+from PySide2.QtGui import QPixmap  # pylint: disable=no-name-in-module
+from PySide2.QtWidgets import (QDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,  # pylint: disable=no-name-in-module
+                               QSizePolicy, QVBoxLayout, QWidget, QPushButton, QTabWidget,  # pylint: disable=no-name-in-module
+                               QListWidget, QStackedWidget, QTextBrowser, QButtonGroup, QRadioButton,  # pylint: disable=no-name-in-module
+                               QComboBox)  # pylint: disable=no-name-in-module
+from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
+
+from enigma.interface.gui import VIEW_DATA, STYLESHEET, LABELS
+from enigma.interface.gui.plugboard import AbstractPlugboard, Socket
 
 SELECTOR_LABELS = ("THIN", "SLOW", "MEDIUM", "FAST")
 SELECTOR_TOOLTIPS = ("Does not rotate", None, None, "Rotates on every keypress")

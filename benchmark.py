@@ -19,16 +19,14 @@ def benchmark(char_n=None):
     if isinstance(char_n, int):
         char_n = (char_n,)
     else:
-        char_n = [10 ** n for n in range(7)]
-    for n in char_n:
+        char_n = [10 ** num for num in range(7)]
+    for num in char_n:
         start = time.time()
-        for letter in repeat("A", n):
+        for letter in repeat("A", num):
             enigma.press_key(letter)
         end = time.time()
 
         output = "Total encryption time: %.5f seconds for %d letters..." % (
-            end - start,
-            n,
-        )
+            end - start, num)
         logging.info(output)
         print(output)

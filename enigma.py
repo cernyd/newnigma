@@ -4,16 +4,16 @@ import argparse
 import logging
 from sys import stdin
 
-import pytest
+from pytest import main as pytest_main
 
 from benchmark import benchmark
-from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import HISTORICAL
+from enigma.api.enigma_api import EnigmaAPI  # pylint: disable=no-name-in-module
+from enigma.core.components import HISTORICAL  # pylint: disable=no-name-in-module
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
 from enigma.utils.cfg_handler import load_config
 
-default_init = {"model": "Enigma I", "rotors": ["I", "II", "III"], "reflector": "UKW-A"}
+DEFAULT_INIT = {"model": "Enigma I", "rotors": ["I", "II", "III"], "reflector": "UKW-A"}
 
 
 def config_from_args(args, load_to=None):
@@ -96,12 +96,12 @@ def resolve_conflicts(args):
 
 if __name__ == "__main__":
     # FLAG ARGS ====================================================
-    parser = argparse.ArgumentParser(
+    PARSER = argparse.ArgumentParser(
         description="returns Enigma encrypted text base"
         "on settings and provided text."
     )
 
-    argument_data = (
+    ARGUMENT_DATA = (
         (
             ("-t", "--test"),
             dict(
@@ -125,10 +125,10 @@ if __name__ == "__main__":
         (("-v", "--verbose"), dict(help="Turns on verbose logging messages")),
         (("-s", "--silent"), dict(help="Turns off all prints except cli output")),
     )
-    for arg in argument_data:
-        parser.add_argument(*arg[0], **arg[1], action="store_true", default=False)
+    for arg in ARGUMENT_DATA:
+        PARSER.add_argument(*arg[0], **arg[1], action="store_true", default=False)
 
-    parser.add_argument(
+    PARSER.add_argument(
         "-b",
         "--benchmark",
         help="benchmarks encryption speed for N characters",
@@ -139,8 +139,8 @@ if __name__ == "__main__":
 
     # SETTINGS ARGS ====================================================
 
-    cli_args = parser.add_argument_group("startup settings")
-    cli_data = (
+    CLI_ARGS = PARSER.add_argument_group("startup settings")
+    CLI_DATA = (
         (
             ("--from",),
             dict(help="file to load Enigma settings from", nargs=1, dest="filename"),
@@ -220,16 +220,16 @@ if __name__ == "__main__":
         ),
     )
 
-    for arg in cli_data:
-        cli_args.add_argument(*arg[0], **arg[1])
+    for arg in CLI_DATA:
+        CLI_ARGS.add_argument(*arg[0], **arg[1])
 
     # ARG PARSE ====================================================
 
-    args = parser.parse_args()
+    ARGS = PARSER.parse_args()
 
     # PRE-LAUNCH ACTIONS ===========================================
 
-    if args.verbose and not args.silent:  # Set verbose logs
+    if ARGS.verbose and not ARGS.silent:  # Set verbose logs
         logging.basicConfig(
             level=logging.INFO,
             format="%(levelname)s:%(module)s:%(funcName)s: %(message)s",
@@ -237,76 +237,76 @@ if __name__ == "__main__":
     else:  # Disable logs (only show critical)
         logging.basicConfig(level=logging.CRITICAL)
 
-    resolve_conflicts(args)  # Checks for conflicting options
+    resolve_conflicts(ARGS)  # Checks for conflicting options
 
     # TEST PHASE ==================================================
 
-    if args.run_tests:
+    if ARGS.run_tests:
         logging.info("Running pre-launch tests...")
         # -x = stop at first failure
-        exit_code = pytest.main(["tests", "-x", "--tb=no"])
+        EXIT_CODE = pytest_main(["tests", "-x", "--tb=no"])
 
-        if exit_code != 1:
+        if EXIT_CODE != 1:
             logging.error("Pre-launch tests failed! Aborting...")
             logging.shutdown()
-            exit(exit_code)
+            exit(EXIT_CODE)
 
         logging.info("All pre-launch tests succeeded...")
-    elif args.only_run_tests:
+    elif ARGS.only_run_tests:
         logging.info("Running tests with detailed feedback...")
         logging.shutdown()
-        exit(pytest.main(["tests", "--tb=long", "--durations=3"]))
+        exit(pytest_main(["tests", "--tb=long", "--durations=3"]))
 
     # BENCHMARK ===========================================================
 
-    if args.benchmark_n:
+    if ARGS.benchmark_n:
         try:
-            n = int(args.benchmark_n[0])
+            N_LETTERS = int(ARGS.benchmark_n[0])
         except ValueError:
-            logging.error('Invalid number "%s" for benchmark, exiting...' % str(n))
-            print('Invalid number "%s", choose a valid number greater than 0!' % str(n))
+            logging.error('Invalid number "%s" for benchmark, exiting...', str(N_LETTERS))
+            print('Invalid number "%s", choose a valid number greater than 0!' % str(N_LETTERS))
             exit(1)
 
-        if not n > 0:
+        if N_LETTERS <= 0:
             logging.error("Benchmark character count is not greater than 0, exiting...")
             print("Benchmark character count must be greater than 0!")
             exit(1)
 
-        benchmark(n)
+        benchmark(N_LETTERS)
         logging.shutdown()
         exit()
 
     # CONFIG LOAD =========================================================
 
     logging.info("Loading config...")
-    enigma_api = EnigmaAPI(**default_init)  # Fallback configuration
-    config = config_from_args(args)
+    ENIGMA_API = EnigmaAPI(**DEFAULT_INIT)  # Fallback configuration
+    CONFIG = config_from_args(ARGS)
 
-    filename = None
-    if args.filename:
-        filename = args.filename[0]
+    FILENAME = None
+    if ARGS.filename:
+        FILENAME = ARGS.filename[0]
 
-    if config and filename:
+    if CONFIG and FILENAME:
         print("Cannot load settings both from arguments and file!")
         exit(1)
 
-    if config:  # Load from settings arguments
-        if not config["model"] and len(config) > 1:
+    if CONFIG:  # Load from settings arguments
+        if not CONFIG["model"] and len(CONFIG) > 1:
             print("Enigma model must be specified when specifying settings!")
             exit(1)
-        config_from_args(args, enigma_api)
+        config_from_args(ARGS, ENIGMA_API)
         logging.info("Loading settings specified in cli arguments...")
-    elif filename:  # Load from file specified in --from
+    elif FILENAME:  # Load from file specified in --from
         try:
-            enigma_api.load_from(filename)
+            ENIGMA_API.load_from(FILENAME)
         except Exception:
             logging.info(
                 'No valid configuration found in "%s", using defaults instead....'
-                % filename
+                % FILENAME
             )
     else:  # Load defalt config
         try:
-            enigma_api = EnigmaAPI(**load_config("config.json")["default"])
+            ENIGMA_API = EnigmaAPI(**load_config("config.json")["default"])
         except Exception:
             logging.info(
                 "Failed to load default config, using builtin defaults instead..."
@@ -316,18 +316,18 @@ if __name__ == "__main__":
 
     logging.info("Starting Enigma...")
 
-    if args.cli:  # Command line mode
-        logging.info("Loading in CLI mode with settings:\n%s..." % str(enigma_api))
+    if ARGS.cli:  # Command line mode
+        logging.info("Loading in CLI mode with settings:\n%s...", str(ENIGMA_API))
 
         # If stdin exists, load text from it
-        msg = None if stdin.isatty() else str(stdin.readline()).strip()
+        MESSAGE = None if stdin.isatty() else str(stdin.readline()).strip()
 
-        if msg is not None:
-            logging.info("Loaded input '%s' from stdin..." % msg)
+        if MESSAGE is not None:
+            logging.info("Loaded input '%s' from stdin...", MESSAGE)
 
-        cli(enigma_api, args, msg)
+        cli(ENIGMA_API, ARGS, MESSAGE)
 
-    elif args.preview:  # Preview command only
+    elif ARGS.preview:  # Preview command only
         logging.info("Printing preview...")
         print(
             "Copy the command below:\n\n./enigma.py --cli --model 'Enigma I' "
@@ -336,7 +336,7 @@ if __name__ == "__main__":
         )
     else:  # Graphical mode
         logging.info("Launching Enigma Qt Application...")
-        Runtime(enigma_api)
+        Runtime(ENIGMA_API)
 
     # APPLICATION SHUTDOWN =================================================
 

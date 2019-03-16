@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# pylint: disable=missing-docstring
 from random import choice, choices, randint, sample, shuffle
 from string import ascii_uppercase as alphabet
 
 import pytest
 
 from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import Rotor, HISTORICAL
+from enigma.core.components import HISTORICAL, Rotor
 
 trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, -1332, "heaaafs", "", Rotor,
               "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))
@@ -216,8 +217,8 @@ def test_generate_rotor_callback():
     enigma_api = EnigmaAPI("Enigma I")
 
     for i in list(range(3)) * 10:
-        by = randint(0, 25)
-        callback = enigma_api.generate_rotate_callback(i, by)
+        rotate_by = randint(0, 25)
+        callback = enigma_api.generate_rotate_callback(i, rotate_by)
         callback()
-        assert int(enigma_api.positions()[i]) - 1 == by
+        assert int(enigma_api.positions()[i]) - 1 == rotate_by
         enigma_api.positions([1, 1, 1])

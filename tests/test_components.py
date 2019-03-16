@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
+# pylint: disable=no-name-in-module,missing-docstring,line-too-long
 
 from string import ascii_uppercase as alphabet
 
 import pytest
 
-from enigma import contains
+from enigma.utils.misc import contains
 from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import UKWD, Enigma, Plugboard, Uhr
+from enigma.core.components import UKWD, Plugboard, Uhr
 
 
 def test_single_encrypt():
@@ -132,8 +133,7 @@ def test_position():
 def test_reflector():
     reflector = EnigmaAPI.generate_component("Enigma M3", "reflectors", "UKW-B")
 
-    result = reflector.reflect("A")
-    assert "A" == reflector.reflect(result)
+    assert reflector.reflect(reflector.reflect("A")) == "A"
 
 
 def test_turnover():

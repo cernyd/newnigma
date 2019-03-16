@@ -2,13 +2,16 @@ import logging
 from re import findall, sub
 from textwrap import wrap
 
-from enigma.interface.gui import (
-    QApplication, QFont, QFrame, QHBoxLayout,
-    QIcon, QLabel, QMenuBar, QPlainTextEdit,
-    QPushButton, QSize, QSizePolicy, QSpacerItem,
-    Qt, QTextCursor, QVBoxLayout, QWidget,
-    BASE_DIR, letter_groups
-)
+from PySide2.QtCore import QSize, Qt, QDir  # pylint: disable=no-name-in-module
+from PySide2.QtGui import QFont, QIcon, QTextCursor  # pylint: disable=no-name-in-module
+from PySide2.QtWidgets import (QApplication, QDialog, QFrame, QHBoxLayout,  # pylint: disable=no-name-in-module
+                               QLabel, QLineEdit, QMenuBar, QPlainTextEdit,  # pylint: disable=no-name-in-module
+                               QPushButton, QSizePolicy, QSpacerItem,  # pylint: disable=no-name-in-module
+                               QVBoxLayout, QWidget, QMessageBox, QFileDialog)  # pylint: disable=no-name-in-module
+
+from json import JSONDecodeError
+from enigma.core.components import DEFAULT_LAYOUT
+from enigma.interface.gui import BASE_DIR, letter_groups
 from enigma.interface.gui.plugboard import PlugboardDialog
 from enigma.interface.gui.settings import Settings
 

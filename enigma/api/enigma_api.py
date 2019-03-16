@@ -1,5 +1,5 @@
-from enigma.core.components import (UKW_D, UKWD, Enigma, Reflector, Rotor,
-                                    Stator, format_position, HISTORICAL)
+from enigma.core.components import (HISTORICAL, UKW_D, UKWD, Enigma, Reflector,
+                                    Rotor, Stator, format_position)
 from enigma.utils.cfg_handler import load_config, save_config
 
 

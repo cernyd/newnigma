@@ -1,8 +1,11 @@
 import logging
 
-from enigma.interface.gui import (QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy,
-                                  Qt, QVBoxLayout, QDialog, AbstractPlugboard, QDial, Socket,
-                                  QCheckBox)
+from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
+from PySide2.QtWidgets import (QCheckBox, QDial, QDialog, QFrame, QHBoxLayout,  # pylint: disable=no-name-in-module
+                               QLabel, QLineEdit, QPushButton, QSizePolicy,  # pylint: disable=no-name-in-module
+                               QVBoxLayout)  # pylint: disable=no-name-in-module
+
+from enigma.interface.gui import AbstractPlugboard, Socket
 
 
 class PlugboardDialog(AbstractPlugboard):

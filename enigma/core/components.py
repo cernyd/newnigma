@@ -1,4 +1,4 @@
-from enigma import contains
+from enigma.utils.misc import contains
 from enigma.core.extensions import Uhr
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -925,7 +925,7 @@ class Enigma:
         """
         if not action:
             return isinstance(self._plugboard, Uhr)
-        
+
         if action == "connect":
             if isinstance(self._storage, Uhr):
                 self._storage, self._plugboard = self._plugboard, self._storage
