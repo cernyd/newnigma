@@ -52,7 +52,6 @@ class EnigmaAPI:
         :param model: {str} Enigma model
         """
         if type(model) != str or model not in historical:
-            print(model)
             raise ValueError("Invalid enigma model '%s'" % str(model))
 
         labels = lambda component: [item["label"] for item in

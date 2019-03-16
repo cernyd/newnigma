@@ -56,22 +56,23 @@ def config_from_args(args, load_to=None):
     if args.reflector_position:
         config["reflector_position"] = int(args.reflector_position[0])
         if load_to:
-            load_to.ring_settings(config["reflector_position"])
+            load_to.reflector_position(config["reflector_position"])
 
     if args.reflector_pairs:
         config["reflector_wiring"] = args.reflector_pairs
         if load_to:
-            load_to.ring_settings(config["reflector_wiring"])
+            load_to.reflector_pairs(config["reflector_wiring"])
 
     if args.uhr:
         config["uhr_position"] = int(args.uhr[0])
         if load_to:
-            load_to.ring_settings(config["uhr_position"])
+            load_to.uhr("connect")
+            load_to.uhr_position(config["uhr_position"])
 
     if args.plug_pairs:
         config["plug_pairs"] = args.plug_pairs
         if load_to:
-            load_to.ring_settings(config["plug_pairs"])
+            load_to.plug_pairs(config["plug_pairs"])
 
     return config
 
