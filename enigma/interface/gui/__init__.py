@@ -268,6 +268,26 @@ for model in historical:
     })
 
 
+
+def letter_groups(text, group_size=5):
+    """
+    Formats letter into blocks according to group size
+    :param text: {str} Text to "blockify"
+    :param group_size: {int} Size of blocks
+    """
+    output = ""
+    i = 0
+    for letter in text:
+        if i == group_size:
+            i = 0
+            output += " "
+        output += letter
+        i += 1
+    return output
+
+
+
+
 class AbstractPlugboard(QDialog):
     """Abstract object with features shared by all 'pair connect' windows"""
     def __init__(self, master, enigma_api, title):

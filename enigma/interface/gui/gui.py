@@ -3,16 +3,17 @@ from copy import copy
 from re import findall, sub
 from textwrap import wrap
 
-from enigma.interface.gui import *
-from enigma.interface.gui.plugboard import *
-from enigma.interface.gui.settings import *
+from enigma.inteface.gui import *
+from enigma.interface.gui.plugboard import PlugboardDialog
+from enigma.interface.gui.settings import Settings
 
 
 class Runtime:
+    """Object initializing and handling the Qt runtime"""
     def __init__(self, api):
         """
         Runtime object wrapping the root window
-        :param api: {EnigmaAPI}
+        :param api: {EnigmaAPI} Shared EnigmaAPI instance
         """
         from sys import argv
 
@@ -32,7 +33,7 @@ class Root(QWidget):
     def __init__(self, enigma_api):
         """
         Initializes Root QT window widgets
-        :param enigma_api: {EnigmaAPI} Initialized EnigmaAPI object
+        :param enigma_api: {EnigmaAPI} Shared EnigmaAPI object
         """
         super().__init__()
 
@@ -121,9 +122,7 @@ class Root(QWidget):
         self.show()
 
     def get_pairs(self):
-        """
-        Opens the plugboard menu
-        """
+        """Opens the plugboard menu"""
         logging.info("Opening Plugboard menu...")
         old_pairs = self.enigma_api.plug_pairs()
         plugboard = PlugboardDialog(self, self.enigma_api)
@@ -139,9 +138,7 @@ class Root(QWidget):
         del plugboard
 
     def refresh_gui(self):
-        """
-        Refreshes main window GUI based on new EnigmaAPI settings
-        """
+        """Refreshes main window GUI based on new EnigmaAPI settings"""
         logging.info("Refreshing GUI components...")
         self.setWindowTitle(self.enigma_api.model())
         self.i_textbox.clear()
@@ -155,9 +152,7 @@ class Root(QWidget):
         self.lightboard.regenerate_bulbs(self.enigma_api.data()["layout"])
 
     def load_config(self):
-        """
-        Loads EnigmaAPI settings from config file and refershes GUI
-        """
+        """Loads EnigmaAPI settings from a config file and refershes GUI"""
         dialog = QFileDialog(self)
         filename = dialog.getOpenFileName(
             self, "Load settings", QDir.homePath(), "Enigma config (*.json)"
@@ -191,9 +186,7 @@ class Root(QWidget):
             logging.info("No load file selected...")
 
     def save_config(self):
-        """
-        Collects data from EnigmaAPI and saves it to config
-        """
+        """Collects data from EnigmaAPI and saves it to selected filename"""
         dialog = QFileDialog(self)
         dialog.setDefaultSuffix("json")
         filename = dialog.getSaveFileName(
@@ -210,10 +203,8 @@ class Root(QWidget):
             logging.info("No save file selected...")
 
     def export_message(self):
-        """
-        Opens a dialog to get the save location, exports current Enigma
-        settings and encrypted message to the file
-        """
+        """Opens a dialog to get the save location, exports current Enigma 
+        settings and encrypted message to the file"""
         dialog = QFileDialog(self)
         filename = dialog.getSaveFileName(
             self, "Save enigma message", QDir.homePath(), "*.txt"
@@ -231,6 +222,7 @@ class Root(QWidget):
 
 
 class Lightboard(QFrame):
+    """Shows characters from charset on generated lightbulbs"""
     def __init__(self, master, charset_plug):
         """
         Creates a "board" representing Enigma light bulbs and allows their
@@ -258,6 +250,12 @@ class Lightboard(QFrame):
         self.regenerate_bulbs(default_layout)
 
     def regenerate_bulbs(self, layout):
+        """Regenerates lightbulbs to a selected layout using new layout
+        and current charset
+        :param layout: {iterable}List of lists of indexes
+                                 in charset ([[1, 2, 3, ..]  first row...
+                                              [4, 5, 6, ..]])  second row ...
+        """
         self.clear_bulbs()
         for row in layout:
             if row:
@@ -281,6 +279,7 @@ class Lightboard(QFrame):
         self.power_off()
 
     def clear_bulbs(self):
+        """Deletes all lightbulbs leaving the lightboard ready for regeneration"""
         for bulb in self._lightbulbs.values():
             bulb.deleteLater()
             del bulb
@@ -292,16 +291,13 @@ class Lightboard(QFrame):
             del row
 
     def power_off(self):
-        """
-        Turns all lightbulbs black
-        """
+        """Turns all lightbulbs black"""
         for bulb in self._lightbulbs.values():
             bulb.setStyleSheet(self._base_style % "gray")
 
     def light_up(self, character):
-        """
-        Lights up character on the lightboard, only powers off if letter isn't
-        not found
+        """Lights up character on the lightboard, only powers off if letter isn't
+        not found.
         :param character: {char} character to light up
         """
         self.power_off()
@@ -311,6 +307,7 @@ class Lightboard(QFrame):
 
 
 class _RotorsHandler(QFrame):
+    """Coordinates all rotors and the settings button"""
     def __init__(
         self,
         master,
@@ -318,7 +315,7 @@ class _RotorsHandler(QFrame):
         rotate_plug,
         rotate_ref_plug,
         enigma_api,
-        label_plug,
+        refresh_plug,
         reflector_pos_plug,
     ):
         """  # TODO: Missing comments
@@ -326,7 +323,11 @@ class _RotorsHandler(QFrame):
         :param position_plug: {callable} Callable method for getting rotor
                                          positions
         :param rotate_plug: {callable} Temporary callable for getting
-                                       rotor offset handlers
+                                      rotor offset handlers
+        :param rotate_ref_plug: {callable} Callable to change reflector position
+        :param enigma_api: {EnigmaAPI} Shared EnigmaAPI instance
+        :param refresh_plug: {callable} Used to refresh the GUI based on new rotor positions
+        :param reflector_pos_plug: {callable} Used to get reflector position
         """
         super().__init__(master)
 
@@ -344,7 +345,7 @@ class _RotorsHandler(QFrame):
         self.enigma_api = enigma_api
         self._rotate_plug = rotate_plug
         self._position_plug = position_plug
-        self._label_plug = label_plug
+        self._refresh_plug = refresh_plug
         self._rotate_ref_plug = rotate_ref_plug
         self._reflector_pos_plug = reflector_pos_plug
 
@@ -388,10 +389,8 @@ class _RotorsHandler(QFrame):
         self.set_positions()
 
     def generate_rotors(self):
-        """
-        Regenerates rotor and reflector views (with position indicators and
-        and buttons to rotate them
-        """
+        """Regenerates rotor and reflector views (with position indicators and
+        and buttons to rotate them according to new EnigmaAPI settings"""
         self._layout.removeItem(self._left_spacer)
         self._layout.removeItem(self._right_spacer)
         self._layout.removeWidget(self.settings_button)
@@ -432,9 +431,8 @@ class _RotorsHandler(QFrame):
         self._layout.addWidget(self.settings_button)
 
     def open_settings(self):
-        """
-        Opens settings and reloads indicators
-        """
+        """Opens settings and reloads indicators afterwards if changes are
+        detected"""
         logging.info("Opening settings menu...")
         old_cfg = self.enigma_api.get_config()
         settings = Settings(self, self.enigma_api)
@@ -443,15 +441,13 @@ class _RotorsHandler(QFrame):
             logging.info("Settings changed, reloading GUI...")
             del settings
             self.generate_rotors()
-            self._label_plug()
+            self._refresh_plug()
             self.set_positions()
         else:
             logging.info("No changes to settings made...")
 
     def set_positions(self):
-        """
-        Refreshes position indicators to show new positions from EnigmaAPI
-        """
+        """Refreshes position indicators to show new positions from EnigmaAPI"""
         if (
             self.enigma_api.reflector_rotatable()
             and self.enigma_api.reflector() != "UKW-D"
@@ -465,7 +461,8 @@ class _RotorsHandler(QFrame):
 
 
 class _RotorHandler(QFrame):
-    """Holds component references for particular rotor"""
+    """Has a position indicator window and buttons to change it, calls back to
+    plugs if any buttons are pressed."""
 
     def __init__(self, master, plus_plug, minus_plug, set_pos_plug):
         """
@@ -522,44 +519,25 @@ class _RotorHandler(QFrame):
         self._layout.addWidget(self.position_minus, alignment=Qt.AlignCenter)
 
     def set(self, position):
-        """
-        Sets indicator position to specified text
+        """Sets indicator position to specified text
+        :param position: {str} Sets position window to select text (a new position)
         """
         self._indicator.setText(position)
 
     def increment(self):
-        """
-        Increments rotor position by one (1)
-        """
+        """Increments rotor position by one (1)"""
         self.plus_plug()
         self.set_positions()
 
     def decrement(self):
-        """
-        Decrements rotor position by one (-1)
-        """
+        """Decrements rotor position by one (-1)"""
         self.minus_plug()
         self.set_positions()
 
 
-def letter_groups(text, group_size=5):
-    """
-    Formats letter into blocks according to group size
-    :param text: {str} Text to "blockify"
-    :param group_size: {int} Size of blocks
-    """
-    output = ""
-    i = 0
-    for letter in text:
-        if i == group_size:
-            i = 0
-            output += " "
-        output += letter
-        i += 1
-    return output
-
-
 class _InputTextBox(QPlainTextEdit):
+    """Textbox responsible for user input, text formatting and outputting
+    encrypted text to output textbox"""
     def __init__(
         self,
         master,
