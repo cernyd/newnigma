@@ -1,5 +1,8 @@
-from enigma.utils.misc import contains
+"""Enigma simulation core. Contains all historical data, components and the Enigma
+machine simulation class."""
 from enigma.core.extensions import Uhr
+# pylint: disable=inconsistent-return-statements
+from enigma.utils.misc import contains
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -460,9 +463,15 @@ class Stator(_Component):
         super().__init__("ETW", wiring, charset=charset)
 
     def forward(self, letter):
+        """Routes character from front to back
+        :param character: {str}
+        """
         return super()._forward(letter)
 
     def backward(self, letter):
+        """Routes character from back to front
+        :param character: {str}
+        """
         return super()._backward(letter)
 
     def __str__(self):

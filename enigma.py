@@ -1,3 +1,6 @@
+"""Entrypoint into the Enigma simulation, processes command line arguments
+and evaluates launch mode based upon them. Can launch in cli or gui mode.
+Can read message data from stdin pipes."""
 #!/usr/bin/env python3
 
 import argparse
@@ -7,8 +10,10 @@ from sys import stdin
 from pytest import main as pytest_main
 
 from benchmark import benchmark
-from enigma.api.enigma_api import EnigmaAPI  # pylint: disable=no-name-in-module
-from enigma.core.components import HISTORICAL  # pylint: disable=no-name-in-module
+from enigma.api.enigma_api import \
+    EnigmaAPI  # pylint: disable=no-name-in-module
+from enigma.core.components import \
+    HISTORICAL  # pylint: disable=no-name-in-module
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import Runtime
 from enigma.utils.cfg_handler import load_config

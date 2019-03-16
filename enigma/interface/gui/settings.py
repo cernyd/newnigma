@@ -1,13 +1,16 @@
+"""Settings menu with tabs and associated objects, UKW_D menu."""
 import logging
 
-from PySide2.QtGui import QPixmap  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import (QDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,  # pylint: disable=no-name-in-module
-                               QSizePolicy, QVBoxLayout, QWidget, QPushButton, QTabWidget,  # pylint: disable=no-name-in-module
-                               QListWidget, QStackedWidget, QTextBrowser, QButtonGroup, QRadioButton,  # pylint: disable=no-name-in-module
-                               QComboBox)  # pylint: disable=no-name-in-module
 from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
+from PySide2.QtGui import QPixmap  # pylint: disable=no-name-in-module
+from PySide2.QtWidgets import \
+    QComboBox  # pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module
+from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,
+                               QLabel, QListWidget, QPushButton,
+                               QRadioButton, QSizePolicy, QStackedWidget,
+                               QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
 
-from enigma.interface.gui import VIEW_DATA, STYLESHEET, LABELS
+from enigma.interface.gui import LABELS, STYLESHEET, VIEW_DATA
 from enigma.interface.gui.plugboard import AbstractPlugboard, Socket
 
 SELECTOR_LABELS = ("THIN", "SLOW", "MEDIUM", "FAST")
@@ -33,13 +36,15 @@ class Settings(QDialog):
         self.setWindowTitle("Settings")
         self.setLayout(main_layout)
         self.setFixedHeight(620)
+        self.reflector_group = []
+        self.rotor_frames = []
 
         # SAVE ATTRIBUTES ======================================================
 
         self.enigma_api = enigma_api
         self.rotor_selectors = []
         self.ring_selectors = []
-        self.ukwd = UKWD_Settings(self, enigma_api)
+        self.ukwd = UKWDSettings(self, enigma_api)
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
 
@@ -269,11 +274,7 @@ class Settings(QDialog):
         self.reflector_group.button(reflector_i).setChecked(True)
 
         for i, rotor in enumerate(self.enigma_api.rotors()):
-            if (
-                model == "Enigma M4"
-                and self.enigma_api.reflector() != "UKW-D"
-                and i == 0
-            ):
+            if (model == "Enigma M4" and self.enigma_api.reflector() != "UKW-D" and i == 0):
                 rotor_i = ["Beta", "Gamma"].index(rotor)
             else:
                 rotor_i = rotors.index(rotor)
@@ -290,7 +291,7 @@ class Settings(QDialog):
 
         new_model = self.stacked_wikis.currently_selected
         new_reflector = self.reflector_group.checkedButton().text()  # REFLECTOR CHOICES
-        reflector_pairs = self.ukwd._pairs()
+        reflector_pairs = self.ukwd.pairs()
 
         if new_reflector == "UKW-D" and new_model == "Enigma M4":
             new_rotors = [
@@ -314,7 +315,7 @@ class Settings(QDialog):
             self.enigma_api.reflector(new_reflector)
 
         if new_reflector == "UKW-D":
-            self.enigma_api._enigma.reflector_pairs(reflector_pairs)
+            self.enigma_api.reflector_pairs(reflector_pairs)
 
         if new_rotors != self.enigma_api.rotors():
             self.enigma_api.rotors(new_rotors)
@@ -327,6 +328,10 @@ class Settings(QDialog):
         )
 
         self.close()
+
+    def pairs(self):
+        """Returns current UKW-D pairs for collection"""
+        return self._pairs
 
 
 class ViewSwitcher(QWidget):
@@ -437,7 +442,7 @@ class _EnigmaView(QWidget):
         self.main_layout.addWidget(self.wiki_text)
 
 
-class UKWD_Settings(AbstractPlugboard):
+class UKWDSettings(AbstractPlugboard):
     """UKW-D wiring settings derived from the abstract plugboard"""
 
     def __init__(self, master, enigma_api):

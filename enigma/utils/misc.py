@@ -1,3 +1,5 @@
+"""Other miscellaneous assets"""
+
 def contains(pairs, pair):
     """Checks if a pair is not already in pairs
     :param pairs: {iterable}

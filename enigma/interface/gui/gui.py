@@ -1,15 +1,17 @@
+"""Main window of the Qt interface and associated objects."""
 import logging
+from json import JSONDecodeError
 from re import findall, sub
 from textwrap import wrap
 
-from PySide2.QtCore import QSize, Qt, QDir  # pylint: disable=no-name-in-module
-from PySide2.QtGui import QFont, QIcon, QTextCursor  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import (QApplication, QDialog, QFrame, QHBoxLayout,  # pylint: disable=no-name-in-module
-                               QLabel, QLineEdit, QMenuBar, QPlainTextEdit,  # pylint: disable=no-name-in-module
-                               QPushButton, QSizePolicy, QSpacerItem,  # pylint: disable=no-name-in-module
-                               QVBoxLayout, QWidget, QMessageBox, QFileDialog)  # pylint: disable=no-name-in-module
+from PySide2.QtCore import QDir, QSize, Qt  # pylint: disable=no-name-in-module
+from PySide2.QtGui import (QFont, QIcon,  # pylint: disable=no-name-in-module
+                           QTextCursor)
+from PySide2.QtWidgets import (  # pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module; pylint: disable=no-name-in-module
+    QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QMenuBar,
+    QMessageBox, QPlainTextEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
 
-from json import JSONDecodeError
 from enigma.core.components import DEFAULT_LAYOUT
 from enigma.interface.gui import BASE_DIR, letter_groups
 from enigma.interface.gui.plugboard import PlugboardDialog
@@ -142,7 +144,7 @@ class Root(QWidget):
 
         new_pairs = self.enigma_api.plug_pairs()
         if old_pairs != new_pairs:
-            logging.info('New plug pairs set to "%s"' % str(new_pairs))
+            logging.info('New plug pairs set to "%s"', str(new_pairs))
         else:
             logging.info("No changes to plug pairs...")
 
@@ -175,7 +177,7 @@ class Root(QWidget):
         if filename:
             try:
                 self.enigma_api.load_from(filename)
-                logging.info('Successfully loaded config from file "%s"' % filename)
+                logging.info('Successfully loaded config from file "%s"', filename)
             except (FileNotFoundError, JSONDecodeError) as error:
                 QMessageBox.critical(
                     self,
@@ -184,7 +186,7 @@ class Root(QWidget):
                     "selected file!\nError message:\n\n %s" % repr(error),
                 )
                 logging.error(
-                    'Failed to load config from file "%s"' % filename, exc_info=True
+                    'Failed to load config from file "%s"', filename, exc_info=True
                 )
                 return
             except Exception as error:
@@ -206,7 +208,7 @@ class Root(QWidget):
             self.refresh_gui()
             self.i_textbox.blockSignals(False)
             self._rotors.set_positions()
-            logging.info('Checkpoint set to "%s"' % str(self.enigma_api.positions()))
+            logging.info('Checkpoint set to "%s"', str(self.enigma_api.positions()))
             self.enigma_api.set_checkpoint()
         else:
             logging.info("No load file selected...")
@@ -478,10 +480,7 @@ class _RotorsHandler(QFrame):
 
     def set_positions(self):
         """Refreshes position indicators to show new positions from EnigmaAPI"""
-        if (
-            self.enigma_api.reflector_rotatable()
-            and self.enigma_api.reflector() != "UKW-D"
-        ):
+        if (self.enigma_api.reflector_rotatable() and self.enigma_api.reflector() != "UKW-D"):
             logging.info('Reflector indicator set to position "%s"', self._reflector_pos_plug())
             self._reflector_indicator.set(self._reflector_pos_plug())
 
@@ -569,16 +568,16 @@ class _InputTextBox(QPlainTextEdit):
     encrypted text to output textbox"""
 
     def __init__(
-        self,
-        master,
-        encrypt_plug,
-        output_plug,
-        output_textbox,
-        refresh_plug,
-        letter_group_plug,
-        revert_pos,
-        overflow_plug,
-        charset,
+            self,
+            master,
+            encrypt_plug,
+            output_plug,
+            output_textbox,
+            refresh_plug,
+            letter_group_plug,
+            revert_pos,
+            overflow_plug,
+            charset,
     ):
         """Handles user input and sends it to the output textbox
         :param master: {QWidget} Parent Qt object

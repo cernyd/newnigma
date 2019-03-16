@@ -1,3 +1,5 @@
+"""Command line mode of Enigma encryption, encrypts and displays message based on
+supplied enigma_api object."""
 import logging
 
 

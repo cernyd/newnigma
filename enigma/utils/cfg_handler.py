@@ -1,3 +1,4 @@
+"""Functions for loading from and saving to JSON files."""
 import json
 import logging
 
@@ -6,7 +7,7 @@ def load_config(filename):
     """Attempts to load JSON serialized data from a file
     :param filename: {str} Path to config file
     """
-    logging.info('Attempting to load from file "%s"...' % filename)
+    logging.info('Attempting to load from file "%s"...', filename)
     try:
         with open(filename, "r") as config:
             return json.loads(config.read())

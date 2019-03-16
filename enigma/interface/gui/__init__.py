@@ -1,8 +1,9 @@
+"""Shared abstract objects (Plugboard and Socket) and wiki data."""
 import logging
 
 from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import (QDialog, QFrame, QLabel, QLineEdit, QSizePolicy,  # pylint: disable=no-name-in-module
-                               QVBoxLayout)  # pylint: disable=no-name-in-module
+from PySide2.QtWidgets import QVBoxLayout  # pylint: disable=no-name-in-module;
+from PySide2.QtWidgets import QDialog, QFrame, QLabel, QLineEdit, QSizePolicy  # pylint: disable=no-name-in-module
 
 from enigma.core.components import HISTORICAL
 
@@ -365,8 +366,10 @@ class AbstractPlugboard(QDialog):
         """Connects two sockets without unnecessary interaction of two sockets
         to avoid recursive event calls)
         :param socket: {char} Letter for the calling sockets
-        :param other_socket: {char} letter for the other socket, disconnects the first parameter socket if None
-        :param refresh: {bool} Whether or not the GUI should be refreshed after making changes
+        :param other_socket: {char} letter for the other socket, disconnects the
+        first parameter socket if None
+        :param refresh: {bool} Whether or not the GUI should
+                               be refreshed after making changes
         """
         plug = self.plugs[socket]
 
@@ -377,11 +380,11 @@ class AbstractPlugboard(QDialog):
                 self.plugs[other].set_text(None)
         else:
             # Check if letter is valid
-            if (
-                other_socket in self.banned + [socket]
-                or self.plugs[other_socket].pair()
-                or (len(self._pairs()) == 10 and self.uhr_enabled)
-            ):
+            socket_unavailable = other_socket in self.banned + [socket]
+            socket_used = self.plugs[other_socket].pair()
+            uhr_full = len(self._pairs()) == 10 and self.uhr_enabled
+
+            if socket_unavailable or socket_used or uhr_full:
                 plug.set_text("")
             else:  # Connects sockets
                 plug_id = len(self._pairs()) + 1

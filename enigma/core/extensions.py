@@ -1,3 +1,7 @@
+"""Uhr extension device that attaches to the Enigmas plugboard"""
+# pylint: disable=inconsistent-return-statements
+
+
 class Uhr:
     """Uhr Plugboard extension device"""
 
@@ -55,7 +59,8 @@ class Uhr:
     def route(self, letter, backwards=False):
         """Routes letters trough the Uhr
         :param letter: {str} Letter to route
-        :param backwards: {bool} Letters are wired differently if backwards is True (returning from rotor assembly)
+        :param backwards: {bool} Letters are wired differently
+                          if backwards is True (returning from rotor assembly)
         """
         board = None
         for plug in self._real_coords["a"] + self._real_coords["b"]:

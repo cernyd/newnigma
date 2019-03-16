@@ -5,9 +5,9 @@ from string import ascii_uppercase as alphabet
 
 import pytest
 
-from enigma.utils.misc import contains
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import UKWD, Plugboard, Uhr
+from enigma.utils.misc import contains
 
 
 def test_single_encrypt():
