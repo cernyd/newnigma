@@ -458,11 +458,17 @@ historical = {
 
 
 def format_position(charset, position, numeric=False):
+    """Formats position into letter format or numeric format (01, 02, ...)
+    :param charset: {str} Character set to index numeric positions
+    :param position: {char} character representing a position
+    :param numeric: {bool} returns a numeric format if True
+    """
     return "%02d" % (position) if numeric else charset[position-1]
 
 
 class Plugboard:
     """Represents the plugboard component of an Enigma machine, not available on all models"""
+
     def __init__(self, pairs=None):
         """
         :param pairs: {[str, str, str, ...} Pairs to connect on the plugboard
@@ -500,6 +506,7 @@ class Plugboard:
 
 class _Component:  # Base component
     """Base class for all components"""
+
     def __init__(self, label, wiring, charset=alphabet):
         """
         :param label: {str} Component label
@@ -523,6 +530,7 @@ class _Component:  # Base component
 
     def _backward(self, character):
         """Routes character from back to front
+        :param character: {str}
         """
         return self._charset[self._wiring.index(character)]
 
@@ -676,6 +684,7 @@ class UKWD(Reflector):
                     "There must be exactly 12 pairs for correct wiring!"
                 )
 
+            # The banned JY are just labels, the real banned letters are NA
             wiring = ["N"] + [""] * 12 + ["A"] + [""] * 12
 
             for pair in pairs:
@@ -686,8 +695,10 @@ class UKWD(Reflector):
 
                 wiring[a_index], wiring[b_index] = self._charset[b_index], self._charset[a_index]
 
+            # Creates a wiring table just like a normal reflector has
             self._wiring = "".join(wiring)
         else:
+            # Reconstructs the original pairs and returns them
             pairs = []
             for i, letter in enumerate(self._wiring):
                 if letter == "A" or letter == "N":
@@ -698,7 +709,7 @@ class UKWD(Reflector):
                     pairs.append(pair)
 
             return pairs
-    
+
     def __str__(self):
         return "Reflector with label " + self._label + "\nWiring : " + self._wiring + "\nCharset: " + self._charset
 
@@ -716,11 +727,9 @@ class Rotor(_Rotatable):
 
         self._turnover = turnover
         self._ring_offset = 0
-        self._turnover = turnover
 
     def _adjusted_offset(self):
-        """Offset adjusted for possible ring setting change
-        """
+        """Offset adjusted for possible ring setting change"""
         return (self._offset - self._ring_offset) % self._max_index
 
     def forward(self, letter):
@@ -748,7 +757,7 @@ class Rotor(_Rotatable):
         return self._charset[rel_result]
 
     def ring_offset(self, offset=None):
-        """Sets "Rinstellung" (ring settings) which can be misaligned with internal wiring
+        """Sets "Ringstellung" (ring settings) which can be misaligned with internal wiring
         :param setting: {int} new ring setting
         """
         if type(offset) == int:
@@ -811,6 +820,7 @@ class Enigma:
         self._rotatable_ref = rotatable_ref
 
         # PLUGBOARD AND UHR
+
         self._plugboard = Plugboard(plug_pairs) if plugboard else None
         if self._plugboard is None:
             self._plugboard_route = lambda letter, _=None: letter
@@ -917,15 +927,15 @@ class Enigma:
         if new_positions:
             for position, rotor in zip(new_positions, self._rotors):
                 if type(position) == str:
-                    if position in self._charset:
+                    if position in self._charset:  # Is a letter from charset
                         position = self._charset.index(position) + 1
-                    else:
+                    else:  # Is a number passed as string ("01" for example)
                         position = int(position)
                 elif type(position) != int:
                     print("Invalid position type!")
 
                 rotor.offset(position)
-        else:
+        else:  # Returns current positions
             return tuple(
                 [rotor.position(self._numeric) for rotor in self._rotors]
             )

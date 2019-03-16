@@ -377,7 +377,7 @@ class EnigmaAPI:
 
         final_data = None
         if comp_type == "stator":
-            final_data = data[comp_type] 
+            final_data = data[comp_type]
             final_data["charset"] = data["charset"]
             return Stator(**data[comp_type])
         if type(label) == int:

@@ -1,11 +1,12 @@
-from PySide2.QtWidgets import *
-from PySide2.QtCore import QUrl, QSize, Qt, QDir
-from PySide2.QtGui import QIcon, QFont, QPixmap, QTextCursor, QDesktopServices
-from enigma.utils.cfg_handler import save_config, load_config
-from enigma.core.components import historical
-from json import JSONDecodeError
 import logging
+from json import JSONDecodeError
 
+from PySide2.QtCore import QDir, QSize, Qt
+from PySide2.QtGui import QFont, QIcon, QPixmap, QTextCursor
+from PySide2.QtWidgets import *
+
+from enigma.core.components import historical
+from enigma.utils.cfg_handler import load_config, save_config
 
 labels = [
     "A-01", "B-02", "C-03", "D-04", "E-05", "F-06", "G-07", "H-08", "I-09", "J-10",
@@ -334,7 +335,7 @@ class AbstractPlugboard(QDialog):
         self.old_pairs = self._pairs()
         self.close()
 
-    def clear_pairs(self): 
+    def clear_pairs(self):
         """Clears all pairs and sockets"""
         logging.info("Clearing all wiring pairs...")
         for plug in self.plugs.values():

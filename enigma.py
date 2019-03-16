@@ -5,6 +5,7 @@ import logging
 from sys import stdin
 
 import pytest
+
 from benchmark import benchmark
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import historical

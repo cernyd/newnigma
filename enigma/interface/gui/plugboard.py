@@ -145,8 +145,6 @@ class UhrDialog(QDialog):
 
         # UHR POSITION DIAL ====================================================
 
-        self._uhr_position = uhr_position
-
         self.indicator = QLabel("00")
         self.indicator.setStyleSheet(
             "font-size: 20px; text-align: center; background-color: white"

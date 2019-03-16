@@ -342,7 +342,6 @@ class _RotorsHandler(QFrame):
         self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self._layout = QHBoxLayout(self)
         self._layout.setAlignment(Qt.AlignCenter)
-        self._rotor_layout = QHBoxLayout()
         self._rotor_indicators = []
         self._reflector_indicator = None
 
