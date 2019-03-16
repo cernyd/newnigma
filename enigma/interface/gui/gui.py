@@ -3,7 +3,7 @@ from copy import copy
 from re import findall, sub
 from textwrap import wrap
 
-from enigma.inteface.gui import *
+from enigma.interface.gui import *
 from enigma.interface.gui.plugboard import PlugboardDialog
 from enigma.interface.gui.settings import Settings
 
@@ -621,7 +621,7 @@ class _InputTextBox(QPlainTextEdit):
         :param charset: {str} all characters that can be typed (others are blocked)
         """
         self.charset = "[^%s]+" % charset
-
+        
     def select_block(self, this=False):
         """Synchronizes selection blocks between two menus
         :param this: {bool} True if input textbox scrollbar was moved, False if output textbox
@@ -651,10 +651,9 @@ class _InputTextBox(QPlainTextEdit):
             self.setTextCursor(new_cursor)
             self.blockSignals(False)
 
-    def input_detected(self):   # TODO: This method is incredibly slow, fix
+    def input_detected(self):
         """Encrypts newly typed/inserted text and outputs it to the output textbox"""
         text = sub(self.charset, "", self.toPlainText().upper())
-
         new_len = len(text)
         diff = self.last_len - new_len
 
@@ -667,32 +666,30 @@ class _InputTextBox(QPlainTextEdit):
             self.sync_plug(self.last_len)
         elif diff != 0:  # If anything changed
             if diff < 0:  # If text longer than before
-                encrypted = "".join(map(self.encrypt_plug, text[diff:]))
+                encrypted = self.encrypt_plug(text[diff:])
+                self.output_plug(encrypted)
 
                 if len(encrypted) <= 30:
                     logging.info('Buffer longer by %d, new encrypted text "%s"' % (abs(diff), encrypted))
                 else:
                     logging.info('Buffer longer by %d, new encrypted text "%s..."' % (abs(diff), encrypted[:30]))
 
-                self.output_plug(encrypted)
-
                 if self.overflow_plug():
                     logging.warning("Position buffer is full, trimming...")
             elif diff > 0:  # If text shorter than before
-                logging.info("Buffer shorter by %d, trimming and reverting positions..." % abs(diff))
-
                 self.sync_plug(new_len)
                 self._revert_pos(diff)
+                logging.info("Buffer shorter by %d, trimming and reverting positions..." % abs(diff))
 
             self.refresh_plug()
             self.last_len = new_len
+            self.set_text(text)
         else:
             logging.info("No changes to buffer made...")
+            self.set_text(text)
 
         if len(text) == 0:
             logging.info("Text buffer now empty...")
-
-        self.set_text(text)
 
     def sync_scroll(self, new_val, other=False):
         """Synchronizes scrollbars between input and output textboxes
