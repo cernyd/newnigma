@@ -232,7 +232,9 @@ class Lightboard(QFrame):
     """Shows characters from charset on generated lightbulbs"""
     def __init__(self, master, charset_plug):
         """Creates a "board" representing Enigma light bulbs and allows their
-        control
+        control.
+        :param master: Parent Qt object
+        :param charset_plug: Callable returning the current correct charset
         """
         super().__init__(master)
 
@@ -252,7 +254,6 @@ class Lightboard(QFrame):
         # CONSTRUCT LIGHTBOARD ================================================
 
         self.rows = []
-
         self.regenerate_bulbs(default_layout)
 
     def regenerate_bulbs(self, layout):
@@ -324,7 +325,7 @@ class _RotorsHandler(QFrame):
         refresh_plug,
         reflector_pos_plug,
     ):
-        """  # TODO: Missing comments
+        """
         :param master: {Qt} Master qt object
         :param position_plug: {callable} Callable method for getting rotor
                                          positions
@@ -390,6 +391,8 @@ class _RotorsHandler(QFrame):
         self._right_spacer = QSpacerItem(
             0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding
         )
+
+        # REGENERATE ===============================================
 
         self.generate_rotors()
         self.set_positions()
@@ -556,8 +559,7 @@ class _InputTextBox(QPlainTextEdit):
         overflow_plug,
         charset
     ):
-        """
-        Handles user input and sends it to the output textbox
+        """Handles user input and sends it to the output textbox
         :param master: {QWidget} Parent Qt object
         :param encrypt_plug: {callable} A callable that accepts one letter
                                         and returns one letter, should provide
@@ -571,6 +573,7 @@ class _InputTextBox(QPlainTextEdit):
         :param revert_pos: {callable} Reverts Enigma rotor position when the
                                       text gets shorter
         :param overflow_plug: {callable} Checks if the position buffer is overflowing
+        :param charset: {str} Initially used charset
         """
         super().__init__(master)
 
@@ -612,42 +615,48 @@ class _InputTextBox(QPlainTextEdit):
 
         self.last_len = 0
         self._revert_pos = revert_pos
-    
+
     def set_charset(self, charset):
+        """Sets charset to new charset
+        :param charset: {str} all characters that can be typed (others are blocked)
+        """
         self.charset = "[^%s]+" % charset
 
     def select_block(self, this=False):
+        """Synchronizes selection blocks between two menus
+        :param this: {bool} True if input textbox scrollbar was moved, False if output textbox
+                            initiated the event
         """
-        Synchronizes selection blocks between two menus
-        """
-        if this:
+        if this:  # Movement in this scrollbar
             cursor = self.textCursor()
             start, end = cursor.selectionStart(), cursor.selectionEnd()
             new_cursor = self.output_textbox.textCursor()
             new_cursor.setPosition(start)
             new_cursor.setPosition(end, QTextCursor.KeepAnchor)
+
+            # Prevent recursive events
             self.output_textbox.blockSignals(True)
             self.output_textbox.setTextCursor(new_cursor)
             self.output_textbox.blockSignals(False)
-        else:
+
+        else:  # Movement in output scrollbar
             cursor = self.output_textbox.textCursor()
             start, end = cursor.selectionStart(), cursor.selectionEnd()
             new_cursor = self.textCursor()
             new_cursor.setPosition(start)
             new_cursor.setPosition(end, QTextCursor.KeepAnchor)
+
+            # Prevent recursive events
             self.blockSignals(True)
             self.setTextCursor(new_cursor)
             self.blockSignals(False)
 
-    def input_detected(self):
-        """
-        Encrypts newly typed/inserted text and outputs it to the output textbox
-        """
+    def input_detected(self):   # TODO: This method is incredibly slow, fix
+        """Encrypts newly typed/inserted text and outputs it to the output textbox"""
         text = sub(self.charset, "", self.toPlainText().upper())
 
         new_len = len(text)
         diff = self.last_len - new_len
-
 
         if diff <= -10000:  # If insertion greater than 10 000 chars
             logging.warning('Blocked attempt to insert %d characters...' % abs(diff))
@@ -686,6 +695,10 @@ class _InputTextBox(QPlainTextEdit):
         self.set_text(text)
 
     def sync_scroll(self, new_val, other=False):
+        """Synchronizes scrollbars between input and output textboxes
+        :param new_val: {float} new scrollbar position
+        :param other: {bool} True if this scrollbar should be set, False if the other scrollbar
+        """
         if other:
             self.other_scrollbar.blockSignals(True)
             self.verticalScrollBar().setValue(new_val)
@@ -696,6 +709,9 @@ class _InputTextBox(QPlainTextEdit):
             self.verticalScrollBar().blockSignals(False)
 
     def set_text(self, text):
+        """Sets input textbox text without triggering write events
+        :param text: {str} new text
+        """
         self.blockSignals(True)  # Blocks programatical edits to the widget
         self.setPlainText(letter_groups(text, self.letter_group_plug()))
         self.moveCursor(QTextCursor.End)
@@ -703,9 +719,10 @@ class _InputTextBox(QPlainTextEdit):
 
 
 class _OutputTextBox(QPlainTextEdit):
+    """Displays read-only text, allows synchronized scrolling and text selection"""
+
     def __init__(self, master, light_up_plug, letter_group_plug):
-        """
-        Shows text inserted trough the .insert() plug
+        """Shows text inserted trough the .insert() plug
         :param master: Qt parent object
         :param light_up_plug: {callable} Callable that accepts a single letter
                                          that should light up on the lightboard
@@ -726,8 +743,8 @@ class _OutputTextBox(QPlainTextEdit):
         self.setFont(font)
 
     def sync_length(self, length):
-        """
-        Sets widget length to the desired length
+        """Sets widget length to the desired length (to keep input and output textboxes
+        exactly the same length)
         :param length: {int} new length of the displayed text
         """
         self.light_up_plug("")
@@ -737,14 +754,14 @@ class _OutputTextBox(QPlainTextEdit):
 
         self.setPlainText(text)
         self.moveCursor(QTextCursor.End)
-        try:
+
+        try:  # Try to light up
             self.light_up_plug(self.toPlainText()[-1])
         except IndexError:
-            pass
+            pass  # Ignore lightboard errors
 
     def insert(self, text):
-        """
-        Appends text into the textbox
+        """Sets text into the textbox
         :param text: {char} Letter to be appended
         """
         text = self.toPlainText().replace(" ", "") + text
@@ -753,7 +770,5 @@ class _OutputTextBox(QPlainTextEdit):
         self.moveCursor(QTextCursor.End)
 
     def text(self):
-        """
-        Returns currently displayed text
-        """
+        """Returns currently displayed text"""
         return self.toPlainText()
