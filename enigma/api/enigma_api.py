@@ -132,7 +132,10 @@ class EnigmaAPI:
         """Returns positions or sets a new one if new_positions is overridden
         :param new_positions: {str}
         """
-        return self._enigma.positions(new_positions)
+        result = self._enigma.positions(new_positions)
+        if new_positions:
+            self.set_checkpoint()
+        return result
 
     def ring_settings(self, new_ring_settings=None):
         """Returns ring_settings or sets a new one if new_ring_settings

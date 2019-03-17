@@ -58,7 +58,7 @@ def config_from_args(args, load_to=None):
             load_to.ring_settings(config["ring_settings"])
 
     if args.reflector_position:
-        config["reflector_position"] = int(args.reflector_position[0])
+        config["reflector_position"] = args.reflector_position[0]
         if load_to:
             load_to.reflector_position(config["reflector_position"])
 
@@ -90,7 +90,7 @@ def resolve_conflicts(args):
 
     if args.silent and args.verbose:
         logging.error("Conflicting flags --verbose and --silent!")
-        print("conflicting flags --verbose and --silent!")
+        print("Conflicting flags --verbose and --silent!")
         logging.shutdown()
         exit(-1)
 
@@ -317,7 +317,7 @@ if __name__ == "__main__":
             logging.info(
                 "No configuration file '%s' found, exiting....", FILENAME
             )
-            print("No valid configuration found in file '%s'!" % FILENAME)
+            print("File '%s' not found!" % FILENAME)
             exit(1)
         except JSONDecodeError:
             logging.info(

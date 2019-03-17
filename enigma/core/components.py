@@ -863,9 +863,16 @@ class Enigma:
 
     def reflector_position(self, new_position=None):
         """Reflector position getter/setter"""
-        if isinstance(new_position, int):
-            if isinstance(new_position, str):
-                new_position = self._charset.index(new_position)
+        if new_position is not None:
+            try:
+                if isinstance(new_position, str):
+                    if new_position in self._charset:
+                        new_position = int(self._charset.index(new_position)) + 1
+                    else:
+                        new_position = int(new_position)
+            except (ValueError, TypeError):
+                raise ValueError("Invalid reflector position '%s'!" % str(new_position))
+
             self._reflector.offset(new_position)
         else:
             return self._reflector.position()
@@ -888,16 +895,23 @@ class Enigma:
         :param new_positions: {iterable}
         """
         if new_positions:
-            for position, rotor in zip(new_positions, self._rotors):
-                if isinstance(position, str):
-                    if position in self._charset:  # Is a letter from charset
-                        position = self._charset.index(position) + 1
-                    else:  # Is a number passed as string ("01" for example)
-                        position = int(position)
-                elif not isinstance(position, int):
-                    print("Invalid position type!")
+            if len(new_positions) != self.rotor_n():
+                raise ValueError("Invalid number of positions to set!")
 
-                rotor.offset(position)
+            try:
+                for position, rotor in zip(new_positions, self._rotors):
+                    if isinstance(position, str):
+                        if position in self._charset:  # Is a letter from charset
+                            position = self._charset.index(position) + 1
+                        else:  # Is a number passed as string ("01" for example)
+                            position = int(position)
+                    elif not isinstance(position, int):
+                        raise ValueError("Invalid position type!")
+
+            except (ValueError, TypeError):
+                raise ValueError("Invalid position '%s'!" % str(position))
+
+            rotor.offset(position)
         else:  # Returns current positions
             return tuple([rotor.position(self._numeric) for rotor in self._rotors])
 
@@ -907,8 +921,11 @@ class Enigma:
         :param new_ring_settings: {[int, int, int]} new ring settings
         """
         if new_ring_settings:
-            for setting, rotor in zip(new_ring_settings, self._rotors):
-                rotor.ring_offset(setting)
+            try:
+                for setting, rotor in zip(new_ring_settings, self._rotors):
+                    rotor.ring_offset(setting)
+            except (ValueError, TypeError):
+                raise ValueError("Invalid ring setting '%s'!" % str(setting))
         else:
             return [rotor.ring_offset() for rotor in self._rotors]
 
