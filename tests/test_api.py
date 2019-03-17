@@ -9,7 +9,7 @@ import pytest
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import HISTORICAL, Rotor
 
-trash_data = ("iweahbrnawjhb", EnigmaAPI, 12341123, -1332, "heaaafs", "", Rotor,
+TRASH_DATA = ("iweahbrnawjhb", EnigmaAPI, 12341123, -1332, "heaaafs", "", Rotor,
               "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))
 
 
@@ -80,7 +80,7 @@ def test_model_set():
         enigma_api.model(new_model)
         assert enigma_api.model() == new_model
 
-    for trash in trash_data:
+    for trash in TRASH_DATA:
         with pytest.raises(ValueError):
             enigma_api.model(trash)
 
@@ -91,7 +91,7 @@ def test_reflector_set():
         enigma_api.reflector(new_reflector)
         assert enigma_api.reflector() == new_reflector
 
-    for trash in trash_data:
+    for trash in TRASH_DATA:
         with pytest.raises(ValueError):
             enigma_api.reflector(trash)
 
@@ -110,7 +110,7 @@ def test_rotors_set():
         enigma_api.rotors(new_rotors)
         assert enigma_api.rotors() == [rotors[i] for i in new_rotors]
 
-    for trash in trash_data:
+    for trash in TRASH_DATA:
         with pytest.raises(ValueError):
             enigma_api.rotors(trash)
 

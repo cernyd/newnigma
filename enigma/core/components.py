@@ -388,7 +388,7 @@ class Plugboard:
         """
         :param pairs: {[str, str, str, ...} Pairs to connect on the plugboard
         """
-        self._pairs = []
+        self.__pairs = []
         self.pairs(pairs)
 
     def pairs(self, pairs=None):
@@ -402,9 +402,9 @@ class Plugboard:
         if pairs is not None:
             pairs = [pair.upper() for pair in pairs]
             validate_pairs(pairs, "plugboard")
-            self._pairs = pairs
+            self.__pairs = pairs
         else:
-            return self._pairs
+            return self.__pairs
 
     def route(self, letter):
         """Routes letter trough the wiring pair (if the letter is wired), otherwise
@@ -412,7 +412,7 @@ class Plugboard:
         :param letter: {char} input letter
         :return: {char} output routed letter
         """
-        for pair in self._pairs:
+        for pair in self.__pairs:
             if letter in pair:
                 return pair[0] if pair[0] != letter else pair[1]
         return letter
@@ -430,7 +430,7 @@ class _Component:  # Base component
         :param wiring: {str} Component wiring
         :param charset: {str} Component character set
         """
-        self._label = label
+        self.__label = label
         self._charset = charset
         self._max_index = len(charset)
 
@@ -453,7 +453,7 @@ class _Component:  # Base component
 
     def label(self):
         """Returns component label"""
-        return self._label
+        return self.__label
 
 
 class Stator(_Component):
@@ -482,7 +482,7 @@ class Stator(_Component):
     def __str__(self):
         return (
             "Stator with label "
-            + self._label
+            + self.label()
             + "\nWiring : "
             + self._wiring
             + "\nCharset: "
@@ -591,7 +591,7 @@ class Reflector(_Rotatable):
     def __str__(self):
         msg = (
             "Reflector with label "
-            + self._label
+            + self.label()
             + "\nWiring : "
             + self._wiring
             + "\nCharset: "
@@ -614,7 +614,7 @@ class UKWD(Reflector):
         """
         super().__init__("UKW-D", ALPHABET, False, ALPHABET)
 
-        self._marking = " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
+        self.__marking = " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
         self.wiring(pairs)
 
     def wiring(self, pairs=None):
@@ -632,7 +632,7 @@ class UKWD(Reflector):
                 if "J" in pair or "Y" in pair:
                     raise ValueError("J and Y are hardwired!")
 
-                a_index, b_index = map(self._marking.index, pair)
+                a_index, b_index = map(self.__marking.index, pair)
 
                 wiring[a_index], wiring[b_index] = (
                     self._charset[b_index],
@@ -648,7 +648,7 @@ class UKWD(Reflector):
                 if letter in "AN":
                     continue
 
-                pair = self._marking[i] + self._marking[self._charset.index(letter)]
+                pair = self.__marking[i] + self.__marking[self._charset.index(letter)]
                 if not contains(pairs, pair):
                     pairs.append(pair)
 
@@ -657,7 +657,7 @@ class UKWD(Reflector):
     def __str__(self):
         return (
             "Reflector with label "
-            + self._label
+            + self.label()
             + "\nWiring : "
             + self._wiring
             + "\nCharset: "
@@ -729,7 +729,7 @@ class Rotor(_Rotatable):
     def __str__(self):
         msg = (
             "Rotor with label "
-            + self._label
+            + self.label()
             + "\nWiring : "
             + self._wiring
             + "\nCharset: "
