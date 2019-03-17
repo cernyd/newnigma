@@ -302,7 +302,7 @@ def letter_groups(text, group_size=5):
     return output
 
 
-class AbstractPlugboard(QDialog):
+class _AbstractPlugboard(QDialog):
     """Abstract object with features shared by all 'pair connect' windows"""
 
     def __init__(self, master, enigma_api, title):

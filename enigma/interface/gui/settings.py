@@ -12,13 +12,13 @@ from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,
                                QTextBrowser, QVBoxLayout, QWidget)
 
 from enigma.interface.gui import LABELS, STYLESHEET, VIEW_DATA
-from enigma.interface.gui.plugboard import AbstractPlugboard, Socket
+from enigma.interface.gui.plugboard import _AbstractPlugboard, Socket
 
 SELECTOR_LABELS = ("THIN", "SLOW", "MEDIUM", "FAST")
 SELECTOR_TOOLTIPS = ("Does not rotate", None, None, "Rotates on every keypress")
 
 
-class Settings(QDialog):
+class SettingsWindow(QDialog):
     """Settings menu with two tabs for settings models and components"""
 
     def __init__(self, master, enigma_api):
@@ -45,7 +45,7 @@ class Settings(QDialog):
         self.enigma_api = enigma_api
         self.rotor_selectors = []
         self.ring_selectors = []
-        self.ukwd = UKWDSettings(self, enigma_api)
+        self.ukwd = UKWDSettingsWindow(self, enigma_api)
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
 
@@ -56,7 +56,7 @@ class Settings(QDialog):
 
         tab_widget = QTabWidget()
 
-        self.stacked_wikis = ViewSwitcher(self, self.regen_model)
+        self.stacked_wikis = _ViewSwitcherWidget(self, self.regen_model)
         tab_widget.addTab(self.stacked_wikis, "Enigma model")
         tab_widget.addTab(self.settings_frame, "Component settings")
 
@@ -335,7 +335,7 @@ class Settings(QDialog):
         return self._pairs
 
 
-class ViewSwitcher(QWidget):
+class _ViewSwitcherWidget(QWidget):
     """Object that handles displaying of Enigma model wikis and images"""
 
     def __init__(self, master, regen_plug):
@@ -364,7 +364,7 @@ class ViewSwitcher(QWidget):
         for i, model in enumerate(VIEW_DATA):
             self.model_list.insertItem(i, model)
             description = VIEW_DATA[model]["description"]
-            self.stacked_wikis.addWidget(_EnigmaView(self, model, description))
+            self.stacked_wikis.addWidget(_EnigmaViewWidget(self, model, description))
         self.total_models = len(VIEW_DATA)
 
         self.layout.addWidget(self.model_list)
@@ -403,7 +403,7 @@ class ViewSwitcher(QWidget):
         selected.setToolTip("Currently used Enigma model")
 
 
-class _EnigmaView(QWidget):
+class _EnigmaViewWidget(QWidget):
     """A single Enigma wiki view with text and image"""
 
     def __init__(self, master, model, description):
@@ -443,7 +443,7 @@ class _EnigmaView(QWidget):
         self.main_layout.addWidget(self.wiki_text)
 
 
-class UKWDSettings(AbstractPlugboard):
+class UKWDSettingsWindow(_AbstractPlugboard):
     """UKW-D wiring settings derived from the abstract plugboard"""
 
     def __init__(self, master, enigma_api):

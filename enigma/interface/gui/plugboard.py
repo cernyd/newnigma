@@ -9,10 +9,10 @@ from PySide2.QtWidgets import \
 from PySide2.QtWidgets import (QCheckBox, QDial, QDialog, QFrame, QHBoxLayout,
                                QLabel, QPushButton, QSizePolicy)
 
-from enigma.interface.gui import AbstractPlugboard, Socket
+from enigma.interface.gui import _AbstractPlugboard, Socket
 
 
-class PlugboardDialog(AbstractPlugboard):
+class PlugboardWindow(_AbstractPlugboard):
     """Plugboard for setting Plugboard plug pairs in normal and Uhr mode"""
 
     def __init__(self, master, enigma_api):
@@ -59,7 +59,7 @@ class PlugboardDialog(AbstractPlugboard):
         storno.clicked.connect(self.hide)
 
         self.uhr = QPushButton("Uhr")
-        self.uhrmenu = UhrDialog(self, enigma_api.uhr_position)
+        self.uhrmenu = UhrWindow(self, enigma_api.uhr_position)
         self.uhr.clicked.connect(self.uhrmenu.exec)
 
         self.enable_uhr = QCheckBox(
@@ -141,7 +141,7 @@ class PlugboardDialog(AbstractPlugboard):
         self.close()
 
 
-class UhrDialog(QDialog):
+class UhrWindow(QDialog):
     """Uhr dialog menu with dial"""
 
     def __init__(self, master, uhr_position):
