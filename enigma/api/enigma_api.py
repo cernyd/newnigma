@@ -99,13 +99,7 @@ class EnigmaAPI:
         :param new_model: {str}
         """
         if new_model is not None:
-            labels = self.model_labels(new_model)
-
-            rotors = labels["rotors"][: self.rotor_n(new_model)]
-            reflector = labels["reflectors"][0]
-
-            del self._enigma
-            self._enigma = self.generate_enigma(new_model, reflector, rotors)
+            self._enigma = self.generate_enigma(new_model)
             self.set_checkpoint()
         else:
             return self._enigma.model()
@@ -330,8 +324,8 @@ class EnigmaAPI:
         """
         try:
             data = HISTORICAL[model]
-        except KeyError:
-            raise ValueError("Invalid Enigma model '%s'" % model)
+        except (KeyError, TypeError):
+            raise ValueError("Invalid Enigma model '%s'" % str(model))
 
         rotor_n = data["rotor_n"] if reflector_label != "UKW-D" else 3
         defaults = cls.default_cfg(model, rotor_n, True)
@@ -391,7 +385,7 @@ class EnigmaAPI:
 
         if not final_data:
             raise ValueError(
-                "No component of type %s with label %s found!" % (comp_type, label)
+                "No component of type '%s' with label '%s' found!" % (comp_type, label)
             )
         final_data["charset"] = data["charset"]
 
@@ -424,7 +418,7 @@ class EnigmaAPI:
                 pass
 
             try:
-                self.reflector_pairs(config["reflector_wiring"])
+                self.reflector_pairs(config["reflector_pairs"])
             except (KeyError, ValueError):
                 pass
 
@@ -462,7 +456,7 @@ class EnigmaAPI:
         except ValueError:
             pass
         try:
-            data["reflector_wiring"] = self.reflector_pairs()
+            data["reflector_pairs"] = self.reflector_pairs()
         except ValueError:
             pass
         try:
@@ -508,7 +502,7 @@ class EnigmaAPI:
             pass
 
         try:
-            msg += "\nReflector wiring: %s" % " ".join(data["reflector_wiring"])
+            msg += "\nReflector wiring: %s" % " ".join(data["reflector_pairs"])
         except KeyError:
             pass
 

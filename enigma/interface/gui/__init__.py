@@ -319,7 +319,7 @@ class AbstractPlugboard(QDialog):
         self.uhr_enabled = False
         self.apply_plug = lambda: None
 
-    def _pairs(self):
+    def pairs(self):
         """Returns all selected wiring pairs
         """
         pairs = []
@@ -339,7 +339,7 @@ class AbstractPlugboard(QDialog):
             logging.info('Setting wiring pairs to "%s"', str(new_pairs))
             for pair in new_pairs:
                 self.connect_sockets(*pair, False)
-            self.old_pairs = self._pairs()
+            self.old_pairs = self.pairs()
 
         self.apply_plug()
 
@@ -383,12 +383,12 @@ class AbstractPlugboard(QDialog):
             # Check if letter is valid
             socket_unavailable = other_socket in self.banned + [socket]
             socket_used = self.plugs[other_socket].pair()
-            uhr_full = len(self._pairs()) == 10 and self.uhr_enabled
+            uhr_full = len(self.pairs()) == 10 and self.uhr_enabled
 
             if socket_unavailable or socket_used or uhr_full:
                 plug.set_text("")
             else:  # Connects sockets
-                plug_id = len(self._pairs()) + 1
+                plug_id = len(self.pairs()) + 1
                 a_plug = (plug_id, "a")
                 b_plug = (plug_id, "b")
 

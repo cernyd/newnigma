@@ -5,6 +5,7 @@ Can read message data from stdin pipes."""
 
 import argparse
 import logging
+from json import JSONDecodeError
 from sys import stdin
 
 from pytest import main as pytest_main
@@ -27,12 +28,13 @@ def config_from_args(args, load_to=None):
     :param load_to: {EnigmaAPI} EnigmaAPI to load the config to
     """
     config = {}
-
-    try:
-        config["model"] = args.model[0]
+    model = args.model
+    if model:
+        model = model[0]
+        config["model"] = model
         if load_to:
-            load_to.model(config["model"])
-    except Exception:
+            load_to.model(model)
+    else:
         config["model"] = None
 
     if args.reflector:
@@ -61,9 +63,9 @@ def config_from_args(args, load_to=None):
             load_to.reflector_position(config["reflector_position"])
 
     if args.reflector_pairs:
-        config["reflector_wiring"] = args.reflector_pairs
+        config["reflector_pairs"] = args.reflector_pairs
         if load_to:
-            load_to.reflector_pairs(config["reflector_wiring"])
+            load_to.reflector_pairs(config["reflector_pairs"])
 
     if args.uhr:
         config["uhr_position"] = int(args.uhr[0])
@@ -291,28 +293,46 @@ if __name__ == "__main__":
     if ARGS.filename:
         FILENAME = ARGS.filename[0]
 
-    if CONFIG and FILENAME:
+    HAS_CONFIG = any(CONFIG.values())
+    if HAS_CONFIG and FILENAME:
         print("Cannot load settings both from arguments and file!")
         exit(1)
 
-    if CONFIG:  # Load from settings arguments
+    if HAS_CONFIG:  # Load from settings arguments
         if not CONFIG["model"] and len(CONFIG) > 1:
             print("Enigma model must be specified when specifying settings!")
             exit(1)
-        config_from_args(ARGS, ENIGMA_API)
+
+        try:
+            config_from_args(ARGS, ENIGMA_API)
+        except (KeyError, ValueError) as err:
+            print(err)
+            exit(1)
+
         logging.info("Loading settings specified in cli arguments...")
     elif FILENAME:  # Load from file specified in --from
         try:
             ENIGMA_API.load_from(FILENAME)
-        except Exception:
+        except FileNotFoundError:
             logging.info(
-                'No valid configuration found in "%s", using defaults instead....'
-                % FILENAME
+                "No configuration file '%s' found, exiting....", FILENAME
             )
+            print("No valid configuration found in file '%s'!" % FILENAME)
+            exit(1)
+        except JSONDecodeError:
+            logging.info(
+                "No valid configuration found in file '%s', exiting....", FILENAME
+            )
+            print("No valid configuration found in file '%s'!" % FILENAME)
+            exit(1)
+        except KeyError:
+            print("File loaded but did not contain required data!")
+            exit(1)
+
     else:  # Load defalt config
         try:
             ENIGMA_API = EnigmaAPI(**load_config("config.json")["default"])
-        except Exception:
+        except (FileNotFoundError, KeyError, ValueError):
             logging.info(
                 "Failed to load default config, using builtin defaults instead..."
             )

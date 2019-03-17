@@ -21,11 +21,18 @@ def cli(enigma_api, args, msg=None):
     else:
         msg = (args.message[0] if msg is None else msg).upper()
 
+    try:
+        msg = enigma_api.encrypt(msg)
+    except ValueError as err:
+        print(err)
+        exit(1)
+
     if not args.silent:
         print(enigma_api)
-        print("Encrypted message: ", "")
+        print("Encrypted message: %s" % msg, end='')
+    else:
+        print(msg, end='')
 
-    print(enigma_api.encrypt(msg), end="")
     logging.info("Successfully encrypted %d letters, quitting CLI mode..." % len(msg))
 
     if not args.silent:

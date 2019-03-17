@@ -91,7 +91,7 @@ class PlugboardDialog(AbstractPlugboard):
     def refresh_apply(self):
         """Enables "Apply" button either if Uhr is disabled or Uhr is enabled and
         10 pairs are set"""
-        pair_n = len(self._pairs())
+        pair_n = len(self.pairs())
         if self.enable_uhr.isChecked() and pair_n != 10:
             logging.info("Uhr pre-requisites not met, keeping button disabled...")
             self.apply_btn.setDisabled(True)
@@ -119,7 +119,7 @@ class PlugboardDialog(AbstractPlugboard):
 
     def collect(self):
         """Collects all unique letter pairs, enables and sets up Uhr if it's also checked"""
-        pairs = self._pairs()
+        pairs = self.pairs()
 
         if self.enable_uhr.isChecked():
             logging.info(

@@ -504,7 +504,7 @@ class UKWDSettings(AbstractPlugboard):
 
     def refresh_apply(self):
         """Enables the "Apply" button only if all 12 pairs are connected"""
-        if len(self._pairs()) != 12:
+        if len(self.pairs()) != 12:
             self.apply_btn.setDisabled(True)
             self.apply_btn.setToolTip("All 12 pairs must be connected!")
             logging.info("Apply conditions met, Apply button enabled...")
