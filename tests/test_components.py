@@ -7,8 +7,8 @@ from string import ascii_uppercase as alphabet
 import pytest
 
 from enigma.api.enigma_api import EnigmaAPI
-from enigma.core.components import UKWD, Plugboard, Uhr
 from enigma.core import contains
+from enigma.core.components import UKWD, Plugboard, Uhr
 
 
 def test_single_encrypt():

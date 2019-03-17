@@ -2,7 +2,7 @@
 # pylint: disable=inconsistent-return-statements
 """Uhr extension device that attaches to the Enigmas plugboard"""
 
-from enigma.core import validate_pairs, convert_position, ALPHABET
+from enigma.core import ALPHABET, convert_position, validate_pairs
 
 
 class Uhr:

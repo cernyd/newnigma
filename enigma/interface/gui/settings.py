@@ -12,7 +12,7 @@ from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,
                                QTextBrowser, QVBoxLayout, QWidget)
 
 from enigma.interface.gui import LABELS, STYLESHEET, VIEW_DATA
-from enigma.interface.gui.plugboard import _AbstractPlugboard, Socket
+from enigma.interface.gui.plugboard import Socket, _AbstractPlugboard
 
 SELECTOR_LABELS = ("THIN", "SLOW", "MEDIUM", "FAST")
 SELECTOR_TOOLTIPS = ("Does not rotate", None, None, "Rotates on every keypress")
@@ -50,13 +50,13 @@ class SettingsWindow(QDialog):
         # ROTORS AND REFLECTOR SETTINGS ========================================
 
         self.__ukwd_button = QPushButton("UKW-D wiring")
-        self.__ukwd_button.clicked.connect(self.open_ukwd_wiring)
+        self.__ukwd_button.clicked.connect(self.open_ukwd_window)
 
         # TAB WIDGET ===========================================================
 
         tab_widget = QTabWidget()
 
-        self.__stacked_wikis = _ViewSwitcherWidget(self, self.regen_model)
+        self.__stacked_wikis = _ViewSwitcherWidget(self, self.regenerate_for_model)
         tab_widget.addTab(self.__stacked_wikis, "Enigma model")
         tab_widget.addTab(self.__settings_frame, "Component settings")
 
@@ -83,7 +83,7 @@ class SettingsWindow(QDialog):
         main_layout.addWidget(tab_widget)
         main_layout.addWidget(button_frame)
 
-    def open_ukwd_wiring(self):
+    def open_ukwd_window(self):
         """Opens UKWD wiring menu"""
         logging.info("Opened UKW-D wiring menu...")
         self.__ukwd_window.exec_()
@@ -235,7 +235,7 @@ class SettingsWindow(QDialog):
             wgt.deleteLater()
             del wgt
 
-    def regen_model(self, new_model):
+    def regenerate_for_model(self, new_model):
         """Regenerates component settings
         :param new_model: {str} Enigma model
         """

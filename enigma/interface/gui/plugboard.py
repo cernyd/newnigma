@@ -9,7 +9,7 @@ from PySide2.QtWidgets import \
 from PySide2.QtWidgets import (QCheckBox, QDial, QDialog, QFrame, QHBoxLayout,
                                QLabel, QPushButton, QSizePolicy)
 
-from enigma.interface.gui import _AbstractPlugboard, Socket
+from enigma.interface.gui import Socket, _AbstractPlugboard
 
 
 class PlugboardWindow(_AbstractPlugboard):
@@ -66,12 +66,12 @@ class PlugboardWindow(_AbstractPlugboard):
             "Enable Uhr"
         )  # In that case all plugs must be occupied! (and red/white)
         self.__enable_uhr.setChecked(enigma_api.uhr())
-        self.__enable_uhr.stateChanged.connect(self.change_uhr_status)
+        self.__enable_uhr.stateChanged.connect(self.__change_uhr_status)
 
         # CONNECTS SOCKETS =====================================================
 
         self._enigma_api = enigma_api
-        self.change_uhr_status(False)
+        self.__change_uhr_status(False)
         try:
             self.set_pairs(self._enigma_api.plug_pairs())
         except ValueError:
@@ -104,7 +104,7 @@ class PlugboardWindow(_AbstractPlugboard):
             self.__apply_btn.setDisabled(False)
             self.__apply_btn.setToolTip(None)
 
-    def change_uhr_status(self, clear=True):
+    def __change_uhr_status(self, clear=True):
         """Enables "Uhr" button if the checkmark is enabled
         :param clear: {bool} Whether or not the connected pairs should be cleared
         """

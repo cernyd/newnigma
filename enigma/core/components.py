@@ -4,8 +4,8 @@
 """Enigma simulation core. Contains all historical data, components and the Enigma
 machine simulation class."""
 
+from enigma.core import contains, convert_position, validate_pairs
 from enigma.core.extensions import Uhr
-from enigma.core import contains, validate_pairs, convert_position
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

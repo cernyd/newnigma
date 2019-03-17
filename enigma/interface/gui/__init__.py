@@ -2,8 +2,7 @@
 import logging
 
 from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import \
-    QVBoxLayout  # pylint: disable=no-name-in-module;
+from PySide2.QtWidgets import QVBoxLayout  # pylint: disable=no-name-in-module;
 from PySide2.QtWidgets import QDialog, QFrame, QLabel, QLineEdit, QSizePolicy
 
 from enigma.core.components import HISTORICAL
