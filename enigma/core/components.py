@@ -615,20 +615,20 @@ class UKWD(Reflector):
         super().__init__("UKW-D", ALPHABET, False, ALPHABET)
 
         self.__marking = " ZXWVUTSRQPON MLKIHGFEDCBA"  # German notation
-        self.wiring(pairs)
+        self.reflector_pairs(pairs)
 
-    def wiring(self, pairs=None):
+    def reflector_pairs(self, new_reflector_pairs=None):
         """Returns wiring if pairs are None, else sets them
-        :param pairs: {[str, str, str, ...]} Letter pairs, but without "J" and "Y"
+        :param new_relfector_pairs: {[str, str, str, ...]} Letter pairs, but without "J" and "Y"
         """
-        if pairs:
-            if len(pairs) != 12:
+        if new_reflector_pairs:
+            if len(new_reflector_pairs) != 12:
                 raise ValueError("There must be exactly 12 pairs for correct wiring!")
 
             # The banned JY are just labels, the real banned letters are NA
             wiring = ["N"] + [""] * 12 + ["A"] + [""] * 12
 
-            for pair in pairs:
+            for pair in new_reflector_pairs:
                 if "J" in pair or "Y" in pair:
                     raise ValueError("J and Y are hardwired!")
 
@@ -643,16 +643,16 @@ class UKWD(Reflector):
             self._wiring = "".join(wiring)
         else:
             # Reconstructs the original pairs and returns them
-            pairs = []
+            new_reflector_pairs = []
             for i, letter in enumerate(self._wiring):
                 if letter in "AN":
                     continue
 
                 pair = self.__marking[i] + self.__marking[self._charset.index(letter)]
-                if not contains(pairs, pair):
-                    pairs.append(pair)
+                if not contains(new_reflector_pairs, pair):
+                    new_reflector_pairs.append(pair)
 
-            return pairs
+            return new_reflector_pairs
 
     def __str__(self):
         return (
@@ -773,8 +773,8 @@ class Enigma:
         :param numeric: {bool} Enables numeric position display if True
         :param charset: {str} Character set used by Enigma and subcomponents
         """
-        self._model = model
-        self._rotor_n = rotor_n
+        self.__model = model
+        self.__rotor_n = rotor_n
         self._charset = charset
 
         # COMPONENTS
@@ -782,7 +782,7 @@ class Enigma:
         self._rotors = []
         self.rotors(rotors)
         self._stator = stator
-        self._rotatable_ref = rotatable_ref
+        self.__rotatable_ref = rotatable_ref
 
         # PLUGBOARD AND UHR
 
@@ -798,7 +798,7 @@ class Enigma:
         """Returns rotor count but takes UKW-D into consideration"""
         if self._reflector.label() == "UKW-D":
             return 3
-        return self._rotor_n
+        return self.__rotor_n
 
     def press_key(self, key):
         """Simulates effects of pressing an Enigma keys (returning the routed
@@ -837,7 +837,7 @@ class Enigma:
 
     def model(self):
         """Returns current model"""
-        return self._model
+        return self.__model
 
     def reflector(self, new_reflector=None):
         """Reflector getter/setter"""
@@ -851,11 +851,11 @@ class Enigma:
         if self._reflector.label() != "UKW-D":
             raise ValueError("Only UKW-D reflector has wiring pairs!")
 
-        return self._reflector.wiring(new_pairs)
+        return self._reflector.reflector_pairs(new_pairs)
 
     def reflector_rotatable(self):
         """Returns whether or not the reflector is rotatable"""
-        return self._rotatable_ref
+        return self.__rotatable_ref
 
     def rotate_reflector(self, offset_by=1):
         """Rotates reflector by select number of positions

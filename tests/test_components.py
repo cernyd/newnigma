@@ -31,7 +31,7 @@ def test_ukwd():
 
     assert ukwd.reflect("T") == "P"
 
-    for pair in ukwd.wiring():
+    for pair in ukwd.reflector_pairs():
         assert contains(pairs, pair)
 
 

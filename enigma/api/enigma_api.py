@@ -212,6 +212,10 @@ class EnigmaAPI:
             return lambda: self._enigma.rotate_reflector(offset_by)
         self._enigma.rotate_reflector(offset_by)
 
+    def charset(self):
+        """Returns current Enigma charset"""
+        return self._enigma.charset()
+
     # BUFFER TOOLS
 
     def __serialized_position(self):
@@ -468,12 +472,6 @@ class EnigmaAPI:
             pass
 
         return data
-
-    def charset(self):
-        """Returns current Enigma charset"""
-        return self._enigma.charset()
-
-    # SAVE/LOAD
 
     def save_to(self, filename):
         """Dumps API configuration to a file"""
