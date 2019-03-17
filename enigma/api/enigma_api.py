@@ -505,7 +505,7 @@ class EnigmaAPI:
             pass
 
         try:
-            msg += "\nReflector wiring: %s" % " ".join(data["reflector_pairs"])
+            msg += "\nReflector pairs: %s" % " ".join(data["reflector_pairs"])
         except KeyError:
             pass
 

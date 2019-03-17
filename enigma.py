@@ -53,7 +53,7 @@ def config_from_args(args, load_to=None):
             load_to.positions(config["positions"])
 
     if args.ring_settings:
-        config["ring_settings"] = map(int, args.ring_settings)
+        config["ring_settings"] = args.ring_settings
         if load_to:
             load_to.ring_settings(config["ring_settings"])
 
@@ -68,7 +68,7 @@ def config_from_args(args, load_to=None):
             load_to.reflector_pairs(config["reflector_pairs"])
 
     if args.uhr:
-        config["uhr_position"] = int(args.uhr[0])
+        config["uhr_position"] = args.uhr[0]
         if load_to:
             load_to.uhr("connect")
             load_to.uhr_position(config["uhr_position"])

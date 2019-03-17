@@ -5,7 +5,7 @@
 machine simulation class."""
 
 from enigma.core.extensions import Uhr
-from enigma.utils.misc import contains
+from enigma.core import contains, validate_pairs, convert_position
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -400,6 +400,8 @@ class Plugboard:
         :return: {dict} dictionary with pairs usable by the plugboard
         """
         if pairs is not None:
+            pairs = [pair.upper() for pair in pairs]
+            validate_pairs(pairs, "plugboard")
             self._pairs = pairs
         else:
             return self._pairs
@@ -864,15 +866,7 @@ class Enigma:
     def reflector_position(self, new_position=None):
         """Reflector position getter/setter"""
         if new_position is not None:
-            try:
-                if isinstance(new_position, str):
-                    if new_position in self._charset:
-                        new_position = int(self._charset.index(new_position)) + 1
-                    else:
-                        new_position = int(new_position)
-            except (ValueError, TypeError):
-                raise ValueError("Invalid reflector position '%s'!" % str(new_position))
-
+            new_position = convert_position(new_position, self._charset, "reflector position")
             self._reflector.offset(new_position)
         else:
             return self._reflector.position()
@@ -898,20 +892,8 @@ class Enigma:
             if len(new_positions) != self.rotor_n():
                 raise ValueError("Invalid number of positions to set!")
 
-            try:
-                for position, rotor in zip(new_positions, self._rotors):
-                    if isinstance(position, str):
-                        if position in self._charset:  # Is a letter from charset
-                            position = self._charset.index(position) + 1
-                        else:  # Is a number passed as string ("01" for example)
-                            position = int(position)
-                    elif not isinstance(position, int):
-                        raise ValueError("Invalid position type!")
-
-            except (ValueError, TypeError):
-                raise ValueError("Invalid position '%s'!" % str(position))
-
-            rotor.offset(position)
+            for position, rotor in zip(new_positions, self._rotors):
+                rotor.offset(convert_position(position, self._charset, "rotor position"))
         else:  # Returns current positions
             return tuple([rotor.position(self._numeric) for rotor in self._rotors])
 
@@ -921,11 +903,8 @@ class Enigma:
         :param new_ring_settings: {[int, int, int]} new ring settings
         """
         if new_ring_settings:
-            try:
-                for setting, rotor in zip(new_ring_settings, self._rotors):
-                    rotor.ring_offset(setting)
-            except (ValueError, TypeError):
-                raise ValueError("Invalid ring setting '%s'!" % str(setting))
+            for setting, rotor in zip(new_ring_settings, self._rotors):
+                rotor.ring_offset(convert_position(setting, self._charset, "ring setting"))
         else:
             return [rotor.ring_offset() for rotor in self._rotors]
 
@@ -972,7 +951,7 @@ class Enigma:
         if not isinstance(self._plugboard, Uhr):
             raise ValueError("Can't set uhr position - uhr not connected!")
 
-        if isinstance(new_position, int):
+        if new_position is not None:
             self._plugboard.position(new_position)
         else:
             return self._plugboard.position()

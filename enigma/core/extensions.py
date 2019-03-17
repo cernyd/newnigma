@@ -2,6 +2,8 @@
 # pylint: disable=inconsistent-return-statements
 """Uhr extension device that attaches to the Enigmas plugboard"""
 
+from enigma.core import validate_pairs, convert_position, ALPHABET
+
 
 class Uhr:
     """Uhr Plugboard extension device"""
@@ -32,9 +34,13 @@ class Uhr:
 
     def position(self, new_position=None):
         """Positions getter/setter, valid position range is 00 - 39"""
-        if isinstance(new_position, int):
+        if new_position is not None:
+            print(new_position)
+            new_position = convert_position(new_position, ALPHABET, "Uhr position")
+
             if new_position not in range(0, 40):
-                raise ValueError("Positions can only be set to values 1 - 26!")
+                raise ValueError("Uhr positions can only be set to values 00 - 39!")
+
             self._offset = new_position
         else:
             return self._offset
@@ -42,10 +48,15 @@ class Uhr:
     def pairs(self, pairs=None):
         """Pairs getter/setter, only 10 letter pairs can be connected at a time!"""
         if pairs is not None:
+            pairs = [pair.upper() for pair in pairs]
+
+            validate_pairs(pairs, "Uhr")
+
             if pairs and len(pairs) != 10:
                 raise ValueError(
                     "Uhr allows only exactly 10 pairs to be plugged in at a time!"
                 )
+
             self._pairs = pairs
 
             a_coords = []
