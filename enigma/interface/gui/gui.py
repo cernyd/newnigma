@@ -21,27 +21,22 @@ from PySide2.QtWidgets import (  # pylint: disable=no-name-in-module; pylint: di
     QVBoxLayout, QWidget)
 
 
+def runtime(enigma_api):
+    """Initializes the Qt environment and starts root window
+    :param enigma_api: {EnigmaAPI} Shared EnigmaAPI instance
+    """
+    from sys import argv
 
-class QtRuntime:
-    """Object initializing and handling the Qt runtime"""
+    logging.info("Setting application icon and title...")
 
-    def __init__(self, api):
-        """
-        Runtime object wrapping the root window
-        :param api: {EnigmaAPI} Shared EnigmaAPI instance
-        """
-        from sys import argv
+    app = QApplication(argv)
+    app.setApplicationName("Enigma")
+    app.setApplicationDisplayName("Enigma")
+    app.setWindowIcon(QIcon(BASE_DIR + "enigma_200px.png"))
 
-        logging.info("Setting application icon and title...")
-
-        self.__app = QApplication(argv)
-        self.__app.setApplicationName("Enigma")
-        self.__app.setApplicationDisplayName("Enigma")
-        self.__app.setWindowIcon(QIcon(BASE_DIR + "enigma_200px.png"))
-
-        RootWindow(api)
-        logging.info("Starting Qt runtime...")
-        self.__app.exec_()
+    RootWindow(enigma_api)
+    logging.info("Starting Qt runtime...")
+    app.exec_()
 
 
 class RootWindow(QWidget):
@@ -93,14 +88,14 @@ class RootWindow(QWidget):
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ==============================
 
         logging.info("Adding I/O textboxes...")
-        self.__output_textbox = _OutputTextBoxWidget(
+        output_textbox = _OutputTextBoxWidget(
             self, self.__lightboard.light_up, enigma_api.letter_group
         )
         self.__input_textbox = _InputTextBoxWidget(
             self,
             enigma_api.encrypt,
-            self.__output_textbox.insert,
-            self.__output_textbox,
+            output_textbox.insert,
+            output_textbox,
             self.__rotors.set_positions,
             enigma_api.letter_group,
             enigma_api.revert_by,
@@ -113,7 +108,7 @@ class RootWindow(QWidget):
         logging.info("Adding Plugboard button")
         self.__plug_button = QPushButton("Plugboard")
         self.__plug_button.setToolTip("Edit plugboard letter pairs")
-        self.__plug_button.clicked.connect(self.get_pairs)
+        self.__plug_button.clicked.connect(self.__open_plugboard_window)
 
         # SHOW WIDGETS ========================================================
 
@@ -130,13 +125,13 @@ class RootWindow(QWidget):
             QLabel("OUTPUT", self, styleSheet="font-size: 20px"),
             alignment=Qt.AlignCenter,
         )
-        main_layout.addWidget(self.__output_textbox)
+        main_layout.addWidget(output_textbox)
         main_layout.addWidget(self.__plug_button)
 
         self.refresh_gui()
         self.show()
 
-    def get_pairs(self):
+    def __open_plugboard_window(self):
         """Opens the plugboard menu"""
         logging.info("Opening Plugboard menu...")
         old_pairs = self.__enigma_api.plug_pairs()
@@ -207,7 +202,7 @@ class RootWindow(QWidget):
                 return
 
             # Refresh gui after loading setings
-            self.__rotors.generate_rotors()
+            self.__rotors.__generate_rotors()
             self.__input_textbox.blockSignals(True)
             self.refresh_gui()
             self.__input_textbox.blockSignals(False)
@@ -250,7 +245,7 @@ class RootWindow(QWidget):
         if filename:
             logging.info('Exporing message to "%s"...', filename)
             with open(filename, "w") as file:
-                message = "\n".join(wrap(self.__output_textbox.text(), 29))
+                message = "\n".join(wrap(self.output_textbox.text(), 29))
                 file.write("%s\n%s\n" % (str(self.__enigma_api), message))
 
 
@@ -290,7 +285,7 @@ class _LightboardWidget(QFrame):
                                  in charset ([[1, 2, 3, ..]  first row...
                                               [4, 5, 6, ..]])  second row ...
         """
-        self.clear_bulbs()
+        self.__clear_bulbs()
         for row in layout:
             if row:
                 row_frame = QFrame(self)
@@ -310,9 +305,9 @@ class _LightboardWidget(QFrame):
 
                 self.__lb_layout.addWidget(row_frame)
 
-        self.power_off()
+        self.__power_off()
 
-    def clear_bulbs(self):
+    def __clear_bulbs(self):
         """Deletes all lightbulbs leaving the lightboard ready for regeneration"""
         for bulb in self.__lightbulbs.values():
             bulb.deleteLater()
@@ -324,7 +319,7 @@ class _LightboardWidget(QFrame):
             row.deleteLater()
             del row
 
-    def power_off(self):
+    def __power_off(self):
         """Turns all lightbulbs black"""
         for bulb in self.__lightbulbs.values():
             bulb.setStyleSheet(self.__base_style % "gray")
@@ -334,7 +329,7 @@ class _LightboardWidget(QFrame):
         not found.
         :param character: {char} character to light up
         """
-        self.power_off()
+        self.__power_off()
 
         if character in self.__lightbulbs:
             self.__lightbulbs[character].setStyleSheet(self.__base_style % "yellow")
@@ -380,7 +375,6 @@ class _RotorsHandlerWidget(QFrame):
         self.__rotate_plug = rotate_plug
         self.__position_plug = position_plug
         self.__refresh_plug = refresh_plug
-        self.__rotate_ref_plug = rotate_ref_plug
         self.__reflector_pos_plug = reflector_pos_plug
 
         # SETTINGS ICON =======================================================
@@ -389,7 +383,7 @@ class _RotorsHandlerWidget(QFrame):
         self.__settings_button.setIconSize(QSize(50, 50))
         self.__settings_button.setToolTip("Edit Enigma rotor and reflector settings")
         self.__settings_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        self.__settings_button.clicked.connect(self.open_settings)
+        self.__settings_button.clicked.connect(self.__open_settings)
 
         # GENERATE ROTORS AND REFLECTOR =======================================
 
@@ -405,8 +399,8 @@ class _RotorsHandlerWidget(QFrame):
 
         self.__reflector_indicator = _RotorHandlerWidget(
             self,
-            self.__rotate_ref_plug(1, True),
-            self.__rotate_ref_plug(-1, True),
+            rotate_ref_plug(1, True),
+            rotate_ref_plug(-1, True),
             self.set_positions,
         )
         self.__reflector_indicator.setToolTip("Reflector position indicator")
@@ -421,10 +415,10 @@ class _RotorsHandlerWidget(QFrame):
 
         # REGENERATE ===============================================
 
-        self.generate_rotors()
+        self.__generate_rotors()
         self.set_positions()
 
-    def generate_rotors(self):
+    def __generate_rotors(self):
         """Regenerates rotor and reflector views (with position indicators and
         and buttons to rotate them according to new EnigmaAPI settings"""
         self.__layout.removeItem(self._left_spacer)
@@ -466,7 +460,7 @@ class _RotorsHandlerWidget(QFrame):
         self.__layout.addItem(self._right_spacer)
         self.__layout.addWidget(self.__settings_button)
 
-    def open_settings(self):
+    def __open_settings(self):
         """Opens settings and reloads indicators afterwards if changes are
         detected"""
         logging.info("Opening settings menu...")
@@ -476,7 +470,7 @@ class _RotorsHandlerWidget(QFrame):
         if old_cfg != self.__enigma_api.get_config():
             logging.info("Settings changed, reloading GUI...")
             del settings
-            self.generate_rotors()
+            self.__generate_rotors()
             self.__refresh_plug()
             self.set_positions()
         else:
@@ -511,7 +505,7 @@ class _RotorHandlerWidget(QFrame):
 
         # QT WINDOW SETTINGS ==================================================
 
-        self.__layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self)
 
         # SAVE ATTRIBUTES =====================================================
 
@@ -521,10 +515,10 @@ class _RotorHandlerWidget(QFrame):
 
         # ROTATE FORWARD ======================================================
 
-        self.__position_plus = QPushButton("+", self)
-        self.__position_plus.clicked.connect(self.increment)
-        self.__position_plus.setFixedSize(40, 40)
-        self.__position_plus.setToolTip("Rotates rotor forwards by one place")
+        position_plus = QPushButton("+", self)
+        position_plus.clicked.connect(self.__increment)
+        position_plus.setFixedSize(40, 40)
+        position_plus.setToolTip("Rotates rotor forwards by one place")
 
         # POSITION INDICATOR ==================================================
 
@@ -539,16 +533,16 @@ class _RotorHandlerWidget(QFrame):
 
         # ROTATE FORWARD ======================================================
 
-        self.__position_minus = QPushButton("-", self)
-        self.__position_minus.setFixedSize(40, 40)
-        self.__position_minus.clicked.connect(self.decrement)
-        self.__position_minus.setToolTip("Rotates rotors backwards by one place")
+        position_minus = QPushButton("-", self)
+        position_minus.setFixedSize(40, 40)
+        position_minus.clicked.connect(self.__decrement)
+        position_minus.setToolTip("Rotates rotors backwards by one place")
 
         # SHOW WIDGETS ========================================================
 
-        self.__layout.addWidget(self.__position_plus, alignment=Qt.AlignCenter)
-        self.__layout.addWidget(self.__indicator, alignment=Qt.AlignCenter)
-        self.__layout.addWidget(self.__position_minus, alignment=Qt.AlignCenter)
+        layout.addWidget(position_plus, alignment=Qt.AlignCenter)
+        layout.addWidget(self.__indicator, alignment=Qt.AlignCenter)
+        layout.addWidget(position_minus, alignment=Qt.AlignCenter)
 
     def set(self, position):
         """Sets indicator position to specified text
@@ -556,12 +550,12 @@ class _RotorHandlerWidget(QFrame):
         """
         self.__indicator.setText(position)
 
-    def increment(self):
+    def __increment(self):
         """Increments rotor position by one (1)"""
         self.__plus_plug()
         self.__set_positions()
 
-    def decrement(self):
+    def __decrement(self):
         """Decrements rotor position by one (-1)"""
         self.__minus_plug()
         self.__set_positions()
@@ -604,7 +598,7 @@ class _InputTextBoxWidget(QPlainTextEdit):
         # QT WIDGET SETTINGS ==================================================
 
         self.setPlaceholderText("Type your message here")
-        self.textChanged.connect(self.input_detected)
+        self.textChanged.connect(self.__input_detected)
         self.setStyleSheet("background-color: white;")
 
         # FONT ================================================================
@@ -627,19 +621,19 @@ class _InputTextBoxWidget(QPlainTextEdit):
 
         # SCROLLBAR SYNC ======================================================
 
-        self.verticalScrollBar().valueChanged.connect(self.sync_scroll)
+        self.verticalScrollBar().valueChanged.connect(self.__sync_scroll)
         self.__other_scrollbar.valueChanged.connect(
-            lambda new_val: self.sync_scroll(new_val, True)
+            lambda new_val: self.__sync_scroll(new_val, True)
         )
 
         # HIGHLIGHTER =========================================================
 
-        output_textbox.selectionChanged.connect(self.select_block)
-        self.selectionChanged.connect(lambda: self.select_block(True))
+        output_textbox.selectionChanged.connect(self.__select_block)
+        self.selectionChanged.connect(lambda: self.__select_block(True))
 
         # ATTRIBUTES ==========================================================
 
-        self.last_len = 0
+        self.__last_len = 0
         self.__revert_pos = revert_pos
 
     def set_charset(self, charset):
@@ -648,7 +642,7 @@ class _InputTextBoxWidget(QPlainTextEdit):
         """
         self.__charset = "[^%s]+" % charset
 
-    def select_block(self, this=False):
+    def __select_block(self, this=False):
         """Synchronizes selection blocks between two menus
         :param this: {bool} True if input textbox scrollbar was moved, False if output textbox
                             initiated the event
@@ -677,11 +671,11 @@ class _InputTextBoxWidget(QPlainTextEdit):
             self.setTextCursor(new_cursor)
             self.blockSignals(False)
 
-    def input_detected(self):
+    def __input_detected(self):
         """Encrypts newly typed/inserted text and outputs it to the output textbox"""
         text = sub(self.__charset, "", self.toPlainText().upper())
         new_len = len(text)
-        diff = self.last_len - new_len
+        diff = self.__last_len - new_len
 
         if diff <= -10000:  # If insertion greater than 10 000 chars
             logging.warning("Blocked attempt to insert %d characters...", abs(diff))
@@ -690,8 +684,8 @@ class _InputTextBoxWidget(QPlainTextEdit):
                 "Input too long",
                 "Inserting more than 10000 characters at a time is disallowed!",
             )
-            text = text[: self.last_len]
-            self.__sync_plug(self.last_len)
+            text = text[: self.__last_len]
+            self.__sync_plug(self.__last_len)
         elif diff != 0:  # If anything changed
             if diff < 0:  # If text longer than before
                 encrypted = self.__encrypt_plug(text[diff:])
@@ -716,16 +710,16 @@ class _InputTextBoxWidget(QPlainTextEdit):
                 )
 
             self.__refresh_plug()
-            self.last_len = new_len
-            self.set_text(text)
+            self.__last_len = new_len
+            self.__set_text(text)
         else:
             logging.info("No changes to buffer made...")
-            self.set_text(text)
+            self.__set_text(text)
 
         if not text:
             logging.info("Text buffer now empty...")
 
-    def sync_scroll(self, new_val, other=False):
+    def __sync_scroll(self, new_val, other=False):
         """Synchronizes scrollbars between input and output textboxes
         :param new_val: {float} new scrollbar position
         :param other: {bool} True if this scrollbar should be set, False if the other scrollbar
@@ -739,7 +733,7 @@ class _InputTextBoxWidget(QPlainTextEdit):
             self.__other_scrollbar.setValue(new_val)
             self.verticalScrollBar().blockSignals(False)
 
-    def set_text(self, text):
+    def __set_text(self, text):
         """Sets input textbox text without triggering write events
         :param text: {str} new text
         """

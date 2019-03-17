@@ -308,22 +308,22 @@ class _AbstractPlugboard(QDialog):
     def __init__(self, master, enigma_api, title):
         super().__init__(master)
 
-        self.main_layout = QVBoxLayout()
-        self.setLayout(self.main_layout)
+        self._main_layout = QVBoxLayout()
+        self.setLayout(self._main_layout)
         self.setWindowTitle(title)
-        self.enigma_api = enigma_api
+        self._enigma_api = enigma_api
 
-        self.old_pairs = {}
-        self.plugs = {}
-        self.banned = []
-        self.uhr_enabled = False
-        self.apply_plug = lambda: None
+        self._old_pairs = {}
+        self._plugs = {}
+        self._banned = []
+        self._uhr_enabled = False
+        self._apply_plug = lambda: None
 
     def pairs(self):
         """Returns all selected wiring pairs
         """
         pairs = []
-        for plug in self.plugs.values():
+        for plug in self._plugs.values():
             marking = plug.marking
             if marking and "a" in marking:
                 pairs.append((marking[0], plug.pair()))
@@ -339,28 +339,28 @@ class _AbstractPlugboard(QDialog):
             logging.info('Setting wiring pairs to "%s"', str(new_pairs))
             for pair in new_pairs:
                 self.connect_sockets(*pair, False)
-            self.old_pairs = self.pairs()
+            self._old_pairs = self.pairs()
 
-        self.apply_plug()
+        self._apply_plug()
 
     def apply(self):
         """Sets current pairs to the ones that will be collected, closes window
         """
-        self.old_pairs = self._pairs()
+        self._old_pairs = self.pairs()
         self.close()
 
     def clear_pairs(self):
         """Clears all pairs and sockets"""
         logging.info("Clearing all wiring pairs...")
-        for plug in self.plugs.values():
+        for plug in self._plugs.values():
             self.connect_sockets(plug.letter, None, False)
 
-        self.apply_plug()
+        self._apply_plug()
 
     def storno(self):
         """Clears all selected pairs and closes the window"""
         logging.info("Cancelling changes to wiring...")
-        self.set_pairs(self.old_pairs)
+        self.set_pairs(self._old_pairs)
         self.close()
 
     def connect_sockets(self, socket, other_socket, refresh=True):
@@ -372,18 +372,18 @@ class _AbstractPlugboard(QDialog):
         :param refresh: {bool} Whether or not the GUI should
                                be refreshed after making changes
         """
-        plug = self.plugs[socket]
+        plug = self._plugs[socket]
 
         if not other_socket:  # Disconnect
-            other = self.plugs[socket].connected_to
+            other = self._plugs[socket].connected_to
             plug.set_text(None)
             if other:
-                self.plugs[other].set_text(None)
+                self._plugs[other].set_text(None)
         else:
             # Check if letter is valid
-            socket_unavailable = other_socket in self.banned + [socket]
-            socket_used = self.plugs[other_socket].pair()
-            uhr_full = len(self.pairs()) == 10 and self.uhr_enabled
+            socket_unavailable = other_socket in self._banned + [socket]
+            socket_used = self._plugs[other_socket].pair()
+            uhr_full = len(self.pairs()) == 10 and self._uhr_enabled
 
             if socket_unavailable or socket_used or uhr_full:
                 plug.set_text("")
@@ -392,15 +392,15 @@ class _AbstractPlugboard(QDialog):
                 a_plug = (plug_id, "a")
                 b_plug = (plug_id, "b")
 
-                if self.uhr_enabled:
+                if self._uhr_enabled:
                     plug.set_text(other_socket, False, a_plug, True)
-                    self.plugs[other_socket].set_text(socket, False, b_plug, True)
+                    self._plugs[other_socket].set_text(socket, False, b_plug, True)
                 else:
                     plug.set_text(other_socket, False, a_plug)
-                    self.plugs[other_socket].set_text(socket, False, b_plug)
+                    self._plugs[other_socket].set_text(socket, False, b_plug)
 
         if refresh:
-            self.apply_plug()
+            self._apply_plug()
 
 
 class Socket(QFrame):

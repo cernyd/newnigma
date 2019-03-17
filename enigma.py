@@ -16,7 +16,7 @@ from enigma.api.enigma_api import \
 from enigma.core.components import \
     HISTORICAL  # pylint: disable=no-name-in-module
 from enigma.interface.cli import cli
-from enigma.interface.gui.gui import QtRuntime
+from enigma.interface.gui.gui import runtime
 from enigma.utils.cfg_handler import load_config
 
 DEFAULT_INIT = {"model": "Enigma I", "rotors": ["I", "II", "III"], "reflector": "UKW-A"}
@@ -361,7 +361,7 @@ if __name__ == "__main__":
         )
     else:  # Graphical mode
         logging.info("Launching Enigma Qt Application...")
-        QtRuntime(ENIGMA_API)
+        runtime(ENIGMA_API)
 
     # APPLICATION SHUTDOWN =================================================
 

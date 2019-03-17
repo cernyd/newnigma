@@ -32,91 +32,91 @@ class SettingsWindow(QDialog):
         # QT WINDOW SETTINGS ===================================================
 
         main_layout = QVBoxLayout(self)
-        self.settings_frame = QFrame(self)
-        self.settings_layout = QHBoxLayout(self.settings_frame)
+        self.__settings_frame = QFrame(self)
+        self.__settings_layout = QHBoxLayout(self.__settings_frame)
         self.setWindowTitle("Settings")
         self.setLayout(main_layout)
         self.setFixedHeight(620)
-        self.reflector_group = []
-        self.rotor_frames = []
+        self.__reflector_group = []
+        self.__rotor_frames = []
 
         # SAVE ATTRIBUTES ======================================================
 
-        self.enigma_api = enigma_api
-        self.rotor_selectors = []
-        self.ring_selectors = []
-        self.ukwd = UKWDSettingsWindow(self, enigma_api)
+        self.__enigma_api = enigma_api
+        self.__rotor_selectors = []
+        self.__ring_selectors = []
+        self.__ukwd_window = UKWDSettingsWindow(self, enigma_api)
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
 
-        self.ukwd_button = QPushButton("UKW-D wiring")
-        self.ukwd_button.clicked.connect(self.open_ukwd_wiring)
+        self.__ukwd_button = QPushButton("UKW-D wiring")
+        self.__ukwd_button.clicked.connect(self.open_ukwd_wiring)
 
         # TAB WIDGET ===========================================================
 
         tab_widget = QTabWidget()
 
-        self.stacked_wikis = _ViewSwitcherWidget(self, self.regen_model)
-        tab_widget.addTab(self.stacked_wikis, "Enigma model")
-        tab_widget.addTab(self.settings_frame, "Component settings")
+        self.__stacked_wikis = _ViewSwitcherWidget(self, self.regen_model)
+        tab_widget.addTab(self.__stacked_wikis, "Enigma model")
+        tab_widget.addTab(self.__settings_frame, "Component settings")
 
         # BUTTONS ==============================================================
 
-        self.button_frame = QFrame(self)
-        self.button_layout = QHBoxLayout(self.button_frame)
-        self.button_layout.setAlignment(Qt.AlignRight)
+        button_frame = QFrame(self)
+        button_layout = QHBoxLayout(button_frame)
+        button_layout.setAlignment(Qt.AlignRight)
 
-        self.apply_btn = QPushButton("Apply")
-        self.apply_btn.clicked.connect(self.collect)
+        self.__apply_btn = QPushButton("Apply")
+        self.__apply_btn.clicked.connect(self.collect)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.close)
 
-        self.button_layout.addWidget(storno)
-        self.button_layout.addWidget(self.apply_btn)
+        button_layout.addWidget(storno)
+        button_layout.addWidget(self.__apply_btn)
 
         # SHOW WIDGETS =========================================================
 
-        model_i = list(VIEW_DATA.keys()).index(self.enigma_api.model())
-        self.stacked_wikis.select_model(model_i)
-        self.stacked_wikis.highlight(model_i)
+        model_i = list(VIEW_DATA.keys()).index(self.__enigma_api.model())
+        self.__stacked_wikis.select_model(model_i)
+        self.__stacked_wikis.highlight(model_i)
         main_layout.addWidget(tab_widget)
-        main_layout.addWidget(self.button_frame)
+        main_layout.addWidget(button_frame)
 
     def open_ukwd_wiring(self):
         """Opens UKWD wiring menu"""
         logging.info("Opened UKW-D wiring menu...")
-        self.ukwd.exec_()
+        self.__ukwd_window.exec_()
         self.refresh_ukwd()
 
     def refresh_ukwd(self):
         """Refreshes Apply button according to criteria (UKW-D rotor must be
         selected to edit its settings)"""
-        if self.reflector_group.checkedButton().text() == "UKW-D":
+        if self.__reflector_group.checkedButton().text() == "UKW-D":
             logging.info("UKW-D reflector selected, enabling UKW-D button...")
 
-            if len(self.ukwd.pairs()) != 12:
-                self.apply_btn.setDisabled(True)
-                self.apply_btn.setToolTip("Connect all 12 pairs in UKW-D wiring!")
+            if len(self.__ukwd_window.pairs()) != 12:
+                self.__apply_btn.setDisabled(True)
+                self.__apply_btn.setToolTip("Connect all 12 pairs in UKW-D wiring!")
             else:
-                self.apply_btn.setDisabled(False)
-                self.apply_btn.setToolTip(None)
+                self.__apply_btn.setDisabled(False)
+                self.__apply_btn.setToolTip(None)
 
-            self.ukwd_button.setDisabled(False)
-            self.ukwd_button.setToolTip("Select the UKW-D rotor to edit settings")
-            if len(self.rotor_frames) == 4:  # IF THIN ROTORS
+            self.__ukwd_button.setDisabled(False)
+            self.__ukwd_button.setToolTip("Select the UKW-D rotor to edit settings")
+            if len(self.__rotor_frames) == 4:  # IF THIN ROTORS
                 logging.info("Disabling thin rotor radiobuttons...")
-                self.rotor_frames[0].setDisabled(True)
+                self.__rotor_frames[0].setDisabled(True)
         else:
             logging.info("UKW-D reflector deselected, disabling UKW-D button...")
-            self.apply_btn.setDisabled(False)
-            self.apply_btn.setToolTip(None)
+            self.__apply_btn.setDisabled(False)
+            self.__apply_btn.setToolTip(None)
 
-            self.ukwd_button.setDisabled(True)
-            self.ukwd_button.setToolTip(None)
-            if len(self.rotor_frames) == 4:  # IF THIN ROTORS
+            self.__ukwd_button.setDisabled(True)
+            self.__ukwd_button.setToolTip(None)
+            if len(self.__rotor_frames) == 4:  # IF THIN ROTORS
                 logging.info("Enabling thin rotor radiobuttons...")
-                self.rotor_frames[0].setDisabled(False)
+                self.__rotor_frames[0].setDisabled(False)
 
     def generate_components(self, reflectors, rotors, rotor_n):
         """Generates currently displayed components based on Enigma model
@@ -128,7 +128,7 @@ class SettingsWindow(QDialog):
         spacing = 15
         style = "font-size: 18px; text-align: center;"
 
-        reflector_frame = QFrame(self.settings_frame)
+        reflector_frame = QFrame(self.__settings_frame)
         reflector_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
 
         reflector_layout = QVBoxLayout(reflector_frame)
@@ -138,7 +138,7 @@ class SettingsWindow(QDialog):
             alignment=Qt.AlignHCenter,
         )
 
-        self.reflector_group = QButtonGroup(reflector_frame)
+        self.__reflector_group = QButtonGroup(reflector_frame)
         reflector_layout.setAlignment(Qt.AlignTop)
 
         for i, model in enumerate(reflectors):
@@ -147,25 +147,25 @@ class SettingsWindow(QDialog):
                 "Reflector is an Enigma component that \nreflects "
                 "letters from the rotors back to the lightboard"
             )
-            self.reflector_group.addButton(radio)
-            self.reflector_group.setId(radio, i)
+            self.__reflector_group.addButton(radio)
+            self.__reflector_group.setId(radio, i)
             reflector_layout.addWidget(radio, alignment=Qt.AlignTop)
 
         reflector_layout.addStretch()
-        reflector_layout.addWidget(self.ukwd_button)
+        reflector_layout.addWidget(self.__ukwd_button)
 
-        self.reflector_group.button(0).setChecked(True)
-        self.reflector_group.buttonClicked.connect(self.refresh_ukwd)
-        self.settings_layout.addWidget(reflector_frame)
+        self.__reflector_group.button(0).setChecked(True)
+        self.__reflector_group.buttonClicked.connect(self.refresh_ukwd)
+        self.__settings_layout.addWidget(reflector_frame)
 
         # ROTOR SETTINGS =======================================================
 
-        self.rotor_selectors = []
-        self.ring_selectors = []
-        self.rotor_frames = []
+        self.__rotor_selectors = []
+        self.__ring_selectors = []
+        self.__rotor_frames = []
 
         for rotor in range(rotor_n):
-            rotor_frame = QFrame(self.settings_frame)
+            rotor_frame = QFrame(self.__settings_frame)
             rotor_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
             rotor_layout = QVBoxLayout(rotor_frame)
             rotor_layout.setAlignment(Qt.AlignTop)
@@ -211,8 +211,8 @@ class SettingsWindow(QDialog):
             h_rule.setFrameShape(QFrame.HLine)
             h_rule.setFrameShadow(QFrame.Sunken)
 
-            self.ring_selectors.append(combobox)
-            self.rotor_selectors.append(button_group)
+            self.__ring_selectors.append(combobox)
+            self.__rotor_selectors.append(button_group)
 
             rotor_layout.addStretch()
             rotor_layout.addWidget(h_rule)
@@ -222,13 +222,13 @@ class SettingsWindow(QDialog):
             )
             rotor_layout.addWidget(combobox)
 
-            self.settings_layout.addWidget(rotor_frame)
-            self.rotor_frames.append(rotor_frame)
+            self.__settings_layout.addWidget(rotor_frame)
+            self.__rotor_frames.append(rotor_frame)
 
     def clear_components(self):
         """Deletes all components settings widgets"""
         while True:
-            child = self.settings_layout.takeAt(0)
+            child = self.__settings_layout.takeAt(0)
             if not child:
                 break
             wgt = child.widget()
@@ -242,90 +242,90 @@ class SettingsWindow(QDialog):
         logging.info("Regenerating component settings...")
         self.clear_components()
 
-        reflectors = self.enigma_api.model_labels(new_model)["reflectors"]
-        rotors = self.enigma_api.model_labels(new_model)["rotors"]
-        rotor_n = self.enigma_api.rotor_n(new_model)
+        reflectors = self.__enigma_api.model_labels(new_model)["reflectors"]
+        rotors = self.__enigma_api.model_labels(new_model)["rotors"]
+        rotor_n = self.__enigma_api.rotor_n(new_model)
 
         self.generate_components(reflectors, rotors[::], rotor_n)
 
-        defaults = self.enigma_api.default_cfg(new_model, rotor_n)[1]
+        defaults = self.__enigma_api.default_cfg(new_model, rotor_n)[1]
         for selected, i in zip(defaults, range(rotor_n)):
-            self.rotor_selectors[i].button(selected).setChecked(True)
+            self.__rotor_selectors[i].button(selected).setChecked(True)
 
-        self.ukwd.clear_pairs()
-        self.ukwd.old_pairs = {}
-        if new_model == self.enigma_api.model():
+        self.__ukwd_window.clear_pairs()
+        self.__ukwd_window._old_pairs = {}
+        if new_model == self.__enigma_api.model():
             self.load_from_api()
-            self.ukwd.refresh_pairs()
+            self.__ukwd_window.refresh_pairs()
         self.refresh_ukwd()
 
     def load_from_api(self):
         """Loads displayed settings from shared EnigmaAPI instance"""
         logging.info("Loading component settings from EnigmaAPI...")
 
-        model = self.enigma_api.model()
-        reflectors = self.enigma_api.model_labels(model)["reflectors"]
-        rotors = self.enigma_api.model_labels(model)["rotors"]
+        model = self.__enigma_api.model()
+        reflectors = self.__enigma_api.model_labels(model)["reflectors"]
+        rotors = self.__enigma_api.model_labels(model)["rotors"]
 
         if "Beta" in rotors:
             rotors.remove("Beta")
             rotors.remove("Gamma")
 
-        reflector_i = reflectors.index(self.enigma_api.reflector())
-        self.reflector_group.button(reflector_i).setChecked(True)
+        reflector_i = reflectors.index(self.__enigma_api.reflector())
+        self.__reflector_group.button(reflector_i).setChecked(True)
 
-        for i, rotor in enumerate(self.enigma_api.rotors()):
-            if (model == "Enigma M4" and self.enigma_api.reflector() != "UKW-D" and i == 0):
+        for i, rotor in enumerate(self.__enigma_api.rotors()):
+            if (model == "Enigma M4" and self.__enigma_api.reflector() != "UKW-D" and i == 0):
                 rotor_i = ["Beta", "Gamma"].index(rotor)
             else:
                 rotor_i = rotors.index(rotor)
 
-            self.rotor_selectors[i].button(rotor_i).setChecked(True)
+            self.__rotor_selectors[i].button(rotor_i).setChecked(True)
 
-        for i, ring in enumerate(self.enigma_api.ring_settings()):
-            self.ring_selectors[i].setCurrentIndex(ring - 1)
+        for i, ring in enumerate(self.__enigma_api.ring_settings()):
+            self.__ring_selectors[i].setCurrentIndex(ring - 1)
 
     def collect(self):
         """Collects all selected settings for rotors and other components,
         applies them to the EnigmaAPI as new settings"""
         logging.info("Collecting new settings...")
 
-        new_model = self.stacked_wikis.currently_selected
-        new_reflector = self.reflector_group.checkedButton().text()  # REFLECTOR CHOICES
-        reflector_pairs = self.ukwd.pairs()
+        new_model = self.__stacked_wikis.currently_selected
+        new_reflector = self.__reflector_group.checkedButton().text()  # REFLECTOR CHOICES
+        reflector_pairs = self.__ukwd_window.pairs()
 
         if new_reflector == "UKW-D" and new_model == "Enigma M4":
             new_rotors = [
-                group.checkedButton().text() for group in self.rotor_selectors[1:]
+                group.checkedButton().text() for group in self.__rotor_selectors[1:]
             ]
         else:
             new_rotors = [
-                group.checkedButton().text() for group in self.rotor_selectors
+                group.checkedButton().text() for group in self.__rotor_selectors
             ]
 
-        ring_settings = [ring.currentIndex() + 1 for ring in self.ring_selectors]
+        ring_settings = [ring.currentIndex() + 1 for ring in self.__ring_selectors]
 
         logging.info(
-            "EnigmaAPI state before applying settings:\n%s", str(self.enigma_api)
+            "EnigmaAPI state before applying settings:\n%s", str(self.__enigma_api)
         )
 
-        if new_model != self.enigma_api.model():
-            self.enigma_api.model(new_model)
+        if new_model != self.__enigma_api.model():
+            self.__enigma_api.model(new_model)
 
-        if new_reflector != self.enigma_api.reflector():
-            self.enigma_api.reflector(new_reflector)
+        if new_reflector != self.__enigma_api.reflector():
+            self.__enigma_api.reflector(new_reflector)
 
         if new_reflector == "UKW-D":
-            self.enigma_api.reflector_pairs(reflector_pairs)
+            self.__enigma_api.reflector_pairs(reflector_pairs)
 
-        if new_rotors != self.enigma_api.rotors():
-            self.enigma_api.rotors(new_rotors)
+        if new_rotors != self.__enigma_api.rotors():
+            self.__enigma_api.rotors(new_rotors)
 
-        if ring_settings != self.enigma_api.ring_settings():
-            self.enigma_api.ring_settings(ring_settings)
+        if ring_settings != self.__enigma_api.ring_settings():
+            self.__enigma_api.ring_settings(ring_settings)
 
         logging.info(
-            "EnigmaAPI state when closing settings:\n%s", str(self.enigma_api)
+            "EnigmaAPI state when closing settings:\n%s", str(self.__enigma_api)
         )
 
         self.close()
@@ -345,8 +345,8 @@ class _ViewSwitcherWidget(QWidget):
         """
         super().__init__(master)
 
-        self.layout = QHBoxLayout()
-        self.setLayout(self.layout)
+        layout = QHBoxLayout()
+        self.setLayout(layout)
 
         # LIST OF AVAILABLE MODELS =============================================
 
@@ -367,8 +367,8 @@ class _ViewSwitcherWidget(QWidget):
             self.stacked_wikis.addWidget(_EnigmaViewWidget(self, model, description))
         self.total_models = len(VIEW_DATA)
 
-        self.layout.addWidget(self.model_list)
-        self.layout.addWidget(self.stacked_wikis)
+        layout.addWidget(self.model_list)
+        layout.addWidget(self.stacked_wikis)
 
         # Sets initially viewed
         self.currently_selected = None
@@ -416,31 +416,29 @@ class _EnigmaViewWidget(QWidget):
 
         # QT WINDOW SETTINGS ===================================================
 
-        self.model = model
-        self.main_layout = QHBoxLayout()
-        self.setLayout(self.main_layout)
-        self.main_layout.setMargin(0)
+        main_layout = QHBoxLayout()
+        self.setLayout(main_layout)
+        main_layout.setMargin(0)
 
         # MODEL IMAGE ==========================================================
 
-        self.description = description
-        self.img = QLabel("")
+        img = QLabel("")
         pixmap = QPixmap(VIEW_DATA[model]["img"]).scaled(400, 500)
-        self.img.setPixmap(pixmap)
-        self.img.setFrameStyle(QFrame.Panel | QFrame.Plain)
-        self.img.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        img.setPixmap(pixmap)
+        img.setFrameStyle(QFrame.Panel | QFrame.Plain)
+        img.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         # MODEL WIKI ===========================================================
 
-        self.wiki_text = QTextBrowser()
-        self.wiki_text.setHtml(self.description)  # setHtml sets html
-        self.wiki_text.setStyleSheet(STYLESHEET)
-        self.wiki_text.setMinimumWidth(350)
+        wiki_text = QTextBrowser()
+        wiki_text.setHtml(description)  # setHtml sets html
+        wiki_text.setStyleSheet(STYLESHEET)
+        wiki_text.setMinimumWidth(350)
 
         # SHOW WIDGETS =========================================================
 
-        self.main_layout.addWidget(self.img)
-        self.main_layout.addWidget(self.wiki_text)
+        main_layout.addWidget(img)
+        main_layout.addWidget(wiki_text)
 
 
 class UKWDSettingsWindow(_AbstractPlugboard):
@@ -453,8 +451,8 @@ class UKWDSettingsWindow(_AbstractPlugboard):
         :param enigma_api: {EnigmaAPI}
         """
         super().__init__(master, enigma_api, "UKW-D Wiring")
-        self.banned = ["J", "Y"]
-        self.apply_plug = self.refresh_apply
+        self._banned = ["J", "Y"]
+        self._apply_plug = self.refresh_apply
 
         plug_frame = QFrame(self)
         plug_layout = QVBoxLayout(plug_frame)
@@ -465,10 +463,10 @@ class UKWDSettingsWindow(_AbstractPlugboard):
 
             for letter in group:
                 socket = Socket(
-                    self, letter, self.connect_sockets, self.enigma_api.charset()
+                    self, letter, self.connect_sockets, self._enigma_api.charset()
                 )
                 col_layout.addWidget(socket)
-                self.plugs[letter] = socket
+                self._plugs[letter] = socket
 
             plug_layout.addWidget(col_frame)
 
@@ -477,38 +475,38 @@ class UKWDSettingsWindow(_AbstractPlugboard):
         btn_layout = QHBoxLayout(btn_frame)
         btn_layout.setAlignment(Qt.AlignRight)
 
-        self.reset_all = QPushButton("Clear pairs")
-        self.reset_all.clicked.connect(self.clear_pairs)
+        self.__reset_all = QPushButton("Clear pairs")
+        self.__reset_all.clicked.connect(self.clear_pairs)
 
-        self.apply_btn = QPushButton("Apply")
-        self.apply_btn.clicked.connect(self.apply)
+        self.__apply_btn = QPushButton("Apply")
+        self.__apply_btn.clicked.connect(self.apply)
 
         storno = QPushButton("Storno")
         storno.clicked.connect(self.storno)
 
-        btn_layout.addWidget(self.reset_all)
+        btn_layout.addWidget(self.__reset_all)
         btn_layout.addWidget(storno)
-        btn_layout.addWidget(self.apply_btn)
+        btn_layout.addWidget(self.__apply_btn)
 
-        self.main_layout.addWidget(plug_frame)
-        self.main_layout.addWidget(btn_frame)
+        self._main_layout.addWidget(plug_frame)
+        self._main_layout.addWidget(btn_frame)
 
         self.refresh_apply()
 
     def refresh_pairs(self):
         """Attempts to refresh visibly connected pairs from shared EnigmaAPI instance"""
         try:
-            self.set_pairs(self.enigma_api.reflector_pairs())
+            self.set_pairs(self._enigma_api.reflector_pairs())
         except ValueError:
             pass
 
     def refresh_apply(self):
         """Enables the "Apply" button only if all 12 pairs are connected"""
         if len(self.pairs()) != 12:
-            self.apply_btn.setDisabled(True)
-            self.apply_btn.setToolTip("All 12 pairs must be connected!")
+            self.__apply_btn.setDisabled(True)
+            self.__apply_btn.setToolTip("All 12 pairs must be connected!")
             logging.info("Apply conditions met, Apply button enabled...")
         else:
-            self.apply_btn.setDisabled(False)
-            self.apply_btn.setToolTip(None)
+            self.__apply_btn.setDisabled(False)
+            self.__apply_btn.setToolTip(None)
             logging.info("Apply conditions met, Apply button enabled...")
