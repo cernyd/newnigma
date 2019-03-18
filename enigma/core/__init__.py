@@ -12,7 +12,7 @@ def contains(pairs, pair):
 def validate_pairs(pairs, name):
     pairs = pairs[::]
     if len(pairs) > 13:
-        raise ValueError("Too many pairs!")
+        raise ValueError("Too many %s pairs!" % name)
 
     while pairs:
         pair = pairs.pop()
@@ -26,10 +26,10 @@ def validate_pairs(pairs, name):
             raise ValueError("Invalid %s pair '%s'!" % (name, str(pair)))
 
         if pair[0] in letters:
-            raise ValueError("Duplicate letter '%s'!" % pair[0])
+            raise ValueError("Duplicate letter '%s' in %s pair!" % (pair[0], name))
 
         if pair[1] in letters:
-            raise ValueError("Duplicate letter '%s'!" % pair[1])
+            raise ValueError("Duplicate letter '%s' in %s pair!" % (pair[1], name))
 
 
 def convert_position(position, charset, name="component"):

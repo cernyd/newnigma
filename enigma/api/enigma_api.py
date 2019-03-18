@@ -56,7 +56,7 @@ class EnigmaAPI:
         :param model: {str} Enigma model
         """
         if not isinstance(model, str) or model not in HISTORICAL:
-            raise ValueError("Invalid enigma model '%s'" % str(model))
+            raise ValueError("Invalid Enigma model '%s'" % str(model))
 
         labels = lambda component: [
             item["label"] for item in HISTORICAL[model][component]
@@ -375,7 +375,7 @@ class EnigmaAPI:
         try:
             data = HISTORICAL[model]
         except KeyError:
-            raise ValueError("Invalid enigma model %s!" % model)
+            raise ValueError("Invalid Enigma model %s!" % model)
 
         final_data = None
         if comp_type == "stator":
@@ -442,7 +442,7 @@ class EnigmaAPI:
             raise
 
     def get_config(self):
-        """Converts Enigma settings to a json serializable dict (but can be used
+        """Converts Enigma settings to a JSON serializable dict (but can be used
         for any purpose)
         """
         data = {}

@@ -912,7 +912,7 @@ class Enigma:
         """Rotors getter/setter"""
         if new_rotors:
             if len(new_rotors) != self.rotor_n():
-                raise ValueError("This enigma has %d rotors!" % self.rotor_n())
+                raise ValueError("This Enigma has %d rotors!" % self.rotor_n())
 
             self._rotors = new_rotors
         else:

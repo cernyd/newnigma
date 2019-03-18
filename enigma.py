@@ -314,19 +314,19 @@ if __name__ == "__main__":
         try:
             ENIGMA_API.load_from(FILENAME)
         except FileNotFoundError:
-            logging.info(
-                "No configuration file '%s' found, exiting....", FILENAME
-            )
-            print("File '%s' not found!" % FILENAME)
+            msg = "No configuration file '%s' found!" % FILENAME
+            logging.info(msg)
+            print(msg)
             exit(1)
         except JSONDecodeError:
-            logging.info(
-                "No valid configuration found in file '%s', exiting....", FILENAME
-            )
-            print("No valid configuration found in file '%s'!" % FILENAME)
+            msg = "Configuration file '%s'! is not of JSON format" % FILENAME
+            logging.info(msg)
+            print(msg)
             exit(1)
         except KeyError:
-            print("File loaded but did not contain required data!")
+            msg = "Configuration file '%s' loaded but did not contain required data!" % FILENAME
+            logging.info(msg)
+            print(msg)
             exit(1)
 
     else:  # Load defalt config

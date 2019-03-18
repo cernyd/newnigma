@@ -221,7 +221,7 @@ class RootWindow(QWidget):
         )[0]
 
         # To prevent from saving files without a file extension...
-        if not findall(r"\.json$", filename):
+        if not findall(r"\.json$", filename.lower()):
             filename += ".json"
             logging.info(".json file extension for save file not found, adding...")
 
@@ -235,7 +235,7 @@ class RootWindow(QWidget):
         settings and encrypted message to the file"""
         dialog = QFileDialog(self)
         filename = dialog.getSaveFileName(
-            self, "Save enigma message", QDir.homePath(), "*.txt"
+            self, "Save Enigma message", QDir.homePath(), "*.txt"
         )[0]
 
         if not findall(r"\.txt$", filename):
@@ -498,7 +498,7 @@ class _RotorHandlerWidget(QFrame):
                                      rotor one position forward
         :param minus_plug: {callable} Callable that rotates the corresponding
                                       rotor one position backward
-        :param set_pos_plug: {callable} Callable that sets enigma object
+        :param set_pos_plug: {callable} Callable that sets Enigma object
                                         position to the current position
         """
         super().__init__(master)
