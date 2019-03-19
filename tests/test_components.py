@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # pylint: disable=no-name-in-module,missing-docstring,line-too-long
 
-import subprocess
 from string import ascii_uppercase as alphabet
 
 import pytest
@@ -97,8 +96,7 @@ def test_routing():
 
 def test_implementation():
     """
-    Tests t
-he implementation by encrypting each letter of the alphabet
+    Tests the implementation by encrypting each letter of the alphabet
     4000 times and checking if the encrypted message does not contain the
     letter (this must always be true because the Enigma worked this way)
 
@@ -267,13 +265,3 @@ def test_historical_messages(
         result += enigma.press_key(letter)
 
     assert result == correct_result
-
-
-def test_cli():
-    command = (
-        "./enigma.py -cs --model 'Enigma I' --rotors II I III --reflector UKW-A --positions A B L "
-        "--ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ "
-        "--message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
-    )
-    assert subprocess.getoutput(command) == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUE" \
-                                            "DAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"

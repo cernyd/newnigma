@@ -317,6 +317,9 @@ class EnigmaAPI:
         rotors = []
         check_iterable(rotor_labels, "Rotor labels")
 
+        if not rotor_labels:
+            raise ValueError("No rotor labels to generate rotors from!")
+
         for label in rotor_labels:
             rotors.append(cls.generate_component(model, "rotors", label))
         return rotors

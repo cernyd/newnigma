@@ -4,13 +4,15 @@
 from random import choice, choices, randint, sample, shuffle
 from string import ascii_uppercase as alphabet
 
+import subprocess
 import pytest
 
 from enigma.api.enigma_api import EnigmaAPI
 from enigma.core.components import HISTORICAL, Rotor
 
 TRASH_DATA = ("iweahbrnawjhb", EnigmaAPI, 12341123, -1332, "heaaafs", "", Rotor,
-              "Engima", ["fweafawe", "4324", 43, None], "č", "čěšč", ("š", "+", "6"))
+              "Engima", ["fweafawe", "4324", 43, None], "č",
+              "čěšč", ("š", "+", "6"), [])
 
 
 def generate_pairs(k):
@@ -181,7 +183,7 @@ def test_reflector_pairs(pairs, should_fail):
             enigma_api.reflector_pairs(pairs)
     else:
         enigma_api.reflector_pairs(pairs)
-        assert type(enigma_api.encrypt("ABCD"))
+        assert isinstance(enigma_api.encrypt("ABCD"), str)
 
 
 def test_uhr():
@@ -222,3 +224,45 @@ def test_generate_rotor_callback():
         callback()
         assert int(enigma_api.positions()[i]) - 1 == rotate_by
         enigma_api.positions([1, 1, 1])
+
+
+def test_cli():
+    command = (
+        "./enigma.py -cs --model 'Enigma I' --rotors II I III --reflector UKW-A --positions A B L "
+        "--ring_settings 24 13 22 --plug_pairs AM FI NV PS TU WZ "
+        "--message GCDSEAHUGWTQGRKVLFGXUCALXVYMIGMMNMFDXTGNVHVRMMEVOUYFZSLRHDRRXFJWCFHUHMUNZEFRDISIKBGPMYVXUZ"
+    )
+    assert subprocess.getoutput(command) == "FEINDLIQEINFANTERIEKOLONNEBEOBAQTETXANFANGSUE" \
+                                            "DAUSGANGBAERWALDEXENDEDREIKMOSTWAERTSNEUSTADT"
+
+
+def test_generate_component():
+    for _ in range(1000):
+        model = choice(list(HISTORICAL.keys()))
+        comp_type = choice(["rotors", "reflectors"])
+        component_data = choice(HISTORICAL[model][comp_type])
+
+        if component_data["label"] == "UKW-D":
+            continue
+
+        component = EnigmaAPI.generate_component(model, comp_type, label=component_data["label"])
+        assert component.label() == component_data["label"]
+        assert component._wiring == component_data["wiring"]
+        if comp_type == "rotors" and component_data["label"] not in ("Beta", "Gamma"):
+            assert component._turnover == component_data["turnover"]
+
+
+def test_generate_enigma():
+    for _ in range(100):
+        model = choice(list(HISTORICAL.keys()))
+        model_data = HISTORICAL[model]
+
+        enigma = EnigmaAPI.generate_enigma(model)
+
+        assert enigma.model() == model
+        assert enigma.reflector_rotatable() == model_data["rotatable_ref"]
+        assert bool(enigma._plugboard) == model_data["plugboard"]
+        assert enigma._numeric == model_data["numeric"]
+        assert enigma._charset == model_data["charset"]
+        assert enigma.rotor_n() == model_data["rotor_n"]
+        assert enigma.charset() == model_data["charset"]
