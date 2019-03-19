@@ -319,7 +319,7 @@ if __name__ == "__main__":
             print(msg)
             exit(1)
         except JSONDecodeError:
-            msg = "Configuration file '%s'! is not of JSON format" % FILENAME
+            msg = "Configuration file '%s'! is not of JSON format!" % FILENAME
             logging.info(msg)
             print(msg)
             exit(1)
