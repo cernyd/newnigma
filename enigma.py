@@ -22,6 +22,8 @@ from enigma.utils.cfg_handler import load_config
 
 DEFAULT_INIT = {"model": "Enigma I", "rotors": ["I", "II", "III"], "reflector": "UKW-A"}
 
+logging.basicConfig(level=logging.CRITICAL)
+
 
 def config_from_args(args, load_to=None):
     """Returns dictionary of options aquired from args
@@ -112,7 +114,7 @@ def load_custom(custom):
                 data["layout"] = DEFAULT_LAYOUT
             HISTORICAL[model] = data
     except (TypeError, KeyError, ValueError) as err:
-        print("Invalid custom data, please fix 'config.json'! Message: %s" % err)
+        print("Invalid custom data, please fix 'config.json'! Message: %s" % str(err))
         exit(1)
     load_views(custom)
 
@@ -123,10 +125,9 @@ if __name__ == "__main__":
         CONFIG_DATA = load_config("config.json")
         DEFAULT_INIT = CONFIG_DATA["default"]
         CUSTOM = CONFIG_DATA.get("custom")
-    except (FileNotFoundError, KeyError, ValueError):
-        logging.info(
-            "Failed to load default config, using builtin defaults instead..."
-        )
+    except (FileNotFoundError, KeyError, ValueError, JSONDecodeError):
+        msg = "Failed to load default config, using builtin defaults instead..."
+        logging.info(msg)
     if CUSTOM:
         load_custom(CUSTOM)
 
