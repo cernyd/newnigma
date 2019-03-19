@@ -1,0 +1,34 @@
+// This is a snippet of custom configuration data,
+// if no "layout" key is supplied, the default keyboard layout is used.
+// The user is responsible for properly formatting this data
+// and copying it to the 'config.json' file under the 'custom' key.
+{
+    "CUSTOM_MODEL": {
+        "stator": {"wiring": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"},
+        "rotors": [
+            {
+                "label": "LMAO",
+                "wiring": "WLRHBQUNDKJCZSEXOTMAGYFPVI",
+                "turnover": "SUVWZABCEFGIKLOPQ"
+            },
+            {
+                "label": "LMAOOO",
+                "wiring": "TFJQAZWMHLCUIXRDYGOEVBNSKP",
+                "turnover": "STVYZACDFGHKMNQ"
+            },
+            {
+                "label": "III",
+                "wiring": "QTPIXWVDFRMUSLJOHCANEZKYBG",
+                "turnover": "SWZFHMQ"
+            }
+        ],
+        "rotor_n": 3,
+        "reflectors": [{"label": "UKW", "wiring": "IMETCGFRAYSQBZXWLHKDVUPOJN"}],
+        "rotatable_ref": true,
+        "letter_group": 5,
+        "plugboard": false,
+        "numeric": false,
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "description": "This is a custom Enigma model"
+    }
+}

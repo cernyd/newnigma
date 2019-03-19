@@ -88,14 +88,14 @@ class RootWindow(QWidget):
         # INPUT OUTPUT FOR ENCRYPTION/DECRYPTION ==============================
 
         logging.info("Adding I/O textboxes...")
-        output_textbox = _OutputTextBoxWidget(
+        self.__output_textbox = _OutputTextBoxWidget(
             self, self.__lightboard.light_up, enigma_api.letter_group
         )
         self.__input_textbox = _InputTextBoxWidget(
             self,
             enigma_api.encrypt,
-            output_textbox.insert,
-            output_textbox,
+            self.__output_textbox.insert,
+            self.__output_textbox,
             self.__rotors.set_positions,
             enigma_api.letter_group,
             enigma_api.revert_by,
@@ -125,7 +125,7 @@ class RootWindow(QWidget):
             QLabel("OUTPUT", self, styleSheet="font-size: 20px"),
             alignment=Qt.AlignCenter,
         )
-        main_layout.addWidget(output_textbox)
+        main_layout.addWidget(self.__output_textbox)
         main_layout.addWidget(self.__plug_button)
 
         self.refresh_gui()
@@ -202,7 +202,7 @@ class RootWindow(QWidget):
                 return
 
             # Refresh gui after loading setings
-            self.__rotors.__generate_rotors()
+            self.__rotors.generate_rotors()
             self.__input_textbox.blockSignals(True)
             self.refresh_gui()
             self.__input_textbox.blockSignals(False)
@@ -245,7 +245,7 @@ class RootWindow(QWidget):
         if filename:
             logging.info('Exporing message to "%s"...', filename)
             with open(filename, "w") as file:
-                message = "\n".join(wrap(self.output_textbox.text(), 29))
+                message = "\n".join(wrap(self.__output_textbox.text(), 29))
                 file.write("%s\n%s\n" % (str(self.__enigma_api), message))
 
 
@@ -415,10 +415,10 @@ class _RotorsHandlerWidget(QFrame):
 
         # REGENERATE ===============================================
 
-        self.__generate_rotors()
+        self.generate_rotors()
         self.set_positions()
 
-    def __generate_rotors(self):
+    def generate_rotors(self):
         """Regenerates rotor and reflector views (with position indicators and
         and buttons to rotate them according to new EnigmaAPI settings"""
         self.__layout.removeItem(self._left_spacer)
@@ -470,7 +470,7 @@ class _RotorsHandlerWidget(QFrame):
         if old_cfg != self.__enigma_api.get_config():
             logging.info("Settings changed, reloading GUI...")
             del settings
-            self.__generate_rotors()
+            self.generate_rotors()
             self.__refresh_plug()
             self.set_positions()
         else:

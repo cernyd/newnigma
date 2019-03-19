@@ -49,7 +49,7 @@ class SettingsWindow(QDialog):
 
         # ROTORS AND REFLECTOR SETTINGS ========================================
 
-        self.__ukwd_button = QPushButton("UKW-D wiring")
+        self.__ukwd_button = QPushButton("UKW-D pairs")
         self.__ukwd_button.clicked.connect(self.open_ukwd_window)
 
         # TAB WIDGET ===========================================================
@@ -450,7 +450,7 @@ class UKWDSettingsWindow(_AbstractPlugboard):
         :param master: Qt parent object
         :param enigma_api: {EnigmaAPI}
         """
-        super().__init__(master, enigma_api, "UKW-D Wiring")
+        super().__init__(master, enigma_api, "UKW-D pairs")
         self._banned = ["J", "Y"]
         self._apply_plug = self.refresh_apply
 

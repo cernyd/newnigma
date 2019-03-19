@@ -118,6 +118,7 @@ def load_custom(custom):
 
 
 if __name__ == "__main__":
+    CUSTOM = None
     try:
         CONFIG_DATA = load_config("config.json")
         DEFAULT_INIT = CONFIG_DATA["default"]
