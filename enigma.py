@@ -11,10 +11,11 @@ from sys import stdin
 from pytest import main as pytest_main
 
 from benchmark import benchmark
+from enigma.interface.gui import load_views
 from enigma.api.enigma_api import \
     EnigmaAPI  # pylint: disable=no-name-in-module
 from enigma.core.components import \
-    HISTORICAL  # pylint: disable=no-name-in-module
+    HISTORICAL, DEFAULT_LAYOUT  # pylint: disable=no-name-in-module
 from enigma.interface.cli import cli
 from enigma.interface.gui.gui import runtime
 from enigma.utils.cfg_handler import load_config
@@ -101,7 +102,33 @@ def resolve_conflicts(args):
         exit(-1)
 
 
+def load_custom(custom):
+    try:
+        for model, data in custom.items():
+            if HISTORICAL.get(model, False):
+                print("Could not load custom config: model '%s' already exists!" % model)
+                exit(1)
+            if not data.get("layout", False):
+                data["layout"] = DEFAULT_LAYOUT
+            HISTORICAL[model] = data
+    except (TypeError, KeyError, ValueError) as err:
+        print("Invalid custom data, please fix 'config.json'! Message: %s" % err)
+        exit(1)
+    load_views(custom)
+
+
 if __name__ == "__main__":
+    try:
+        CONFIG_DATA = load_config("config.json")
+        DEFAULT_INIT = CONFIG_DATA["default"]
+        CUSTOM = CONFIG_DATA.get("custom")
+    except (FileNotFoundError, KeyError, ValueError):
+        logging.info(
+            "Failed to load default config, using builtin defaults instead..."
+        )
+    if CUSTOM:
+        load_custom(CUSTOM)
+
     # FLAG ARGS ====================================================
     PARSER = argparse.ArgumentParser(
         description="returns Enigma encrypted text base"
@@ -286,7 +313,7 @@ if __name__ == "__main__":
     # CONFIG LOAD =========================================================
 
     logging.info("Loading config...")
-    ENIGMA_API = EnigmaAPI(**DEFAULT_INIT)  # Fallback configuration
+    ENIGMA_API = EnigmaAPI(**DEFAULT_INIT)  # Fallback default configuration
     CONFIG = config_from_args(ARGS)
 
     FILENAME = None
@@ -328,14 +355,6 @@ if __name__ == "__main__":
             logging.info(msg)
             print(msg)
             exit(1)
-
-    else:  # Load defalt config
-        try:
-            ENIGMA_API = EnigmaAPI(**load_config("config.json")["default"])
-        except (FileNotFoundError, KeyError, ValueError):
-            logging.info(
-                "Failed to load default config, using builtin defaults instead..."
-            )
 
     # APPLICATION INIT ====================================================
 

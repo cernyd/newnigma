@@ -250,14 +250,23 @@ RESOURCES = {
 }
 
 
-for model in HISTORICAL:
-    VIEW_DATA[model] = RESOURCES.get(
-        model,
-        {
-            "description": "<h1>%s</h1>\n<hr>\nNo description given" % model,
-            "img": BASE_DIR + "unknown.jpg",
-        },
-    )
+def load_views(configs):
+    """Loads dictionary objects to VIEW_DATA in order to be selectable
+    in the GUI.
+    :param configs: {dict} Dictionary of configurations to load
+    """
+    for model, data in configs.items():
+        description = data.get("description", "No description given")
+        VIEW_DATA[model] = RESOURCES.get(
+            model,
+            {
+                "description": "<h1>%s</h1>\n<hr>\n%s" % (model, description),
+                "img": BASE_DIR + "unknown.jpg",
+            }
+        )
+
+
+load_views(HISTORICAL)
 
 
 def letter_groups(text, group_size=5):
