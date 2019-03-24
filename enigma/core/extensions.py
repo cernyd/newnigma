@@ -8,7 +8,7 @@ from enigma.core import ALPHABET, convert_position, validate_pairs
 class Uhr:
     """Uhr Plugboard extension device"""
 
-    def __init__(self):
+    def __init__(self, pairs=[]):
         # Way contacts 00 ... 39 are steckered with the A board
         self.__contacts = [
             26, 11, 24, 21, 2, 31, 0, 25, 30, 39, 28, 13, 22, 35,
@@ -26,11 +26,13 @@ class Uhr:
 
         self.__offset = 0  # Scrambler disc offset
 
-    def rotate(self, rotate_by=1):
+        self.pairs(pairs)
+
+    def rotate(self, offset_by=1):
         """Rotates Uhr dial by select number of positions
-        :param rotate_by: {int} By how many positions
+        :param offset_by: {int} By how many positions
         """
-        self.__offset = (self.__offset + rotate_by) % 40
+        self.__offset = (self.__offset + offset_by) % 40
 
     def position(self, new_position=None):
         """Positions getter/setter, valid position range is 00 - 39"""

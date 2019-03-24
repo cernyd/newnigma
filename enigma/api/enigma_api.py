@@ -251,8 +251,9 @@ class EnigmaAPI:
         self.__buffer = []
 
     def buffer_full(self):
-        """Checks if the position buffer has reached its maximum length"""
-        return len(self.__buffer) == self.__buffer_size
+        """Checks if the position buffer has reached its maximum length,
+        returns maximum buffer size if buffer is full."""
+        return len(self.__buffer) > self.__buffer_size
 
     def __save_position(self):
         """Saves current Enigma rotor position to the position buffer"""

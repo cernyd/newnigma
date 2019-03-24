@@ -6,7 +6,8 @@
             "II",
             "III"
         ],
-        "reflector": "UKW-A"
+        "reflector": "UKW-A",
+        "position_buffer": 17000
     },
     "custom": {
 

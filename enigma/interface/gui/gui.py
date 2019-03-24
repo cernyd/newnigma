@@ -34,7 +34,13 @@ def runtime(enigma_api):
     app.setApplicationDisplayName("Enigma")
     app.setWindowIcon(QIcon(BASE_DIR + "enigma_200px.png"))
 
-    RootWindow(enigma_api)
+    def cursor_handler(style='normal'):
+        if style == 'normal':
+            app.restoreOverrideCursor()
+        elif style == 'busy':
+            app.setOverrideCursor(Qt.BusyCursor)
+
+    RootWindow(enigma_api, cursor_handler)
     logging.info("Starting Qt runtime...")
     app.exec_()
 
@@ -42,7 +48,7 @@ def runtime(enigma_api):
 class RootWindow(QWidget):
     """Root window for Enigma Qt GUI"""
 
-    def __init__(self, enigma_api):
+    def __init__(self, enigma_api, cursor_handler):
         """Initializes Root QT window widgets
         :param enigma_api: {EnigmaAPI} Shared EnigmaAPI object
         """
@@ -101,6 +107,7 @@ class RootWindow(QWidget):
             enigma_api.revert_by,
             enigma_api.buffer_full,
             enigma_api.data()["charset"],
+            cursor_handler
         )
 
         # PLUGBOARD BUTTONS ===================================================
@@ -576,6 +583,7 @@ class _InputTextBoxWidget(QPlainTextEdit):
             revert_pos,
             overflow_plug,
             charset,
+            cursor_handler
     ):
         """Handles user input and sends it to the output textbox
         :param master: {QWidget} Parent Qt object
@@ -592,6 +600,7 @@ class _InputTextBoxWidget(QPlainTextEdit):
                                       text gets shorter
         :param overflow_plug: {callable} Checks if the position buffer is overflowing
         :param charset: {str} Initially used charset
+        :param cursor_handler: {callable} Allows to set currently used cursor style
         """
         super().__init__(master)
 
@@ -618,6 +627,7 @@ class _InputTextBoxWidget(QPlainTextEdit):
         self.__revert_pos = revert_pos
         self.__overflow_plug = overflow_plug
         self.__charset = "[^%s]+" % charset
+        self.__cursor_handler = cursor_handler
 
         # SCROLLBAR SYNC ======================================================
 
@@ -676,22 +686,18 @@ class _InputTextBoxWidget(QPlainTextEdit):
         text = sub(self.__charset, "", self.toPlainText().upper())
         new_len = len(text)
         diff = self.__last_len - new_len
+        if diff < -1:
+            self.__cursor_handler('busy')
 
-        if diff <= -10000:  # If insertion greater than 10 000 chars
-            logging.warning("Blocked attempt to insert %d characters...", abs(diff))
-            QMessageBox.critical(
-                self,
-                "Input too long",
-                "Inserting more than 10000 characters at a time is disallowed!",
-            )
-            text = text[: self.__last_len]
-            self.__sync_plug(self.__last_len)
-        elif diff != 0:  # If anything changed
+        if diff != 0:  # If anything changed
             if diff < 0:  # If text longer than before
-                encrypted = self.__encrypt_plug(text[diff:])
+                to_encrypt = text[diff:]
+                length = len(to_encrypt)
+
+                encrypted = self.__encrypt_plug(to_encrypt)
                 self.__output_plug(encrypted)
 
-                if len(encrypted) <= 30:
+                if length <= 30:
                     logging.info(
                         'Buffer longer by %d, new encrypted text "%s"', abs(diff), encrypted
                     )
@@ -699,9 +705,6 @@ class _InputTextBoxWidget(QPlainTextEdit):
                     logging.info(
                         'Buffer longer by %d, new encrypted text "%s..."', abs(diff), encrypted[:30]
                     )
-
-                if self.__overflow_plug():
-                    logging.warning("Position buffer is full, trimming...")
             elif diff > 0:  # If text shorter than before
                 self.__sync_plug(new_len)
                 self.__revert_pos(diff)
@@ -714,10 +717,13 @@ class _InputTextBoxWidget(QPlainTextEdit):
             self.__set_text(text)
         else:
             logging.info("No changes to buffer made...")
+            overflow = self.__overflow_plug()
             self.__set_text(text)
 
         if not text:
             logging.info("Text buffer now empty...")
+
+        self.__cursor_handler()
 
     def __sync_scroll(self, new_val, other=False):
         """Synchronizes scrollbars between input and output textboxes

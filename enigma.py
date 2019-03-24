@@ -6,9 +6,9 @@ Can read message data from stdin pipes."""
 import argparse
 import logging
 from json import JSONDecodeError
-from sys import stdin
 
 from pytest import main as pytest_main
+from sys import stdin, stdout
 
 from benchmark import benchmark
 from enigma.interface.gui import load_views
@@ -20,7 +20,8 @@ from enigma.interface.cli import cli
 from enigma.interface.gui.gui import runtime
 from enigma.utils.cfg_handler import load_config
 
-DEFAULT_INIT = {"model": "Enigma I", "rotors": ["I", "II", "III"], "reflector": "UKW-A"}
+DEFAULT_INIT = {"model": "Enigma I", "rotors": ["I", "II", "III"], "reflector": "UKW-A",
+                "position_buffer": 1000000}
 
 logging.basicConfig(level=logging.CRITICAL)
 
@@ -268,8 +269,11 @@ if __name__ == "__main__":
     if ARGS.verbose and not ARGS.silent:  # Set verbose logs
         logging.basicConfig(
             level=logging.INFO,
-            format="%(levelname)s:%(module)s:%(funcName)s: %(message)s",
+            stream=stdout,
+            format="%(levelname)s:%(module)s:%(funcName)s: %(message)s"
         )
+        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger('PySide2').setLevel(logging.CRITICAL)
     else:  # Disable logs (only show critical)
         logging.basicConfig(level=logging.CRITICAL)
 
