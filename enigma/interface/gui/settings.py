@@ -11,7 +11,7 @@ from PySide2.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout,
                                QSizePolicy, QStackedWidget, QTabWidget,
                                QTextBrowser, QVBoxLayout, QWidget)
 
-from enigma.interface.gui import LABELS, STYLESHEET, VIEW_DATA
+from enigma.interface.gui import LABELS, STYLESHEET, VIEW_DATA, HISTORICAL
 from enigma.interface.gui.plugboard import Socket, _AbstractPlugboard
 
 SELECTOR_LABELS = ("THIN", "SLOW", "MEDIUM", "FAST")
@@ -118,7 +118,7 @@ class SettingsWindow(QDialog):
                 logging.info("Enabling thin rotor radiobuttons...")
                 self.__rotor_frames[0].setDisabled(False)
 
-    def generate_components(self, reflectors, rotors, rotor_n):
+    def generate_components(self, reflectors, rotors, rotor_n, charset):
         """Generates currently displayed components based on Enigma model
         :param reflectors: {str} Reflector labels
         :param rotors: {[str, str, str]} Rotor labels
@@ -204,7 +204,7 @@ class SettingsWindow(QDialog):
             # RINGSTELLUNG =====================================================
 
             combobox = QComboBox(rotor_frame)
-            for i, label in enumerate(LABELS):
+            for i, label in enumerate(LABELS[:len(charset)]):
                 combobox.addItem(label, i)
 
             h_rule = QFrame(rotor_frame)
@@ -245,8 +245,9 @@ class SettingsWindow(QDialog):
         reflectors = self.__enigma_api.model_labels(new_model)["reflectors"]
         rotors = self.__enigma_api.model_labels(new_model)["rotors"]
         rotor_n = self.__enigma_api.rotor_n(new_model)
+        charset = HISTORICAL[new_model]["charset"]
 
-        self.generate_components(reflectors, rotors[::], rotor_n)
+        self.generate_components(reflectors, rotors[::], rotor_n, charset)
 
         defaults = self.__enigma_api.default_cfg(new_model, rotor_n)[1]
         for selected, i in zip(defaults, range(rotor_n)):

@@ -866,7 +866,7 @@ class Enigma:
     def reflector_position(self, new_position=None):
         """Reflector position getter/setter"""
         if new_position is not None:
-            new_position = convert_position(new_position, self._charset, "reflector position")
+            new_position = convert_position(new_position, "reflector position")
             self._reflector.offset(new_position)
         else:
             return self._reflector.position()

@@ -2,7 +2,7 @@
 import logging
 
 from PySide2.QtCore import Qt  # pylint: disable=no-name-in-module
-from PySide2.QtWidgets import QVBoxLayout  # pylint: disable=no-name-in-module;
+from PySide2.QtWidgets import QVBoxLayout  # pylint: disable=no-name-in-module
 from PySide2.QtWidgets import QDialog, QFrame, QLabel, QLineEdit, QSizePolicy
 
 from enigma.core.components import HISTORICAL
@@ -229,6 +229,20 @@ Enigma G machine with serial number G-312, likely used by the Abwehr,
 completely rewired.
 """
 
+_ENIGMAZ = """
+<h1>Enigma Z</h1>
+<hr>
+<ul>
+<li>Developed in: 1943 (?)</li>
+<li>Number produced: ?</li>
+<li>Used by: Sweden, Chile</li>
+<li>Rotor count: 3</li>
+<li>Features: Rotatable reflector</li>
+</ul>
+<hr>
+Rare Enigma model that can only encrypt digits.
+"""
+
 STYLESHEET = 'font-family: "Courier New", Courier, monospace'
 
 VIEW_DATA = {}
@@ -247,6 +261,7 @@ RESOURCES = {
     "Swiss K": {"description": _SWISSK, "img": BASE_DIR + "swissk.png"},
     "Railway": {"description": _RAILWAY, "img": BASE_DIR + "enigmak.jpg"},
     "Tirpitz": {"description": _TIRPITZ, "img": BASE_DIR + "tirpitz.jpg"},
+    "Enigma Z": {"description": _ENIGMAZ, "img": BASE_DIR + "enigmaz.jpg"}
 }
 
 

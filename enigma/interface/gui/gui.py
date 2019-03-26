@@ -228,7 +228,7 @@ class RootWindow(QWidget):
         )[0]
 
         # To prevent from saving files without a file extension...
-        if not findall(r"\.json$", filename.lower()):
+        if filename and not findall(r"\.json$", filename.lower()):
             filename += ".json"
             logging.info(".json file extension for save file not found, adding...")
 
@@ -245,7 +245,7 @@ class RootWindow(QWidget):
             self, "Save Enigma message", QDir.homePath(), "*.txt"
         )[0]
 
-        if not findall(r"\.txt$", filename):
+        if filename and not findall(r"\.txt$", filename):
             filename += ".txt"
             logging.info(".txt file extension for save file not found, adding...")
 

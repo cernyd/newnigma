@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # pylint: disable=missing-docstring
+import subprocess
 from random import choice, choices, randint, sample, shuffle
 from string import ascii_uppercase as alphabet
 
-import subprocess
 import pytest
 
 from enigma.api.enigma_api import EnigmaAPI

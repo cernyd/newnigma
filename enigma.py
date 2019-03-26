@@ -6,17 +6,17 @@ Can read message data from stdin pipes."""
 import argparse
 import logging
 from json import JSONDecodeError
-
-from pytest import main as pytest_main
 from sys import stdin, stdout
 
+from pytest import main as pytest_main
+
 from benchmark import benchmark
-from enigma.interface.gui import load_views
 from enigma.api.enigma_api import \
     EnigmaAPI  # pylint: disable=no-name-in-module
-from enigma.core.components import \
-    HISTORICAL, DEFAULT_LAYOUT  # pylint: disable=no-name-in-module
+from enigma.core.components import (  # pylint: disable=no-name-in-module
+    DEFAULT_LAYOUT, HISTORICAL)
 from enigma.interface.cli import cli
+from enigma.interface.gui import load_views
 from enigma.interface.gui.gui import runtime
 from enigma.utils.cfg_handler import load_config
 

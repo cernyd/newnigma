@@ -30,7 +30,7 @@ def benchmark(char_n=None):
             enigma.press_key(letter)
         end = time.time()
 
-        output = "Total encryption time: %.5f seconds for %d letters..." % (
+        output = "Total encryption time: %.3f seconds for %d letters..." % (
             end - start, num)
         logging.info(output)
         print(output)
