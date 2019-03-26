@@ -686,6 +686,7 @@ class _InputTextBoxWidget(QPlainTextEdit):
         text = sub(self.__charset, "", self.toPlainText().upper())
         new_len = len(text)
         diff = self.__last_len - new_len
+
         if diff < -1:
             self.__cursor_handler('busy')
 

@@ -714,8 +714,8 @@ class Rotor(_Rotatable):
         :param setting: {int} new ring setting
         """
         if isinstance(offset, int):
-            if offset not in range(1, 27):
-                raise ValueError("Positions can only be set to values 1 - 26!")
+            if offset not in range(1, len(self._charset)+1):
+                raise ValueError("Positions can only be set to values 1 - %d!" % len(self._charset))
             self._ring_offset = offset - 1
         else:
             return self._ring_offset + 1
@@ -893,7 +893,7 @@ class Enigma:
                 raise ValueError("Invalid number of positions to set!")
 
             for position, rotor in zip(new_positions, self._rotors):
-                rotor.offset(convert_position(position, self._charset, "rotor position"))
+                rotor.offset(convert_position(position, "rotor position"))
         else:  # Returns current positions
             return tuple([rotor.position(self._numeric) for rotor in self._rotors])
 
@@ -904,7 +904,7 @@ class Enigma:
         """
         if new_ring_settings:
             for setting, rotor in zip(new_ring_settings, self._rotors):
-                rotor.ring_offset(convert_position(setting, self._charset, "ring setting"))
+                rotor.ring_offset(convert_position(setting, "ring setting"))
         else:
             return [rotor.ring_offset() for rotor in self._rotors]
 

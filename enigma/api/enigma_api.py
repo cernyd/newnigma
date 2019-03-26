@@ -292,7 +292,7 @@ class EnigmaAPI:
         else:
             position = self.__buffer[-1]
 
-        self.positions(self.__load_position(position))
+        self._enigma.positions(self.__load_position(position))
 
     # ENCRYPTION
 

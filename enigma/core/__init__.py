@@ -32,19 +32,18 @@ def validate_pairs(pairs, name):
             raise ValueError("Duplicate letter '%s' in %s pair!" % (pair[1], name))
 
 
-def convert_position(position, charset, name="component"):
+def convert_position(position, name="component"):
     """Converts position that can come in one of 3 formats:
     1) integer -> returned
     2) number as string -> converted to integer and returned
     3) character as string -> converted by finding index in charset and returned +1
     :param position: {str or int} position to convert
-    :param charset: {str} charset to find position index in
     :param name: {str} component name for error message
     """
     try:
         if isinstance(position, str):
-            if position in charset:
-                position = charset.index(position) + 1
+            if position in ALPHABET:
+                position = ALPHABET.index(position) + 1
             else:
                 position = int(position)
     except (TypeError, ValueError, KeyError):

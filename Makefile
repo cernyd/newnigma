@@ -10,7 +10,7 @@ benchmark:
 	python3 enigma.py --benchmark 10000
 install:
 	sudo apt update
-	sudo apt install -y python3-pip pytest
+	sudo apt install -y python3-pip python3-pytest
 	sudo -H pip3 install --upgrade pip
 	sudo -H pip3 install -r requirements.txt
 clean:

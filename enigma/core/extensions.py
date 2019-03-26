@@ -37,7 +37,7 @@ class Uhr:
     def position(self, new_position=None):
         """Positions getter/setter, valid position range is 00 - 39"""
         if new_position is not None:
-            new_position = convert_position(new_position, ALPHABET, "Uhr position")
+            new_position = convert_position(new_position, "Uhr position")
 
             if new_position not in range(0, 40):
                 raise ValueError("Uhr positions can only be set to values 00 - 39!")
